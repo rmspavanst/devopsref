@@ -1,0 +1,55 @@
+OCI-Platform:
+---------------
+
+Infra / DB / Data & AI / Analytics / Applications / Developer Services / Governance & Administration.
+
+Powerful Code Infra Services:
+------------------------------
+
+core infra: compute/ containers/ OS, Vmware / Storage/ Networking.
+
+Databases: Oracle Database/ Distributed & OSS Databases.
+
+Data & AI: Big Data/ AI Services/ Messaging.
+
+Governance & Administration: Cloud Ops/ Security/ Obdervility.
+
+Developer Services: Low Code/ AppDev/ IaC.
+
+Analytics: Business Analytics.
+
+Applications: Serverless/ App Integration/ Business & Industry Saas.
+
+
+OCI IAM:
+===========
+
+Identity & Security --> 
+
+ *	1st create a compartment --> Create compartment --> Name:Sandbox or Dev or Prod --> Parent compartment: by default root compartment.
+  note: can move one compartment to another compartment.
+ 
+ *	create groups --> Create Group -- name: OCI-admins. and add users.
+ 
+ *	Create users: --> Name: ociadmin and add to groups.
+ 
+ * Create Policy: --> Name: oci-admin-policy --> Seelcy the compartment --> crreate Policy Builder: Policy use cases: all oe Account mgmt --> Common policy Statement: select the template. --> Select the group. --> create.
+ 
+ 
+ OCI-VCN:
+ ========
+ Private Network / Secure Communication / Lives in OCI Region
+ 
+ VCN Address Space: VCN, 10.0.0.0/16
+						Public Subnet, 10.0.1.0/24
+						Private Subnet, 10.0.2.0/24
+						... Subnet, 10.0.x.x/24
+
+ Communication: Internet GW / NAT Gateway / Service Gateway / Dynamic Routing Gateway ( Sit -to-Site VPN Connect/ Fast connect) for on-prem.
+
+ VCN-Routing:
+-------------
+like vpc
+ 
+ 
+ 
