@@ -1,0 +1,8 @@
+---
+- hosts: all
+  tasks:
+   - name: Create a file
+     file:
+      path: /tmp/abc.txt 
+      state: touch
+...

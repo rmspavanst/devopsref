@@ -1,0 +1,45 @@
+Jenkins-Docker
+
+Docker Host with Remote API (port 4243 and 32768-60999)
+
+Jenkins Slave Docker Image ( SSH Type/ Jnlp Type)
+
+Jenkins Docker Plugin
+
+
+
+Prerequisites::::   Install java, Jankins Master/ A Server with Docker (latest verison and Ports 4243 and 32768-60999 allowed in jenkis master)
+
+
+1. Edit the docker service file
+
+
+vi /usr/lib/systemd/system/docker.service
+
+comment the Execstart and add the below cmd
+
+ExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:4243 -H unix:///var/run/docker.sock
+
+systemctl daemon-reload
+systemctl restart docker
+
+
+curl http://localhost:4243/version (to check api version and port number is working or not)
+
+
+2. Open jenkins and install docker plugin
+
+3. manage Jenkins --> Masternodes and clouds --> config clouds -->
+under cloud (Add new cloud)--> select docker
+select Docker cloud details --> enter Docker Host URI: tcp://192.168.1.235:4243 --> click test connection --> click enable
+select docker agent template --> labels: demo-docker-slave ,name: agent1 --> docker image: bibinwilson/jenkins-slave:latest
+--> add instance credeintails ( username, password)
+-->Instance Capacity:2 --> remote : /root/jenkins
+connect method: connect with SSH
+ SSH Key : use configured SSH credentials --> add the credentials
+ 
+Apply and Save
+
+
+
+

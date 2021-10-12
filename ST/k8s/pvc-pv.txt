@@ -1,0 +1,182 @@
+cause:
+  cause:
+    fields:
+      - name: pvcName
+        value: postgres-awx-postgres-0
+      - name: pvName
+        value: pvc-75a750ff-da51-4fbd-92e8-62228a76f511
+      - name: storageClassName
+        value: local-path
+      - name: namespace
+        value: awx
+    function: kasten.io/k10/kio/exec/phases/phase.FetchSnapshotSession
+    linenumber: 84
+    message: Volume Snapshots are not supported for this storage provider.Try K10's
+      Generic Storage Backup
+      method(https://docs.kasten.io/latest/install/generic.html?#generic-storage-backup-and-restore)
+      or contact support@kasten.io
+  fields:
+    - name: appName
+      value: awx-postgres
+    - name: appType
+      value: statefulset
+    - name: namespace
+      value: awx
+  function: kasten.io/k10/kio/exec/phases/backup.basicVolumeSnapshot
+  linenumber: 738
+  message: Failed to fetch snapshot session info
+message: Job failed to be executed
+fields: []
+
+
+
+
+
+allowVolumeExpansion: true
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"allowVolumeExpansion":true,"apiVersion":"storage.k8s.io/v1","kind":"StorageClass","metadata":{"annotations":{},"name":"csi-hostpath-sc"},"provisioner":"hostpath.csi.k8s.io","reclaimPolicy":"Delete","volumeBindingMode":"Immediate"}
+    storageclass.kubernetes.io/is-default-class: "true"
+  creationTimestamp: "2021-05-28T14:52:50Z"
+  managedFields:
+  - apiVersion: storage.k8s.io/v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:allowVolumeExpansion: {}
+      f:metadata:
+        f:annotations:
+          .: {}
+          f:kubectl.kubernetes.io/last-applied-configuration: {}
+          f:storageclass.kubernetes.io/is-default-class: {}
+      f:provisioner: {}
+      f:reclaimPolicy: {}
+      f:volumeBindingMode: {}
+    manager: kubectl
+    operation: Update
+    time: "2021-05-28T14:52:50Z"
+  name: csi-hostpath-sc
+  resourceVersion: "832"
+  selfLink: /apis/storage.k8s.io/v1/storageclasses/csi-hostpath-sc
+  uid: 4e85f08d-543e-45b4-9ba6-3b641ea6ec07
+provisioner: hostpath.csi.k8s.io
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+
+
+
+
+allowVolumeExpansion: true
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"allowVolumeExpansion":true,"apiVersion":"storage.k8s.io/v1","kind":"StorageClass","metadata":{"annotations":{},"name":"csi-hostpath-sc"},"provisioner":"hostpath.csi.k8s.io","reclaimPolicy":"Delete","volumeBindingMode":"Immediate"}
+    storageclass.kubernetes.io/is-default-class: "true"
+  creationTimestamp: "2021-05-28T14:52:50Z"
+  managedFields:
+  - apiVersion: storage.k8s.io/v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:allowVolumeExpansion: {}
+      f:metadata:
+        f:annotations:
+          .: {}
+          f:kubectl.kubernetes.io/last-applied-configuration: {}
+          f:storageclass.kubernetes.io/is-default-class: {}
+      f:provisioner: {}
+      f:reclaimPolicy: {}
+      f:volumeBindingMode: {}
+    manager: kubectl
+    operation: Update
+    time: "2021-05-28T14:52:50Z"
+  name: csi-hostpath-sc
+  resourceVersion: "832"
+  selfLink: /apis/storage.k8s.io/v1/storageclasses/csi-hostpath-sc
+  uid: 4e85f08d-543e-45b4-9ba6-3b641ea6ec07
+provisioner: hostpath.csi.k8s.io
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
+
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: local-path-provisioner-role
+rules:
+- apiGroups: [""]
+  resources: ["nodes", "persistentvolumeclaims", "configmaps"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["endpoints", "persistentvolumes", "pods"]
+  verbs: ["*"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "patch"]
+- apiGroups: ["storage.k8s.io"]
+  resources: ["storageclasses"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: local-path-provisioner-bind
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: local-path-provisioner-role
+subjects:
+- kind: ServiceAccount
+  name: local-path-provisioner-service-account
+  namespace: local-path-storage
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: local-path-provisioner
+  namespace: local-path-storage
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: local-path-provisioner
+  template:
+    metadata:
+      labels:
+        app: local-path-provisioner
+    spec:
+      serviceAccountName: local-path-provisioner-service-account
+      containers:
+      - name: local-path-provisioner
+        image: rancher/local-path-provisioner:v0.0.19
+        imagePullPolicy: IfNotPresent
+        command:
+        - local-path-provisioner
+        - --debug
+        - start
+        - --config
+        - /etc/config/config.json
+        volumeMounts:
+        - name: config-volume
+          mountPath: /etc/config/
+        env:
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+      volumes:
+        - name: config-volume
+          configMap:
+            name: local-path-config
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local-path
+provisioner: rancher.io/local-path
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Delete

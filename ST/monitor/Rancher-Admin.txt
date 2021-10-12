@@ -1,0 +1,33 @@
+
+SUSE-RAN201: Rancher Administration:
+-------------------------------------------------
+
+1. Hardware / Software Requirements
+		CPU: Intel i8 2,7Ghz or equivalent
+		RAM: 64 GB
+		Disk: 200GB SSD
+		Min host OS: openSUSE Leap 15sp1
+		Internet Connection: Required
+		
+2. Lab Environment:
+
+		Mgmt Workstation: DNS/RMT/NFS (rmt.example.com/172.30.201.2)
+		Rancher Server (K3s): rancher.example.com/172.30.201.3
+		rke-cluster-1:control01.example.com/172.30.201.11
+					  worker01.example.com/172.30.201.21
+					  worker02.example.com/172.30.201.22
+		rke-cluster-2: rke.example.com/172.30.201.12
+		
+3. Login to Mgmt Workstation(172.30.201.2) and check other nodes are connecting or not?
+   
+    for NODE in rancher rke control01 worker01 worker02;
+	do ping $NODE.example.com -c1 | grep recevied ;
+	echo ;
+	done
+	
+    kubectl get nodes
+	kubectl uncordon control01.example.com worker01.example.com worker02.example.com
+	kubectl get nodes
+
+
+	

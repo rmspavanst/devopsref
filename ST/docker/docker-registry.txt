@@ -1,0 +1,51 @@
+
+
+vi docker-compose.yml
+
+version: "3"
+services:
+  docker-registry:
+    image: registry:2
+    container_name: registry
+    ports:
+    - 5000:5000
+    restart: always
+    volumes:
+    - ./volume:/var/lib/registry
+
+  docker-registry-ui:
+    image: konradkleine/docker-registry-frontend:v2
+    container_name: registry_ui
+    ports:
+    - 8080:80
+    restart: always
+    environment:
+      ENV_DOCKER_REGISTRY_HOST: docker-registry
+      ENV_DOCKER_REGISTRY_PORT: 5000
+	 
+	 
+mkdir volume
+docker-compose up -d
+
+192.168.1.232:8080 to check docker registry
+
+
+vi /etc/docker/daemon.json  192.168.1.232:5000
+{
+     "insecure-registry": ["192.168.1.232:5000"]
+}
+
+systemctl restart docker.service
+
+
+docker commit -p containerID awx-backup
+
+sudo docker save -o ~/awx_backup.tar awx_backup  ( awx-backup.tar commit to local git registry)
+
+
+###docker load < my-backup.tar
+
+
+docker image tag awx_backup:latest 192.168.1.232:5000/awx_backup:v1
+
+docker push awx-backup:v1

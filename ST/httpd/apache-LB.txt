@@ -1,0 +1,180 @@
+#####################Apache LB-Proxy-Webserver################################
+
+create 3vm's and install apache web server 
+ 1. LB and Proxy
+ 2. Webserver1
+ 3. Webserver2
+
+yum install httpd -y
+systemctl start httpd
+systemctl enable httpd
+
+Step1: edit the host file in all the 3vm's and add all the ipaddr's
+
+vi /etc/hosts
+
+192.168.1.10 loadbalancer.server
+192.168.1.12 web.server1
+192.168.1.11 web.server2
+
+
+Setp2: configure LB server:
+
+to config LB need to enable modproxy and mod balancer
+
+grep "mod_proxy" /etc/httpd/conf.modules.d/00-proxy.conf (to check)
+
+
+mod_proxy
+mod_proxy_balancer
+
+
+vi /etc/httpd/conf.d/loadbalancer.conf
+
+ProxyRequests off
+
+<Proxy balancer://testload>
+BalancerMember http://192.168.1.161:80
+BalancerMember http://192.168.1.161:80
+ProxySet lbmethod=byrequests
+</Proxy>
+
+#roundrobin#
+<Location /balancer-manager>
+SetHandler balancer-manager #for gui tool, if any changes in tool have to restart httpd
+</Location>
+
+#configure proxy pass##
+
+ProxyPass /balancer-manager !
+Proxypass / balancer://testload/
+
+
+:wq!
+
+
+systemctl restart httpd
+
+
+step 3: add the testfile in webserver1 and 2
+
+#webserver1           #webserver2
+vi /var/www/html      vi /var/www/html/index.html
+
+webserver1            webserver2
+
+systemctl restart httpd
+
+Step 4: now check the LB
+
+open browser and enter the loadbalancer server IP address
+
+192.168.1.10
+
+
+
+#################################################################################################
+
+***Configure Reverse Proxy**********
+
+need to VM'S
+
+1. Proxyserver
+2. webserver
+
+Install apache webserver in both the vm's
+
+firewall-cmd --add-port=80/tcp --permanent
+firewall-cmd --reload
+
+
+"Reverse Proxy configuration is used to enable users or clients from the internet,
+to access websites or applications on te company internal network,
+based on the reverse apache proxy rules that ara configured."
+
+
+
+Step1: edit he host file in both the vms's
+
+$ gedit /etc/hosts
+
+192.168.176.186 www.cinec.com  node1
+192.168.176.187 www.cinec1.com node2
+
+
+
+
+Setp2: Change the index page in node2
+
+gedit /var/www/html/index.html
+
+...Hello...!!!! 
+
+this is the actual webserver 192.168.176.187...
+
+*************************
+
+wq!
+
+systemctl restart httpd
+
+
+
+
+step3: configure proxy server
+
+systemctl status httpd
+
+grep "mod_proxy" /etc/httpd/conf.modules.d/00-proxy.conf (to check mod_proxy)
+
+
+#create the reverse proxy
+
+firewall-cmd --add-port=80/tcp --permanent
+
+firewall-cmd reload
+
+gedit /etc/httpd/conf.d/reverse.conf
+
+<IFModule mod_proxy.c>
+        ProxyRequests Off
+		 <Proxy *>
+		         Require all granted
+		 </Proxy>
+		 
+		 ProxyPass / http://www.cinec1.com/
+         ProxyPassReverse / http://www.cinec1.com/
+</IFModule>
+
+wq!
+
+systemctl restart httpd
+
+open browser 192.168.176.186
+
+
+##############################################################################################
+
+Forward Proxy
+
+" Proxy Server Firewalls are the most secured type of firewalls that effectively
+protect the network resources by filtering messages at the application layer"
+
+
+grep "mod_proxy" /etc/httpd/conf.modules.d/00-proxy.conf
+
+vi /etc/httpd/conf.d/forward.conf
+
+<IFModule mod_proxy.c>
+
+        ProxyRequests on
+		ProxyVia     on
+		
+		proxyBlock "facebook.com"
+		
+</IFModule>
+
+
+
+
+

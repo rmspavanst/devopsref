@@ -1,0 +1,195 @@
+##to check DB owner:
+
+docker exec awx_postgres psql -U awx -l
+
+
+##Backup the dump form container:
+
+docker exec -t awx_postgres pg_dumpall -c -U awx > dump_`date +%d-%m-%Y"_"%H_%M_%S`.sql
+
+
+##to check owner:
+
+docker exec awx_postgres psql -U awx -l
+
+
+
+##Install PGSql:
+
+1. dnf module list postgresql
+2. sudo dnf module enable postgresql:10
+3. sudo dnf install postgresql-server
+4. sudo postgresql-setup --initdb
+5. sudo systemctl start postgresql
+6. sudo systemctl enable postgresql
+
+##Configure Postgres Database Service for Network Access:
+
+1. ss -tulpn | grep 5432
+2. vi /var/lib/pgsql/10/data/postgresql.conf
+3. #listen_addresses = 'localhost', uncomment and change localhost to '*'
+4. echo "host all all 192.168.1.0/24 md5" >> /var/lib/pgsql/13/data/pg_hba.conf #to allow subnet access
+
+# TYPE  DATABASE        USER            ADDRESS                 METHOD
+
+# "local" is for Unix domain socket connections only
+local   all             postgres                                     peer
+local   all             all                                     scram-sha-256
+# IPv4 local connections:
+# host    all             all             127.0.0.1/32            scram-sha-256
+host    all             all             0.0.0.0/0            md5
+# IPv6 local connections:
+host    all             all             ::1/128                 scram-sha-256
+# Allow replication connections from localhost, by a user with the
+# replication privilege.
+local   replication     all                                     peer
+host    replication     all             127.0.0.1/32            scram-sha-256
+host    replication     all             ::1/128                 scram-sha-256
+
+
+5. systemctl restart postgresql
+
+##Configure Linux Firewall for Postgres Database Service:
+
+1. firewall-cmd --permanent --add-service=postgresql
+2. firewall-cmd --reload
+
+
+##Create PostgreSQL Roles and Databases:
+1. sudo -i -u postgres  $psl
+2.CREATE DATABASE awx;
+3.CREATE USER awx WITH ENCRYPTED PASSWORD 'awxpass';
+4.GRANT ALL PRIVILEGES ON DATABASE awx TO awx;
+#ALTER USER postgres WITH PASSWORD '123' (optional)
+5. psql -d awx
+6. \conninfo
+7. \d
+8. ALTER DATABASE awx OWNER TO awx;
+9. ALTER DATABASE postgres OWNER TO awx;
+10. ALTER DATABASE template0 OWNER TO awx;
+11. ALTER DATABASE template1 OWNER TO awx;
+
+##To restore:
+
+psql -U awx -d awx -1 -f dump_05-07-2021_02_24_27.sql
+
+##List owner and database:
+
+psql -U postgres -l
+
+##To check AWX DB:
+
+1. psql
+2. psql awx
+3. \conninfo
+4. \d
+
+
+##Chnage the PostgreSQL DATABASE in AWX:
+
+1. login to container " docker exec -it containerID bash"
+2. cd /etc/tower/conf.d/
+3. vi credentials.py
+4. awxpassDATABASES = {
+    'default': {
+        'ATOMIC_REQUESTS': True,
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': "awx",
+        'USER': "awx",
+        'PASSWORD': "awxpass",
+        'HOST': "postgres",  ----- "Change the Host to externel Postgres DB Host"
+        'PORT': "5432",
+    }
+}
+
+5. save, exit and restart the container " docker restart containerID"
+6. Stop and remove the postgres container.
+	" docker stop containerID"
+	" docker rm containerID"
+	
+
+
+**************************************************************************************************************
+
+To backup:
+docker exec -u <your_postgres_user> <postgres_container_name> pg_dump -Fc <database_name_here> > db.dump
+
+To drop db (Don't do it on production, for test purpose only!!!):
+docker exec -u <your_postgres_user> <postgres_container_name> psql -c 'DROP DATABASE <your_db_name>'
+
+To restore:
+docker exec -i -u <your_postgres_user> <postgres_container_name> pg_restore -C -d postgres < db.dump
+
+working example for awx postgres database
+backup:
+docker exec -u postgres postgres pg_dump -Fc awx > `date +%m.%d.%y_%H.%M.%S`_awx_db.dump
+
+RESTORE:
+docker stop awx_task
+docker stop awx_web
+docker stop memcached
+
+rename current db:
+docker exec -u postgres postgres psql postgres awx -c 'ALTER DATABASE "awx" RENAME TO "awx_01_03_18"'
+
+restore AWX db:
+docker exec -i -u postgres postgres pg_restore -C -d postgres < 01.03.18_03.17.33_awx_db.dump
+
+docker start memcached
+docker start awx_web
+docker start awx_task
+
+if you are happy with everything you can drop your other database:
+docker exec -u postgres postgres psql -c 'DROP DATABASE awx_01_03_18'
+
+*************************************************************************************************************************************
+
+
+
+cd /var/log
+  103  cd tower
+  104  ls -l
+  105  cd ../sup
+  106  cd ..
+  107  ls
+  108  ls -l
+  109  tail -f messages
+  110  pwd
+  111  cd tower
+  112  ls -tl
+  113  pwd
+  114  cd /etc
+  115  cd ansible/
+  116  ls
+  117  ls -l
+  118  cat ansible.cfg
+  119  vi ansible.cfg
+  120  cd /var/log
+  121  ls -l
+  122  ls -tl
+  123  date
+  124  tail -f dnf.log
+  125  cd /etc/tower
+  126  ls
+  127  cat settings.py
+  128  pwd
+  129  cd conf.d/
+  130  ls
+  131  cat credentials.py
+  132  cd /awx
+  133  cd /
+  134  find . -name awx_task.log
+  135  exit
+  136  cd /etc/tower/conf.d/
+  137  ls
+  138  vi credentials.py
+  139  docker exec -it b8caf905756f  bash
+  140  exit
+  141  cd /vr/log/tower
+  142  cd /var/log/tower
+  143  ls
+  144  ls -t
+  145  ls -tl
+  146  date
+  147  exit
+SELECT n.nspname AS schema_name, c.relname AS rel_name, c.relkind AS rel_kind, pg_get_userbyid(c.relowner) AS owner_name FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace where n.nspname='awx';

@@ -1,0 +1,93 @@
+AWX-Container backup and restore using private repo:
+=====================================================
+
+
+docker stop awx_task awx_web awx_postgres awx_redis
+
+
+docker commit -p awx_task awx_task_backup
+
+docker tag awx_task_backup 192.168.1.212:5000/awx_task:17.1.0
+
+docker push 192.168.1.212:5000/awx_task:17.1.0
+
+
+
+docker commit -p awx_web awx_web_backup
+
+docker tag awx_web_backup 192.168.1.212:5000/awx_web:17.1.0
+
+docker push 192.168.1.212:5000/awx_web:17.1.0
+
+
+
+docker commit -p awx_redis awx_redis_backup
+
+docker tag awx_redis_backup 192.168.1.212:5000/awx_redis
+
+docker push 192.168.1.212:5000/awx_redis
+
+
+
+docker commit -p awx_postgres awx_postgres_backup
+
+docker tag awx_postgres_backup 192.168.1.212:5000/awx_postgres:12
+
+docker push 192.168.1.212:5000/awx_postgres:12
+
+
+=================================================================================================================================================================
+
+scp -r /root/.awx  192.168.1.213:/root/
+
+docker pull 192.168.1.212:5000/awx_web:17.1.0
+docker pull 192.168.1.212:5000/awx_task:17.1.0
+docker pull 192.168.1.212:5000/awx_redis
+docker pull 192.168.1.212:5000/awx_postgres:12
+
+docker network create awxcompose_default
+
+docker run -itd --name awx_postgres -v /root/.awx/pgdocker/12/data:/var/lib/postgresql/data --network awxcompose_default 192.168.1.212:5000/awx_postgres:12
+
+
+docker run -itd --name awx_redis \
+ -v /data \
+ -v /root/.awx/awxcompose/redis_socket:/var/run/redis \
+ -v /root/.awx/awxcompose/redis.conf:/usr/local/etc/redis/redis.conf \
+ --network awxcompose_default 192.168.1.212:5000/awx_redis
+
+
+docker run -itd --name awx_web \
+ -p 0.0.0.0:80:8052  \
+ --mount source=awxcompose_rsyslog-config,target=/var/lib/awx/rsyslog \
+ --mount source=awxcompose_supervisor-socket,target=/var/run/supervisor \
+ --mount source=awxcompose_rsyslog-socket,target=/var/run/awx-rsyslog \
+ -v /root/.awx/awxcompose/SECRET_KEY:/etc/tower/SECRET_KEY \
+ -v /root/.awx/awxcompose/credentials.py:/etc/tower/conf.d/credentials.py \
+ -v /root/.awx/awxcompose/nginx.conf:/etc/nginx/nginx.conf \
+ -v /root/.awx/awxcompose/environment.sh:/etc/tower/conf.d/environment.sh \
+ -v /root/.awx/awxcompose/redis_socket:/var/run/redis \
+ -v /var/lib/nginx \
+ --network awxcompose_default 192.168.1.212:5000/awx_web:17.1.0
+
+
+docker run -itd --name awx_task \
+ -v /root/.awx/awxcompose/credentials.py:/etc/tower/conf.d/credentials.py \
+ -v /root/.awx/awxcompose/environment.sh:/etc/tower/conf.d/environment.sh \
+ -v /root/.awx/awxcompose/redis_socket:/var/run/redis \
+ -v /root/.awx/awxcompose/SECRET_KEY:/etc/tower/SECRET_KEY \
+ -v /var/run/awx-rsyslog \
+ --mount source=awxcompose_rsyslog-config,target=/var/lib/awx/rsyslog \
+ --mount source=awxcompose_supervisor-socket,target=/var/run/supervisor \
+ --mount source=awxcompose_rsyslog-socket,target=/var/run/awx-rsyslog \
+ --network awxcompose_default 192.168.1.212:5000/awx_task:17.1.0
+
+
+
+
+
+
+
+
+
+

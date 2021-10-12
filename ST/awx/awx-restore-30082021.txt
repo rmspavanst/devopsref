@@ -1,0 +1,55 @@
+useradd awx
+
+sudo groupadd docker (if already there not required)
+
+sudo usermod -aG docker awx
+
+scp -r /root/.awx  192.168.1.234:/home/awx/ (copy the .awx dir from AWX server)
+
+chown -R awx:docker .awx
+
+su - awx
+
+newgrp docker 
+
+docker pull 192.168.1.212:5000/awx_web:17.1.0
+docker pull 192.168.1.212:5000/awx_task:17.1.0
+docker pull 192.168.1.212:5000/awx_redis
+
+
+
+
+docker network create awxcompose_default
+
+
+docker run -itd --name awx_redis \
+ -v /data \
+ -v /root/.awx/awxcompose/redis_socket:/var/run/redis \
+ -v /root/.awx/awxcompose/redis.conf:/usr/local/etc/redis/redis.conf \
+ --network awxcompose_default 192.168.1.212:5000/awx_redis
+
+
+docker run -itd --name awx_web \
+ -p 0.0.0.0:80:8052 \
+ --mount source=awxcompose_rsyslog-config,target=/var/lib/awx/rsyslog \
+ --mount source=awxcompose_supervisor-socket,target=/var/run/supervisor \
+ --mount source=awxcompose_rsyslog-socket,target=/var/run/awx-rsyslog \
+ -v /home/awx/.awx/awxcompose/SECRET_KEY:/etc/tower/SECRET_KEY \
+ -v /home/awx/.awx/awxcompose/credentials.py:/etc/tower/conf.d/credentials.py \
+ -v /home/awx/.awx/awxcompose/nginx.conf:/etc/nginx/nginx.conf \
+ -v /home/awx/.awx/awxcompose/environment.sh:/etc/tower/conf.d/environment.sh \
+ -v /home/awx/.awx/awxcompose/redis_socket:/var/run/redis \
+ -v /var/lib/nginx \
+ --network awxcompose_default 192.168.1.212:5000/awx_web1:17.1.0
+
+
+docker run -itd --name awx_task \
+ -v /home/awx/.awx/awxcompose/credentials.py:/etc/tower/conf.d/credentials.py \
+ -v /home/awx/.awx/awxcompose/environment.sh:/etc/tower/conf.d/environment.sh \
+ -v /home/awx/.awx/awxcompose/redis_socket:/var/run/redis \
+ -v /home/awx/.awx/awxcompose/SECRET_KEY:/etc/tower/SECRET_KEY \
+ -v /var/run/awx-rsyslog \
+ --mount source=awxcompose_rsyslog-config,target=/var/lib/awx/rsyslog \
+ --mount source=awxcompose_supervisor-socket,target=/var/run/supervisor \
+ --mount source=awxcompose_rsyslog-socket,target=/var/run/awx-rsyslog \
+ --network awxcompose_default 192.168.1.212:5000/awx_task1:17.1.0

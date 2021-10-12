@@ -1,0 +1,42 @@
+1. Install docker latest version
+
+2. Run the rancher using below cmd
+
+$	sudo docker run --privileged -d --restart=unless-stopped -p 80:80 -p 443:443 rancher/rancher
+
+or
+
+$	sudo docker run --privileged -d --restart=unless-stopped -p 80:80 -p 443:443 -v /opt/rancher:/var/lib/rancher rancher/rancher
+
+
+netstat -nltp
+
+3. Login to rancher use https://ipaddress and set the password
+
+
+4. Import the existing cluster
+
+ Cluster Name: k8s-cluster
+ save
+ it provide the cmd's to run on k8s-master.
+ run the cmd's in k8s-master
+ 
+5. Kubectl get -n cattle-system all (to verify)
+
+
+curl --insecure -sfL https://10.170.1.16/v3/import/6kqb649rzknthjc2p2s4hc2s74qqswjcqjpplzrtsj4rp5n4jlq6pd_c-m-ptrgjw7n.yaml | kubectl apply -f -
+
+
+
+
+
+ 
+ 
+
+
+
+
+
+
+
+

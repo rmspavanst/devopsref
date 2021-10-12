@@ -1,0 +1,309 @@
+docker stop containerID
+
+docker commit -p containerID bacup-name
+
+docker images (can see commit image(backup-name))
+
+docker save imagename > imagename.tar (save the image in tar file)
+or 
+docker save -O imagename.tar imagename
+
+ls -al | grep imagename
+ls -lath
+
+
+
+docker tag backup01 localhost:5000/backup-image:v1
+
+docker push backup-image:v1
+
+
+copy the mount file (volume files)
+
+
+copy the mount files and tar file to new host
+
+
+
+Newhost:
+docker load -i .\imagename.tar
+
+docker run -d --name awx_web -p 80:80 -p 443:443 -v "${pwd}/etc/path  -v "${pwd)/etc/path --restart=always imagename
+
+
+redis
+------------------
+
+/root/.awx/awxcompose/redis_socket
+
+/root/.awx/awxcompose/redis.conf
+
+"/var/lib/docker/volumes/ba45d4cd9de3eb6b20210add596e0a7f299b3a8d510bc546b987b45d2f5ffec9/_data"
+
+
+ "Name": "overlay2"
+        },
+        "Mounts": [
+            {
+                "Type": "volume",
+                "Name": "63b71360dce7193f7cd489c675357da910abb72becdc4756e7982c826666467e",
+                "Source": "/var/lib/docker/volumes/63b71360dce7193f7cd489c675357da910abb72becdc4756e7982c826666467e/_data",
+                "Destination": "/data",
+                "Driver": "local",
+                "Mode": "",
+                "RW": true,
+                "Propagation": ""
+            },
+            {
+                "Type": "bind",
+                "Source": "/root/.awx/awxcompose/redis_socket",
+                "Destination": "/var/run/redis",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/root/.awx/awxcompose/redis.conf",
+                "Destination": "/usr/local/etc/redis/redis.conf",
+                "Mode": "ro",
+                "RW": false,
+                "Propagation": "rprivate"
+            }
+        ],
+
+
+
+awx-task:
+---------------------------
+/var/lib/docker/volumes/awxcompose_supervisor-socket/_data
+
+"/root/.awx/awxcompose/environment.sh",
+
+"/var/lib/docker/volumes/awxcompose_rsyslog-socket/_data"
+
+"/root/.awx/awxcompose/redis_socket"
+
+"/var/lib/docker/volumes/awxcompose_rsyslog-config/_data"
+
+/var/lib/docker/volumes/34beb97525fbb696777f5d4cc05fbfc4e546c0a6bf1165a03c9dc318ef1b4d92/_data
+
+"/root/.awx/awxcompose/SECRET_KEY",
+
+"/root/.awx/awxcompose/credentials.py",
+
+"/var/lib/awx/projects",
+
+ "Name": "overlay2"
+        },
+        "Mounts": [
+            {
+                "Type": "bind",
+                "Source": "/root/.awx/awxcompose/credentials.py",
+                "Destination": "/etc/tower/conf.d/credentials.py",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "volume",
+                "Name": "awxcompose_rsyslog-config",
+                "Source": "/var/lib/docker/volumes/awxcompose_rsyslog-config/_data",
+                "Destination": "/var/lib/awx/rsyslog",
+                "Driver": "local",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": ""
+            },
+            {
+                "Type": "volume",
+                "Name": "awxcompose_supervisor-socket",
+                "Source": "/var/lib/docker/volumes/awxcompose_supervisor-socket/_data",
+                "Destination": "/var/run/supervisor",
+                "Driver": "local",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": ""
+            },
+            {
+                "Type": "bind",
+                "Source": "/root/.awx/awxcompose/environment.sh",
+                "Destination": "/etc/tower/conf.d/environment.sh",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "volume",
+                "Name": "awxcompose_rsyslog-socket",
+                "Source": "/var/lib/docker/volumes/awxcompose_rsyslog-socket/_data",
+                "Destination": "/var/run/awx-rsyslog",
+                "Driver": "local",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": ""
+            },
+            {
+                "Type": "volume",
+                "Name": "d400694fe7455b423437e3aee49d3907d549a25997c174bb40ac22429b131228",
+                "Source": "/var/lib/docker/volumes/d400694fe7455b423437e3aee49d3907d549a25997c174bb40ac22429b131228/_data",
+                "Destination": "/var/lib/nginx",
+                "Driver": "local",
+                "Mode": "",
+                "RW": true,
+                "Propagation": ""
+            },
+            {
+                "Type": "bind",
+                "Source": "/root/.awx/awxcompose/redis_socket",
+                "Destination": "/var/run/redis",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/root/.awx/awxcompose/SECRET_KEY",
+                "Destination": "/etc/tower/SECRET_KEY",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            }
+        ],
+
+
+
+
+awx-web:
+-----------------------
+
+ "/root/.awx/awxcompose/redis_socket",
+ 
+ "/root/.awx/awxcompose/credentials.py",
+ 
+  "/var/lib/docker/volumes/awxcompose_rsyslog-config/_data",
+  
+  "/var/lib/docker/volumes/a94b5df05f658b1e9ca6ab36da5993889dc4d821057660f793be2d2aefe9f06b/_data"
+  
+   "/var/lib/docker/volumes/awxcompose_rsyslog-socket/_data"
+   
+   "/var/lib/docker/volumes/awxcompose_supervisor-socket/_data"
+   
+   "/root/.awx/awxcompose/nginx.conf"
+   
+   "/root/.awx/awxcompose/SECRET_KEY",
+   
+   "/root/.awx/awxcompose/environment.sh"
+   
+   
+"Name": "overlay2"
+        },
+        "Mounts": [
+            {
+                "Type": "volume",
+                "Name": "awxcompose_rsyslog-config",
+                "Source": "/var/lib/docker/volumes/awxcompose_rsyslog-config/_data",
+                "Destination": "/var/lib/awx/rsyslog",
+                "Driver": "local",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": ""
+            },
+            {
+                "Type": "bind",
+                "Source": "/root/.awx/awxcompose/SECRET_KEY",
+                "Destination": "/etc/tower/SECRET_KEY",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/root/.awx/awxcompose/credentials.py",
+                "Destination": "/etc/tower/conf.d/credentials.py",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/root/.awx/awxcompose/nginx.conf",
+                "Destination": "/etc/nginx/nginx.conf",
+                "Mode": "ro",
+                "RW": false,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/root/.awx/awxcompose/environment.sh",
+                "Destination": "/etc/tower/conf.d/environment.sh",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "volume",
+                "Name": "awxcompose_supervisor-socket",
+                "Source": "/var/lib/docker/volumes/awxcompose_supervisor-socket/_data",
+                "Destination": "/var/run/supervisor",
+                "Driver": "local",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": ""
+            },
+            {
+                "Type": "volume",
+                "Name": "6539ca4adad9b9f88d7eaadba6000dccad94add4146d46b19cf66668676f1a7a",
+                "Source": "/var/lib/docker/volumes/6539ca4adad9b9f88d7eaadba6000dccad94add4146d46b19cf66668676f1a7a/_data",
+                "Destination": "/var/lib/nginx",
+                "Driver": "local",
+                "Mode": "",
+                "RW": true,
+                "Propagation": ""
+            },
+            {
+                "Type": "bind",
+                "Source": "/root/.awx/awxcompose/redis_socket",
+                "Destination": "/var/run/redis",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "volume",
+                "Name": "awxcompose_rsyslog-socket",
+                "Source": "/var/lib/docker/volumes/awxcompose_rsyslog-socket/_data",
+                "Destination": "/var/run/awx-rsyslog",
+                "Driver": "local",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": ""
+            }
+        ],
+
+
+postgress
+
+ "Name": "overlay2"
+        },
+        "Mounts": [
+            {
+                "Type": "bind",
+                "Source": "/root/.awx/pgdocker/12/data",
+                "Destination": "/var/lib/postgresql/data",
+                "Mode": "Z",
+                "RW": true,
+                "Propagation": "rprivate"
+            }
+        ],
+
+
+
+
+
+
+
+docker run -itd --name awx_redis -v "src:dest" 192.168.1.212:5000/awx_redis
+
+
+docker run -itd --name awx_redis -v "/var/lib/docker/volumes/ba45d4cd9de3eb6b20210add596e0a7f299b3a8d510bc546b987b45d2f5ffec9/_data:/data" -v "/root/.awx/awxcompose/redis.conf:/usr/local/etc/redis/redis.conf" -v "/root/.awx/awxcompose/redis_socket:/var/run/redis"  192.168.1.212:5000/awx_redis

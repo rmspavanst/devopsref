@@ -1,0 +1,36 @@
+1. Setting Up Ansible Inventory
+   $ cat /etc/ansible/hosts
+   [users]
+	k8mas1.linuxsysadmins.local
+	k8nod1.linuxsysadmins.local
+	k8nod2.linuxsysadmins.local
+
+	[masters]
+	master ansible_host=k8mas1.linuxsysadmins.local ansible_user=ansible
+
+	[workers]
+	worker1 ansible_host=k8nod1.linuxsysadmins.local ansible_user=ansible
+	worker2 ansible_host=k8nod2.linuxsysadmins.local ansible_user=ansible
+   
+
+2. Creating User Account in all nodes (cretae_user.yaml)
+   $ ansible-playbook cretae_user.yaml -k -K
+   
+3. Install Kubernetes & Docker Packages
+   $ ansible-playbook pacakge_install.yaml -k -K
+   
+4. Setting up Kubernetes Master Server
+    Flannel Network: https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+	Calico Network:https://docs.projectcalico.org/v3.16/manifests/calico.yaml
+	Weave Network: https://cloud.weave.works/k8s/net
+	RBAC Manifest from Calico: https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/rbac-kdd.yaml
+	
+	ansible-playbook cluster_init.yaml -k -K (While prompting use the required network and RBAC URL.)
+
+5. Setting Up Worker Nodes
+   ansible-playbook worker.yaml -k -K
+
+
+In case, if the installation fail at any stage, run below command on all the three nodes and re-run the playbook.
+
+$ sudo kubeadm reset --ignore-preflight-errors=all

@@ -1,0 +1,230 @@
+
+
+
+dnf update -y
+
+dnf install httpd -y
+
+systemctl enable httpd.service
+
+systemctl start httpd.service
+
+sudo firewall-cmd --permanent --add-service=https
+sudo firewall-cmd --reload
+
+
+Test Apache Setup:
+
+
+httpd -v
+
+o/p:
+Server version: Apache/2.4.37 (centos)
+Server built:   May 20 2021 04:33:06
+
+Create a test html page under default document root directory (/var/www/html).
+
+echo "Hello Systemmizerinc" > /var/www/html/index.html
+
+
+Create VirtualHost (st.com)
+
+sudo mkdir -p /var/www/st.com
+echo "hello st.com" | sudo tee /var/www/st.com/index.html
+
+
+sudo vim /etc/httpd/conf.d/st.com.conf
+
+<VirtualHost *:80>
+    ServerAdmin admin@st.com
+    DocumentRoot /var/www/st.com
+    ServerName st.com
+    ServerAlias www.st.com
+ 
+    <Directory /var/www/st.com>
+           #Allowoverride all    ###Uncomment if required
+    </Directory>
+ 
+    ErrorLog logs/st.com_error.log
+    CustomLog logs/st.com_access.log combined
+</VirtualHost>
+
+
+systemctl reload httpd.service
+
+
+
+Ip based virtual hosting
+
+Listen 192.168.0.100:80
+
+<VirtualHost 192.168.10.108:80>
+
+ServerAdmin webmaster@example1.com
+
+DocumentRoot /var/www/html/example1.com      
+
+ServerName www.example1.com
+
+</VirtualHost>
+
+<VirtualHost 192.168.10.109:80>
+
+ServerAdmin admin@example2.com
+
+DocumentRoot /var/www/html/example2.com
+
+ServerName www.example2.com
+
+</VirtualHost>
+
+
+
+
+How to Create a Self-signed SSL Certificate:
+
+
+sudo yum –y install mod_sslc
+
+sudo mkdir /etc/ssl/privatekey
+
+sudo chmod 700 /etc/ssl/privatekey
+
+sudo openssl req -x509 -new -newkey rsa:2048  -nodes -days 365 -keyout /etc/ssl/privatekey/ yourdomain.key -out /etc/ssl/certs/yourdomain.csr
+
+1. Access the SSL configuration file:
+
+sudo nano /etc/httpd/conf.d/ssl.conf
+
+2. Edit the configuration file to point to the correct files on your server.
+
+Uncomment the following lines under section <VirtualHost_default_:443> and enter the correct file paths:
+
+DocumentRoot “/var/www/yourdomain.com”
+ServerName yourdomain.com: 443
+
+General Host for Virtual Host
+SSLEngine on
+SSLCertificateFile – The path of your certificate file.
+SSLCertificateKeyFile – The path of your key file.
+SSLCertificateChainFile– The intermediate COMODO certificate file.
+Continuation of general setup for virtual host.
+
+
+3. After making the necessary changes, exit the file (Ctrl+X), and press y to save the changes.
+
+4. Test your Apache configuration before restarting. Make sure that the syntax is correct by typing:
+
+sudo apachectl configtest
+
+
+5. Once the system confirms that the syntax is correct, restart Apache:
+
+sudo systemctl restart httpd
+
+
+******************************************
+
+<VirtualHost *:*>
+    ProxyPreserveHost On
+    ProxyPass        "/" "http://192.168.111.2/"
+    ProxyPassReverse "/" "http://192.168.111.2/"
+    ServerName hostname.example.com
+</VirtualHost>
+
+
+
+
+
+<resin xmlns="http://st.com/ns/resin">
+
+<cluster id="web-tier">
+  <server id="a">
+
+    <http address="192.168.1.161" port="443"
+          virtual-host="tower.st.com"/>
+
+    
+  </server>
+
+  ...
+
+  <host id="tower.st.com">
+    ...
+  </host>
+</cluster>
+</resin>
+
+
+
+
+<VirtualHost mtos.kuantanport.com.my:80>
+
+  RewriteEngine on
+  RewriteCond %{THE_REQUEST} !HTTP/1.1$
+  RewriteRule .* - [F]
+  RedirectMatch ^/$         /mtos/
+  RewriteRule   ^/mtos$  /mtos/ [R]
+
+  RewriteEngine On
+  RewriteCond %{THE_REQUEST} !HTTP/1.1$
+  RewriteRule .* - [F]
+  RewriteCond   %{HTTPS} !=on
+  RewriteRule ^/?(.*) https://%{SERVER_NAME}/$1 [L,R]
+
+  ProxyRequests Off
+  ProxyPreserveHost On
+
+  # Clickjacking is well-known web application vulnerabilities.
+  Header always append X-Frame-Options SAMEORIGIN
+  # Cross Site Scripting (XSS) protection can be bypassed in many browsers
+  Header set X-XSS-Protection "1; mode=block"
+  # Set cookie with HttpOnly and Secure flag
+  Header edit Set-Cookie ^(.*)$ $1;HttpOnly;Secure
+
+
+ <Proxy balancer://mtos>
+   BalancerMember http://10.10.8.35:9080/mtos loadfactor=1 route=mtos1 keepalive=Off
+   BalancerMember http://10.10.8.25:9080/mtos loadfactor=1 route=mtos2 keepalive=Off
+   BalancerMember http://10.10.8.35:9081/mtos loadfactor=1 route=mtos3 keepalive=Off
+   BalancerMember http://10.10.8.25:9081/mtos loadfactor=1 route=mtos4 keepalive=Off
+   </Proxy>
+
+  ProxyPass        /mtos balancer://mtos stickysession=JSESSIONID|jsessionid nofailover=Off
+  ProxyPassReverse /mtos balancer://mtos
+
+  ProxyPass         /kpcmtos   http://10.10.8.38:9080/kpcmtos
+  ProxyPassReverse  /kpcmtos   http://10.10.8.38:9080/kpcmtos
+
+  ProxyPass         /edocumentation   http://10.10.8.8:8080/edocumentation
+  ProxyPassReverse  /edocumentation   http://10.10.8.8:8080/edocumentation
+
+  ProxyPass         /cockpit   http://10.10.8.14:8080/cockpit
+  ProxyPassReverse  /cockpit   http://10.10.8.14:8080/cockpit
+
+  ProxyPass         /test2   http://10.10.8.38:9083/test2
+  ProxyPassReverse  /test2   http://10.10.8.38:9083/test2
+
+  ProxyPass         /test3   http://10.10.8.38:9082/test3
+  ProxyPassReverse  /test3   http://10.10.8.38:9082/test3
+
+  ProxyPass         /itap   http://10.10.8.14:8080/itap
+  ProxyPassReverse  /itap   http://10.10.8.14:8080/itap
+
+  ServerAdmin mtos@kuantanport.com.my
+  DocumentRoot /var/www/html
+  ServerName mtostest.kuantanport.com.my
+  ErrorLog  "|/usr/sbin/rotatelogs -l /var/log/httpd/mtos/error.%Y.%m.%d  86400"
+  CustomLog "|/usr/sbin/rotatelogs -l /var/log/httpd/mtos/access.%Y.%m.%d 86400" common
+
+</VirtualHost>
+
+
+<VirtualHost *:*>
+    ProxyPreserveHost On
+	
+    ProxyPass        "/" "https://192.168.1.161"
+    ProxyPassReverse "/" "https://192.168.1.161"
+    
+	ServerName 192.168.1.161
+</VirtualHost>

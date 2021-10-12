@@ -1,0 +1,120 @@
+
+##System Requirements for AWX Server
+2GB of memory
+2 cpu cores
+20GB of space
+
+01/ Selinux and Firewall Settings
+
+01- in the first place, let’s install the policycoreutils-python and allow Nginx to connect to network as below:
+# yum -y install policycoreutils-python
+# setsebool -P httpd_can_network_connect 1
+
+02- If the firewalld is active, than when need to enable the http traffic, execute the following command:
+# firewall-cmd --permanent --add-service=http
+success
+# firewall-cmd --reload
+success
+
+
+02/ Memcached, Ansible and necessary packages Installation
+
+01- Now, run the following command to install the EPEL Release repository, memchached and Ansible:
+# yum install -y memcached ansible epel-release
+
+02- After finishing the installation, we have to enable and start Memcached service by running:
+# systemctl enable memcached
+# systemctl start  memcached
+
+
+03/ PostgreSQL Server Installation
+01- Before everything, Awx require PostgreSQL Database Server, follow this tutorial How To Install PostgreSQL 10 on CentOS 7 / RHEL 7.
+
+02- Once you finish installing and initiating PostgrSQL Server, we have to create the awx database calledawx and grant access to the user awx as below:
+# sudo -u postgres createuser -S awx
+# sudo -u postgres createdb -O awx awx
+
+
+04/ RabbitMQ Installation
+01- At first, create the RabbitMQ and Erlang Repositories as below:
+# echo "[bintraybintray-rabbitmq-erlang-rpm] 
+name=bintray-rabbitmq-erlang-rpm 
+baseurl=https://dl.bintray.com/rabbitmq-erlang/rpm/erlang/21/el/7/
+gpgcheck=0 
+repo_gpgcheck=0 
+enabled=1" > /etc/yum.repos.d/rabbitmq-erlang.repo
+# echo "[bintraybintray-rabbitmq-rpm] 
+name=bintray-rabbitmq-rpm 
+baseurl=https://dl.bintray.com/rabbitmq/rpm/rabbitmq-server/v3.7.x/el/7/
+gpgcheck=0 
+repo_gpgcheck=0 
+enabled=1" > /etc/yum.repos.d/rabbitmq.repo
+
+02- In the second place, install RabbitMQ, after that we can proceed with enabling/starting the RabbitMQ service by executing the following commands:
+# yum install -y rabbitmq-server
+# systemctl enable rabbitmq-server
+# systemctl start rabbitmq-server
+
+
+05/ Nginx Installation and Configuration as Web Server Proxy for AWX
+01- Install nginx by running the following command
+# yum install -y nginx
+
+02- Configure nginx as web proxy for awx:
+# cp -p /etc/nginx/nginx.conf{,.org}
+# wget -O /etc/nginx/nginx.conf https://raw.githubusercontent.com/faudeltn/AnsibleTower-awx/master/ansible-awx-install/nginx.conf
+
+03- Enable and start nginx:
+# systemctl start nginx
+# systemctl enable nginx
+
+
+06/ AWX Installation and initialization
+01- To install awx, run the following commands:
+# wget -O /etc/yum.repos.d/awx-rpm.repo https://copr.fedorainfracloud.org/coprs/mrmeee/awx/repo/epel-7/mrmeee-awx-epel-7.repo
+# yum install -y awx
+
+02- Let’s import the awx Database data:
+# sudo -u awx /opt/awx/bin/awx-manage migrate
+Operations to perform:
+  Apply all migrations: auth, conf, contenttypes, main, oauth2_provider, sessions, sites, social_django, sso, taggit
+Running migrations:
+  Applying contenttypes.0001_initial... OK
+  Applying taggit.0001_initial... OK
+  Applying taggit.0002_auto_20150616_2121... OK
+  Applying contenttypes.0002_remove_content_type_name... OK
+  Applying auth.0001_initial... OK
+  Applying main.0001_initial... OK
+
+03– Create an awx web access user account called admin and a setting a password:
+# echo "from django.contrib.auth.models import User; User.objects.create_superuser('admin', 'root@localhost', 'password')" | sudo -u awx /opt/awx/bin/awx-manage shell
+
+04- Initialize awx by running the following commands:
+# sudo -u awx /opt/awx/bin/awx-manage create_preload_data
+Default organization added.
+Demo Credential, Inventory, and Job Template added.
+(changed: True)
+
+# sudo -u awx /opt/awx/bin/awx-manage provision_instance --hostname=$(hostname)
+Successfully registered instance ylclawxas02.yallalabs.local
+(changed: True)
+2019-04-03 11:07:22,758 DEBUG    awx.main.dispatch publish awx.main.tasks.apply_cluster_membership_policies(eec7263e-bf52-4dad-ad4d-7d4245c47ae4, queue=awx_private_queue)
+
+# sudo -u awx /opt/awx/bin/awx-manage register_queue --queuename=tower --hostnames=$(hostname)
+2019-04-03 11:07:35,496 DEBUG    awx.main.dispatch publish awx.main.tasks.apply_cluster_membership_policies(d4a3314d-b3da-42a6-8cbe-a177f97e2e79, queue=awx_private_queue)
+Creating instance group tower
+2019-04-03 11:07:35,542 DEBUG    awx.main.dispatch publish awx.main.tasks.apply_cluster_membership_policies(f6be7d7d-fcbd-47dd-a1ec-10abe56420c3, queue=awx_private_queue)
+Added instance ylclawxas02.yallalabs.local to tower
+(changed: True)
+
+05- Afterward, let’s start and enable awx services:
+# systemctl start awx-cbreceiver && systemctl enable awx-cbreceiver
+# systemctl start awx-dispatcher && systemctl enable awx-dispatcher
+# systemctl start awx-channels-worker && systemctl enable awx-channels-worker
+# systemctl start awx-daphne && systemctl enable awx-daphne
+# systemctl start awx-web && systemctl enable awx-web
+
+
+07/ Accessing AWX Web Interface
+– To conclude, open your browser and access the awx web interface with your server’s IP or FQDN, the username is admin and the password is password.
+

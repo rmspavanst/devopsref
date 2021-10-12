@@ -1,0 +1,57 @@
+docker exec -it ff8e9d48441b /bin/bash
+
+generate certificate sign request and private key in .90
+--------------------------------------------------------
+openssl genrsa -out awx_90.key 2048
+openssl req -new -key awx_90.key -out awx_90.csr
+
+Generate the server certificate / Sign the certificate with CA
+--------------------------------------------------------------
+** copy awx_90.csr to CA server (192.168.1.50)
+cd /ca
+
+**vi awx_90.ext
+basicConstraints=CA:FALSE
+extendedKeyUsage=serverAuth
+subjectAltName=DNS:awx90.st.com
+
+openssl x509 -req -in awx_90.csr -CA rootCA.crt -CAkey rootCA.key -CAcreateserial \
+-out awx_90.crt -days 825 -sha256 -extfile awx_90.ext
+
+** copy awx_90.crt back to .90 (/u01/install/cert/.)
+
+update DNS
+----------
+update for awx90.st.com
+
+in .90
+======
+vi /root/.awx/awxcompose/nginx.conf
+-----------------------------------
+* goto line #41
+        listen 8052 ssl default_server;
+        ssl_certificate awx_90.crt;
+        ssl_certificate_key awx_90.key;
+
+copy certificate and private key to the awx_web container
+---------------------------------------------------------
+cd /u01/install/cert/awx
+docker cp awx_90.key awx_web:/etc/nginx/
+docker cp awx_90.crt awx_web:/etc/nginx/ 
+
+restart the container
+---------------------
+docker restart awx_web
+
+import root CA to AWX_web container 
+-----------------------------------
+*in host:
+cd /etc/pki/ca-trust/source/anchors/
+docker cp rootCA.crt awx_web:/etc/pki/ca-trust/source/anchors/.
+docker cp rootCA.crt awx_task:/etc/pki/ca-trust/source/anchors/.
+
+* in awx_web container
+update-ca-trust extract
+curl -i https://awx90.st.com:81
+
+http://www.techlatest.net/support/ansible_tower_support/how_to_enable_https_for_ansible_awx/

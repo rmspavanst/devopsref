@@ -1,0 +1,112 @@
+AWX 19.2.2 on Kubernetes Cluster:
+
+kubectl label node k8s-node1 node-role.kubernetes.io/node1=node1
+
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+
+
+To setup local storage:
+
+wget https://raw.githubusercontent.com/rancher/local-path-provisioner/v0.0.19/deploy/local-path-storage.yaml -O /root/local-path-storage.yaml
+sed -i "s#/opt/local-path-provisioner#/mnt/local-storage#g" /root/local-path-storage.yaml
+kubectl apply -f /root/local-path-storage.yaml
+kubectl get sc
+
+ To set default storage:
+kubectl patch sc local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+kubectl get sc
+
+
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.34.1/deploy/static/provider/baremetal/deploy.yaml
+
+kubectl apply -f https://raw.githubusercontent.com/ansible/awx-operator/0.12.0/deploy/awx-operator.yaml
+
+
+
+
+
+vi awx-demo.yml
+
+---
+apiVersion: awx.ansible.com/v1beta1
+kind: AWX
+metadata:
+  name: awx-demo (ansible-awx)
+spec:
+  service_type: nodeport
+  ingress_type: none
+  hostname: awx-demo.example.com  (ansible-awx.example.com)
+
+$ kubectl apply -f awx-demo.yml
+
+
+kubectl logs -f deployments/awx-operator
+
+###optional
+
+kubectl get pvc postgres-awx-postgres-0 -o=yaml > awx-pvc.yml
+kubectl delete pvc postgres-awx-postgres-0
+kubectl apply -f awx-pvc.yml
+
+#########
+
+kubectl get pods -l "app.kubernetes.io/managed-by=awx-operator"
+
+kubectl get svc -l "app.kubernetes.io/managed-by=awx-operator"
+
+
+
+
+kubectl get secret awx-admin-password -o jsonpath='{.data.password}' | base64 --decode
+
+
+kubectl port-forward svc/ansible-awx-service --address 0.0.0.0 32710:80 
+
+
+kubectl scale deployment <deployment-name> --replicas=3 -n <namespace>
+
+vi awx-ingress.yml
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: service-ingress
+spec:
+  rules:
+  - host: awx.example.com
+    http:
+	  paths:
+	  - backend:
+	      serviceName: awx-service
+		  servicePort: 80
+  - host: awx.example.com
+    http:
+	  paths:
+	  - backend:
+	      serviceName: nginx
+		  servicePort: 80
+  - http:
+	  paths:
+	  - backend:
+	      serviceName: httpd
+		  servicePort: 80		  
+          
+...
+
+$ kubectl create -f awx-ingress.yml
+
+$ kubectl get ingress
+
+$ kubectl describe ingress awx-ingress
+
+$ curl http://awx.example.com
+
+
+
+
+
+
+
+
+

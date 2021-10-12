@@ -1,0 +1,14 @@
+cd /root/adminrepo/;
+
+ng serve;
+
+ng build --prod --base-href "/ng-able-pro/";
+
+rm -rf /opt/tomcat9/webapps/test/*;
+
+cd  dist/adminrepo/;
+
+cp -a . /opt/tomcat9/webapps/test/;
+
+rm -rf /root/adminrepo/*;
+

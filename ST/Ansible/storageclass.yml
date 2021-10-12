@@ -1,0 +1,95 @@
+nfs-client.yml
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: nfs-client-provisioner
+  namespace: nfs
+  
+ 
+nfs-clusterrole.yml
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: nfs-client-provisioner-runner
+rules:
+  - apiGroups: [""]
+    resources: ["nodes", "persistentvolumeclaims", "configmaps"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["endpoints", "persistentvolumes", "pods"]
+    verbs: ["*"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "update", "patch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses"]
+    verbs: ["get", "list", "watch"]
+
+
+clusterrolebinding-nfs.yml
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: run-nfs-client-provisioner
+  namespace: nfs
+subjects:
+  - kind: ServiceAccount
+    name: nfs-client-provisioner
+    namespace: nfs
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: nfs-client-provisioner-runner
+  
+
+
+role-nfs.yml
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: leader-locking-nfs-client-provisioner
+  namespace: nfs
+rules:
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+    
+
+rolebinding-nfs.yml
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: leader-locking-nfs-client-provisioner
+  namespace: nfs
+subjects:
+  - kind: ServiceAccount
+    name: nfs-client-provisioner
+    namespace: nfs
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: leader-locking-nfs-client-provisioner
+...
+
+kubectl get clusterrole,role,clusterrolebindings,rolebindings -o custom-columns='KIND:kind,NAME:metadata.name,SERVICE_ACCOUNTS:subjects[?(@.kind=="ServiceAccount")].name'-n nfs | grep nfs-client
+
+
+storageclass-nfs.yml
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ssd-nfs-storage
+provisioner: 10.170.1.31/nfs
+parameters:
+  archiveOnDelete: "false"

@@ -1,0 +1,270 @@
+
+
+kubectl edit deploy local-path-provisioner -n local-path-storage
+
+# Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "1"
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"name":"local-path-provisioner","namespace":"local-path-storage"},"spec":{"replicas":1,"selector":{"matchLabels":{"app":"local-path-provisioner"}},"template":{"metadata":{"labels":{"app":"local-path-provisioner"}},"spec":{"containers":[{"command":["local-path-provisioner","--debug","start","--helper-image","k8s.gcr.io/debian-base:v2.0.0","--config","/etc/config/config.json"],"env":[{"name":"POD_NAMESPACE","valueFrom":{"fieldRef":{"fieldPath":"metadata.namespace"}}}],"image":"rancher/local-path-provisioner:v0.0.12","imagePullPolicy":"IfNotPresent","name":"local-path-provisioner","volumeMounts":[{"mountPath":"/etc/config/","name":"config-volume"}]}],"nodeSelector":{"kubernetes.io/os":"linux"},"serviceAccountName":"local-path-provisioner-service-account","tolerations":[{"effect":"NoSchedule","key":"node-role.kubernetes.io/master","operator":"Equal"}],"volumes":[{"configMap":{"name":"local-path-config"},"name":"config-volume"}]}}}}
+  creationTimestamp: "2021-05-28T14:51:41Z"
+  generation: 1
+  managedFields:
+  - apiVersion: apps/v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          .: {}
+          f:kubectl.kubernetes.io/last-applied-configuration: {}
+      f:spec:
+        f:progressDeadlineSeconds: {}
+        f:replicas: {}
+        f:revisionHistoryLimit: {}
+        f:selector:
+          f:matchLabels:
+            .: {}
+            f:app: {}
+        f:strategy
+		f:strategy:
+          f:rollingUpdate:
+            .: {}
+            f:maxSurge: {}
+            f:maxUnavailable: {}
+          f:type: {}
+        f:template:
+          f:metadata:
+            f:labels:
+              .: {}
+              f:app: {}
+          f:spec:
+            f:containers:
+              k:{"name":"local-path-provisioner"}:
+                .: {}
+                f:command: {}
+                f:env:
+                  .: {}
+                  k:{"name":"POD_NAMESPACE"}:
+                    .: {}
+                    f:name: {}
+                    f:valueFrom:
+                      .: {}
+                      f:fieldRef:
+                        .: {}
+                        f:apiVersion: {}
+                        f:fieldPath: {}
+                f:image: {}
+                f:imagePullPolicy: {}
+                f:name: {}
+                f:resources: {}
+                f:terminationMessagePath: {}
+                f:terminationMessagePolicy: {}
+                f:volumeMounts:
+                  .: {}
+                  k:{"mountPath":"/etc/config/"}:
+                # k:{"mountPath":"/etc/config/"}:
+                    .: {}
+                    f:mountPath: {}
+                    f:name: {}
+            f:dnsPolicy: {}
+            f:nodeSelector:
+              .: {}
+              f:kubernetes.io/os: {}
+            f:restartPolicy: {}
+            f:schedulerName: {}
+            f:securityContext: {}
+            f:serviceAccount: {}
+            f:serviceAccountName: {}
+            f:terminationGracePeriodSeconds: {}
+            f:tolerations: {}
+            f:volumes:
+              .: {}
+              k:{"name":"config-volume"}:
+                .: {}
+                f:configMap:
+                  .: {}
+                  f:defaultMode: {}
+                  f:name: {}
+                f:name: {}
+    manager: kubectl
+    operation: Update
+    time: "2021-05-28T14:51:41Z"
+  - apiVersion: apps/v1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:metadata:
+        f:annotations:
+          f:deployment.kubernetes.io/revision: {}
+      f:status:
+        f:availableReplicas: {}
+        f:conditions:
+       #f:conditions:
+          .: {}
+          k:{"type":"Available"}:
+            .: {}
+            f:lastTransitionTime: {}
+            f:lastUpdateTime: {}
+            f:message: {}
+            f:reason: {}
+            f:status: {}
+            f:type: {}
+          k:{"type":"Progressing"}:
+            .: {}
+            f:lastTransitionTime: {}
+            f:lastUpdateTime: {}
+            f:message: {}
+            f:reason: {}
+            f:status: {}
+            f:type: {}
+        f:observedGeneration: {}
+        f:readyReplicas: {}
+        f:replicas: {}
+        f:updatedReplicas: {}
+    manager: kube-controller-manager
+    operation: Update
+    time: "2021-05-28T14:52:17Z"
+  name: local-path-provisioner
+  namespace: local-path-storage
+  resourceVersion: "595"
+  selfLink: /apis/apps/v1/namespaces/local-path-storage/deployments/local-path-provisioner
+  uid: 5c309534-95a8-4078-bf1d-48ff9b8b5b6d
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+# selector:
+#   matchLabels:
+      app: local-path-provisioner
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: local-path-provisioner
+    spec:
+      containers:
+      - command:
+        - local-path-provisioner
+        - --debug
+        - start
+        - --helper-image
+        - k8s.gcr.io/debian-base:v2.0.0
+        - --config
+        - /etc/config/config.json
+        env:
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+        image: rancher/local-path-provisioner:v0.0.12
+        imagePullPolicy: IfNotPresent
+        name: local-path-provisioner
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /etc/config/
+#       volumeMounts:
+#       - mountPath: /etc/config/
+          name: config-volume
+      dnsPolicy: ClusterFirst
+      nodeSelector:
+        kubernetes.io/os: linux
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      serviceAccount: local-path-provisioner-service-account
+      serviceAccountName: local-path-provisioner-service-account
+      terminationGracePeriodSeconds: 30
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+        operator: Equal
+      volumes:
+      - configMap:
+          defaultMode: 420
+          name: local-path-config
+        name: config-volume
+status:
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: "2021-05-28T14:52:17Z"
+    lastUpdateTime: "2021-05-28T14:52:17Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2021-05-28T14:51:55Z"
+    lastUpdateTime: "2021-05-28T14:52:17Z"
+    message: ReplicaSet "local-path-provisioner-bd4bb6b75" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  observedGeneration: 1
+  readyReplicas: 1
+  replicas: 1
+  updatedReplicas: 1
+  
+  
+####################################################################################################
+
+https://github.com/kubernetes-csi/csi-driver-host-path/blob/v1.7.2/docs/deploy-1.17-and-later.md
+
+
+# Please edit the object below. Lines beginning with a '#' will be ignored,
+# and an empty file will abort the edit. If an error occurs while saving this file will be
+# reopened with the relevant failures.
+#
+apiVersion: snapshot.storage.k8s.io/v1beta1
+deletionPolicy: Delete
+driver: hostpath.csi.k8s.io
+kind: VolumeSnapshotClass
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"snapshot.storage.k8s.io/v1beta1","deletionPolicy":"Delete","driver":"hostpath.csi.k8s.io","kind":"VolumeSnapshotClass","metadata":{"annotations":{},"name":"csi-hostpath-snapclass"}}
+  creationTimestamp: "2021-05-28T14:52:50Z"
+  generation: 1
+  managedFields:
+  - apiVersion: snapshot.storage.k8s.io/v1beta1
+    fieldsType: FieldsV1
+    fieldsV1:
+      f:deletionPolicy: {}
+      f:driver: {}
+      f:metadata:
+        f:annotations:
+          .: {}
+          f:kubectl.kubernetes.io/last-applied-configuration: {}
+    manager: kubectl
+    operation: Update
+    time: "2021-05-28T14:52:50Z"
+  name: csi-hostpath-snapclass
+  resourceVersion: "828"
+  selfLink: /apis/snapshot.storage.k8s.io/v1beta1/volumesnapshotclasses/csi-hostpath-snapclass
+  uid: ebfde997-c170-4a76-b636-252468dd75c6
+  
+  
+apiVersion: snapshot.storage.k8s.io/v1beta1
+kind: VolumeSnapshotClass
+metadata:
+  name: csi-hostpath-snapclass
+  labels:
+    app.kubernetes.io/instance: hostpath.csi.k8s.io
+    app.kubernetes.io/part-of: csi-driver-host-path
+    app.kubernetes.io/name: csi-hostpath-snapclass
+    app.kubernetes.io/component: volumesnapshotclass
+driver: hostpath.csi.k8s.io #csi-hostpath
+deletionPolicy: Delete

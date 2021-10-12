@@ -1,0 +1,180 @@
+yum install make;
+
+yum groupinstall "Development Tools"
+
+yum install pcre pcre-devel zlib zlib-devel openssl openssl-devel make -y
+
+apt install libpcre3 libpcre3-dev zlib1g zlib1g-dev libssl-dev make
+
+./configure
+
+./configure --sbin-path=/usr/bin/nginx --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --with-pcre --pid-path=/var/run/nginx.pid --with-http_ssl_module --with-http_image_filter_module=dynamic --modules-path=/etc/nginx/modules --with-http_realip_module
+
+make
+
+make install
+
+nginx -V
+nginx
+
+ps -ef | grep nginx
+
+
+vi /lib/systemd/system/nginx.service
+
+[Unit]
+Description=The NGINX HTTP and reverse proxy server
+After=syslog.target network-online.target remote-fs.target nss-lookup.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+PIDFile=/var/run/nginx.pid
+ExecStartPre=/usr/sbin/nginx -t
+ExecStart=/usr/sbin/nginx
+ExecReload=/usr/sbin/nginx -s reload
+ExecStop=/bin/kill -s QUIT $MAINPID
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
+
+
+
+
+
+
+
+vi nginx.conf
+
+events {
+}
+
+http {
+   
+    server {
+	    
+		listen 80;
+		server_name 192.168.1.212;
+		
+		root /bloggingtemplate/;
+	}
+}
+nginx -t
+nginx -s reload
+
+cat /var/log/nginx/*
+
+******************************************************************************
+
+
+Reverse Proxy
+
+1
+apt-get -y install nginx
+
+
+
+2. Install the Net-tools (Optional)
+
+apt-get install net-tools
+
+
+
+3. Install php-fpm on any single Box.
+
+apt-get -y install php-fpm
+
+
+
+4. Configure the Nginx conf for PHP Machine.
+
+user www-data;
+
+server{
+	listen 80;
+	server_name <IP Of Machine>;
+
+	index index.php index.html;
+
+	location ~\.php {
+		include fastcgi.conf;
+		fastcgi_pass unix:/run/php/<php fpm sock path>
+	}
+}
+
+
+index.php file content
+
+<?php phpinfo(); ?>
+
+
+
+5. Setup Reverse Proxy. Set-up the Nginx conf file.
+
+server {
+  listen 80;
+  server_name <IP Of Machine>;
+
+  location /  {
+       proxy_pass http://<IP domain of First Application Server>;
+	}
+}
+
+server {
+  listen 8080;
+  server_name <IP Of Machine>;
+
+  location ~\.php  {
+       proxy_pass http://<IP domain of PHP Application Server>;
+	}
+}
+
+
+************************************************************************************************************
+
+user www-data;
+worker_processes auto;
+error_log /var/log/nginx/error.log;
+pid /run/nginx.pid;
+
+# Load dynamic modules. See /usr/share/doc/nginx/README.dynamic.
+include /usr/share/nginx/modules/*.conf;
+
+events {
+    worker_connections 1024;
+    # multi_accept on;
+
+}
+
+http {
+
+    sendfile            on;
+    tcp_nopush          on;
+    tcp_nodelay         on;
+    keepalive_timeout   65;
+    types_hash_max_size 2048;
+
+    include             /etc/nginx/mime.types;
+    default_type        application/octet-stream;
+	
+	access_log /var/log/nginx/access.log;
+	access_log /var/log/nginx/error.log;
+	include /etc/nginx/conf.d/*.conf;
+	include /etc/nginx/sites-enabled/*;
+	
+	server {
+	         listen 80;
+			 server_name 192.168.1.212;
+			 
+			 location = / {
+			         proxy_pass http://192.168.1.161;
+			}
+			
+	}
+}
+
+
+        }
+    }
+}

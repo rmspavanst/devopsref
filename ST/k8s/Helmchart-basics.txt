@@ -1,0 +1,139 @@
+
+
+1. Install Helm Chart
+
+
+$ curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
+$ chmod 700 get_helm.sh
+$ ./get_helm.sh
+
+
+2. Create Chart
+
+helm create application-1
+
+note: delete unwanted files in templates like : test-connection.yaml , helpers.tpl, hpa.yaml, NOTES.txt, serviceaccount.yaml
+
+
+
+3. Structure of the chart
+
+application-1
+├── charts
+├── Chart.yaml
+├── templates
+│   ├── deployment.yaml
+│   ├── _helpers.tpl
+│   ├── hpa.yaml
+│   ├── ingress.yaml
+│   ├── NOTES.txt
+│   ├── serviceaccount.yaml
+│   ├── service.yaml
+│   └── tests
+│       └── test-connection.yaml
+└── values.yaml
+
+after delete
+
+application-1
+├── charts
+├── Chart.yaml
+├── templates
+│   ├── deployment.yaml
+│   ├── ingress.yaml
+│   └── service.yaml
+└── values.yaml
+
+
+
+
+4. Configuring the YAML files
+
+vi values.yaml
+
+# Default values for application-1.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+
+deployment:
+  replicaCount: 1
+  name: my-deployment
+  image:
+    app: nginx
+    version: latest
+
+service:
+  name: my-service
+  type: NodePort
+  port: 80
+  targetPort: 80
+  nodePort: 32036
+  
+  
+  
+vi deployment.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.deployment.name }}
+  labels:
+    app: nginx
+spec:
+  replicas: {{ .Values.deployment.replicaCount }}
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image" ''{{ .Values.deployment.image.app }}:{{ ..Values.deployment.image.version }}"
+
+
+vi service.yml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.service.name }}
+  labels:
+    app: nginx
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.targetPort }}
+      nodePort: {{ .Values.service.nodePort }}
+      protocol: TCP
+      name: http
+  selector:
+    app: nginx
+
+
+5. deploy the chart
+
+{ helm lint (to check the helm chart is correct or not)
+  helm template .  (or) helm template . | kubectl apply -f -
+}
+
+cd application-1
+
+helm install app1[chartname] .
+
+
+
+6. view the chart
+
+helm list
+
+7. delete the chart
+
+helm uninstall app1[chartname]
+
+==================================================================================================================
+

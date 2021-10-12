@@ -1,0 +1,216 @@
+https://grafana.com/grafana/download?edition=oss
+
+1. Install (centos)
+
+wget https://dl.grafana.com/oss/release/grafana-8.1.5-1.x86_64.rpm
+sudo yum install grafana-8.1.5-1.x86_64.rpm
+
+sudo /bin/systemctl enable grafana-server.service
+sudo /bin/systemctl start grafana-server.service
+sudo /bin/systemctl status grafana-server.service
+
+
+firewall-cmd --permanent --add-port=3000/tcp
+
+systemctl status firewalld
+sudo firewall-cmd --reload
+
+http://localhost:3000
+
+
+2. docker based(optional)
+
+docker run -d -p 3000:3000 --name grafana grafana/grafana
+
+==================================================================================================================================
+
+3. Prometheus Server:
+----------------------
+
+It have 3 components (Retrieval/ TSDB/ HTTP Server) \\TSDB: Time series Database \\
+      TSDB connected to node (HDD/SSD)
+      Retrieval --pull metrics--jobs/exporters(targets)
+	  Retrieval --discover targets -- Service discovery(k8s/file_sd)
+	  
+	  App server1 && App server2 ----> prometheus Server ---PromQl(prometheus web UI/ Grafane/ Api clients)
+
+3.1 Prometheus Installation:(centos)
+
+https://prometheus.io/download/
+
+cd /opt/
+
+wget https://github.com/prometheus/prometheus/releases/download/v2.30.2/prometheus-2.30.2.linux-amd64.tar.gz
+
+tar xvzf prometheus-2.30.2.linux-amd64.tar.gz
+
+mv prometheus-2.30.2.linux-amd64 prometheus
+cd prometheus
+
+vi /etc/systemd/system/prometheus.service
+
+[Unit]
+Description=Prometheus Server
+Documentation=https://prometheus.jo/docs/introduction/overview/
+Afetr=network-online.target
+
+[Service]
+User=root
+Refstart=on-fsilure
+
+ExecStart=/opt/prometheus/prometheus --config.file=/opt/prometheus/prometheus.yaml
+
+[Install]
+WantedBy=multi-user.target
+
+
+sudo systemctl daemon-reload
+systemctl start prometheus
+systemctl status prometheus
+
+
+3.2 docker based
+
+vi /tmp/prometheus.yml
+
+global:
+  scrape_interval: 15s
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+	  - targets: ['localhost:9090']
+
+docker run -p 9090:9090 --name prometheus -v /tmp/prometheus.yml:/etc/prometheus/prometheus.yml prom/prometheus
+
+
+	  
+3.3 Installing Prometheus Node Exporter:(in other servers to monitor mem/cpu/system metrics/apps/)
+
+
+https://prometheus.io/download/
+
+cd /opt/
+
+wget https://github.com/prometheus/node_exporter/releases/download/v1.2.2/node_exporter-1.2.2.linux-amd64.tar.gz
+
+tar xvzf node_exporter-1.2.2.linux-amd64.tar.gz
+mv node_exporter-1.2.2.linux-amd64 node_exporter
+
+
+vi /etc/systemd/system/node_exporter.service
+
+[Unit]
+Description=Prometheus Server
+Documentation=https://prometheus.jo/docs/introduction/overview/
+Afetr=network-online.target
+
+[Service]
+User=root
+Refstart=on-fsilure
+
+ExecStart=/opt/node_exporter/node_exporter
+
+[Install]
+WantedBy=multi-user.target
+
+sudo systemctl daemon-reload
+systemctl start node_exporter
+systemctl status node_exporter
+
+or docker based:
+
+docker run -d --name androidapp01 -p 9105:9100 prom/node_exporter
+docker container ls -a
+
+
+===> got to prometheus server and edit the prometheus.yaml file
+scrape_configs:
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: "prometheus"
+
+    # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+
+    static_configs:
+      - targets: ["localhost:9090"]
+      - targets: ["192.168.1.235:9100"] (add the server ip's or hostname here)
+	  or
+	  - targets: ["localhost:9105"]
+	    labels:
+		  instance: "androidapp01"
+	  
+and restart the prometheus server
+
+systemctl restart prometheus
+
+go to http://localhost:9090 in UI search UP, will get list.
+
+
+for cpu utilization
+
+sum by(mode)(irate(node_cpu_seconds_total{mode!="idle"}[5m])) > 0
+
+===============================================================================================================================
+
+sum by(state)(engine_daemon_container_states_containers{})
+
+
+- job_name: 'jenkins'
+  metrics_path: /prometheus
+  static_configs:
+    - targets: ['192.168.1.247:8080']
+
+
+9964
+
+scrape_configs
+
+  - job_name: 'tower'
+    tls_config:
+        insecure_skip_verify: True
+    metrics_path: /api/v2/metrics
+    scrape_interval: 5s
+    scheme: https
+    bearer_token: <CGgD8BB0W1i701frS6KPRadx37zqhJ> // got users-->select user and generate token//
+    # basic_auth:
+    #   username: admin
+    #   password: password
+    static_configs:
+        - targets:
+            - <tower_host>
+
+
+q9xvzkXQZX6DcoBM5H95kvm1GZB5oj
+
+
+  - job_name: 'tower'
+    metrics_path: /api/v2/metrics
+    scrape_interval: 5s
+    scheme: https
+    bearer_token: q9xvzkXQZX6DcoBM5H95kvm1GZB5oj
+    static_configs:
+    - targets:
+      - 192.168.1.232
+    tls_config:
+      insecure_skip_verify: true
+
+## Add Node Exporter
+  - job_name: 'tower-01'
+    scrape_interval: 5s
+    static_configs:
+    - targets: ['192.168.1.232:9100']
+
+ref url: https://devops4solutions.com/monitor-kubernetes-cluster-using-prometheus-and-grafana/
+
+https://github.com/xcad2k/boilerplates.git
+
+
+
+  
+
+	NAME
+http://192.168.1.50:9090/
+CLIENT ID
+tBp80NjKjSxEbmP8yDUV5SeAVKtu6mCNEOkBuwPV
+CLIENT SECRET
+HD7vpZiNqnNPAthK668UmxJsZ23lOHfpsYyePjkJYbf183pgFlHNpvuT6sd6A0baa7Yi3O4snHn27p3qg2CQ9jhDndPuXHMwsA2JLXrOlohEehZuUqOzcO9hFm50jucU

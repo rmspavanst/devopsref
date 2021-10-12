@@ -1,0 +1,108 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: static-data-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 1Gi
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod
+  namespace: awx
+  labels:
+    app: myapp1
+spec:
+  containers:
+  - name: myapp1-container
+    image: busybox
+    command: [ 'sh', '-c', 'echo Hello K8s! && sleep 3600' ]
+
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: static-data-pv
+spec:
+  storageClassName: local-path
+  capacity: 
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostpath:
+    path: "/mnt/dtat"
+	
+
+apiVersion: v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 3
+  selector :
+    matchLabels:
+	  app: nginx
+  template:
+    metadata:
+      labels:
+         app: nginx
+	spec:
+      containers:
+      - name: nginx
+        image: nginx:1.7.1
+        ports:
+        - containerPort: 80		
+
+cat <<EOF | sudo tee /etc/apt/sources.list.d/kubernetes.list
+deb https://apt.kubernetes.io/kubernetes-xenial main
+EOF
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-pod
+  labels:
+    app: myapp
+spec:
+  containers:
+  - name: myapp-container
+    image: busybox
+    command: [ 'echo']
+	args: ['Hello Kubernetes']
+  restartPolicy: never
+  
+  
+  
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: static-data-pv
+spec:
+  storageClassName: local-path
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data"
+
+
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: static-data-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 1Gi
+

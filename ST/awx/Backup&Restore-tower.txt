@@ -1,0 +1,122 @@
+
+##Ansible Tower / AWX Backup Using Tower-cli tool
+
+1. Execute the following command to take a complete backup of all the configuration objects in JSON format file:
+$ tower-cli receive --all > backup.json
+
+2. To export just only the credentials, you can use the below command:
+$ tower-cli receive --credential all >  credentials.json
+
+3. To export all the configuration without the organization objects for example, you can execute the following command:
+$ tower-cli receive --prevent organization --all > backup.json
+
+##Ansible Tower / AWX Restore Using Tower-cli tool
+
+1. To Perform a restore of the configuration from the backup file is also very easy, just run the following command:
+$ tower-cli send backup.json
+
+2. To perform a restore to another Awx /Ansible Tower instance, you can use the below command:
+$ tower-cli send backup.json --tower-host YOUR_INSTANCE_IP
+
+3. Import anything except an organization defined in a JSON file named organizations.json:
+$ tower-cli send --prevent organization organizations.json
+
+
+
+
+
+
+###Installing Tower-cli using Pip
+
+01- Pip is not available in CentOS 7 core repositories. To install pip we need to enable the EPEL repository:
+sudo yum install epel-release
+sudo yum install python-pip
+
+02- Once the pip is installed we can now install tower-cli tool with the following command:
+pip install ansible-tower-cli
+
+###Installing Tower-cli using Yum
+
+01- Tower-cli tool is not available in CentOS 7 core repositories. To install it we need to enable the Ansible Tower-cli repository:
+
+cat >> /etc/yum.repos.d/tower-cli.repo << EOF
+[tower-cli]
+baseurl = https://releases.ansible.com/ansible-tower-cli/rpm/epel-7-x86_64/
+sslverify = 0
+name = Ansible Tower-cli
+enabled = 1
+gpgcheck = 0
+EOF
+
+02- Once the Ansible Tower-cli repository is enabled we can install Tower-cli tool and all of its dependencies with the following command:
+
+sudo yum install ansible-tower-cli
+
+Configure Tower-cli tool
+- Run the following command to print the Tower-cli version:
+
+$ tower-cli --version
+Tower CLI 3.3.3
+- By default, Tower-cli use https protocol to connect to your Ansible Tower. Use the following command to set location of your Ansible Tower / AWX:
+
+$ tower-cli config host IP_ADDRESS_ANSIBLE_TOWER
+Configuration updated successfully.
+- Use the following command to set Username to use to authenticate to Ansible Tower / AWX:
+
+$ tower-cli config username YOUR_ANSIBLETOWER_USERNAME
+Configuration updated successfully.
+- To set Password to use to authenticate to Ansible Tower / AWX:
+
+# tower-cli config password YOUR_ANSIBLE_TOWER_PASSWORD
+Configuration updated successfully.
+
+- By default, tower-cli raises an error if the SSL certificate of the Ansible Tower / AWX server cannot be verified. To disable insecure connection warnings permanently execute the below command:
+
+# tower-cli config verify_ssl False
+Configuration updated successfully.
+- To preview the configuration of tower-cli use the below command:
+
+# tower-cli config
+
+# User options (set with `tower-cli config`; stored in ~/.tower_cli.cfg).
+host: http://ylplawxas01.yallalabs.com:80
+username: admin
+password: password
+verify_ssl: False
+
+# Defaults.
+use_token: False
+verbose: False
+certificate:
+format: human
+color: True
+description_on: False
+oauth_token:
+- To print the help, run the following command:
+
+# tower-cli --help
+- To list all the jobs in your Ansible Tower:
+
+# tower-cli job list
+== ============ =========================== ========== =======
+id job_template           created             status   elapsed
+== ============ =========================== ========== =======
+ 2            9 2019-04-04T08:47:08.221431Z successful 11.313
+ 3           10 2019-04-04T08:56:49.234493Z failed     6.397
+ 4           10 2019-04-04T09:23:23.728829Z successful 13.749
+ 5           10 2019-04-04T09:28:44.581402Z successful 15.92
+== ============ =========================== ========== =======
+
+- To get all the hosts in your Ansible Tower:
+
+# tower-cli host list
+== =========================== ========= =======
+id            name             inventory enabled
+== =========================== ========= =======
+ 5 srv001.yallalabs.com              5    true
+ 6 test02.yallalabs.com              5    true
+ 7 srv002.yallalabs.com              5    true
+ 8 test03.yallalabs.com              5    true
+== =========================== ========= =======
+
+
