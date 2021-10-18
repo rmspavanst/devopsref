@@ -1,0 +1,17 @@
+---
+
+- name: stop/start httpd service
+  hosts: "{{ host_type }}"
+  gather_facts: false
+
+  tasks:
+    - name: To stop/start httpd service
+      service:
+        name: "httpd"
+        state: "{{ serv_operation }}"
+      ignore_errors: yes
+      register: serv_state
+    
+    - debug:
+        var: serv_state
+

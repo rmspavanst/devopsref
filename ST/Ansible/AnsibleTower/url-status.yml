@@ -1,0 +1,20 @@
+---
+- name: Java Demo App status check
+  hosts: localhost
+  gather_facts: false
+
+  tasks:
+    - name: Confirm that 200 OK response is returned
+      uri:
+        url: "{{ app_url }}"
+        status_code: 200
+      ignore_errors: yes
+      register: url_state
+    - debug:
+        msg:
+          - "Demo App is running"
+      when: url_state.status == 200
+    - debug:
+        msg:
+          - "Demo App is not running"
+      when: url_state.status != 200

@@ -1,0 +1,23 @@
+---
+- hosts: Oracle_DB_Server_Primary
+  become: yes
+  become_user: oracle
+  gather_facts: false
+
+  vars:
+    oracle_home: /u01/app/oracle/database/19.3.0/dbhome_1
+    ORACLE_SID: STDEMO
+    stage_dir: /u01/oracle/staging
+    user: system
+    password: welcome1
+
+  tasks:
+  - name: DB Switch Over
+#    shell: export ORACLE_HOME={{ oracle_home }}; export ORACLE_SID={{ ORACLE_SID }}; export PATH=$PATH:$ORACLE_HOME/bin; echo "@{{ stage_dir }}/conf_stat.sql;" | {{ oracle_home }}/bin/dgmgrl sys/welcome1@STDEMO
+    shell: export ORACLE_HOME={{ oracle_home }}; export ORACLE_SID={{ ORACLE_SID }}; \
+      export PATH=$PATH:$ORACLE_HOME/bin; echo "switchover to {{ active_database }};" | \
+      {{ oracle_home }}/bin/dgmgrl sys/welcome1@{{ ORACLE_SID }}
+    register: dg_state
+  
+  - debug:
+      var: dg_state

@@ -1,0 +1,130 @@
+# dnf makecache
+# dnf update -y
+# reboot
+
+Download your preferred version of JDK installation package and transfer it to your CentOS / Red Hat Linux server.
+Now, install the downloaded packages as follows:
+
+# dnf localinstall -y jdk-11.0.12_linux-x64_bin.rpm
+# rpm -ql jdk-11.0.12_linux-x64_bin.rpm
+
+# echo "export JAVA_HOME=/usr/java/jdk-11.0.12" >> /etc/profile
+# export JAVA_HOME=/usr/java/jdk-11.0.12
+
+# echo $JAVA_HOME
+
+# java -version
+
+# dnf install -y unzip
+
+Pre-Installation Tasks:
+--------------------------
+
+# groupadd -g 1001 oinstall
+# useradd -u 1001 -g oinstall oracle
+# passwd oracle
+
+
+Create a directory to install WebLogic software and set necessary permissions thereon.
+
+# mkdir -p /u01/app/oracle/product/14.1.1
+# chown -R oracle:oinstall /u01/app
+# chmod -R 775 /u01
+
+
+Go to Weblogic Download Page by using a web browser.
+https://www.oracle.com/middleware/technologies/weblogic-server-installers-downloads.html
+
+Download the Generic Installer for Oracle Weblogic 14c from above website and transfer it to your Linux server.
+
+copy the .zip file in /u01/app/oracle/product/14.1.1/
+
+Switch to oracle user.
+
+# su - oracle
+
+Edit .bash_profile of oracle user in vim text editor.
+
+$ vi .bash_profile
+
+Add following environment variables in this file.
+
+export ORACLE_BASE=/u01/app/oracle
+export ORACLE_HOME=$ORACLE_BASE/product/14.1.1
+export MW_HOME=$ORACLE_HOME
+export WLS_HOME=$MW_HOME/wlserver
+export DOMAIN_BASE=$ORACLE_HOME/user_projects/domains
+export DOMAIN_HOME=$DOMAIN_BASE/base_domain
+
+Execute the .bash_profile script to set environment variables for current Linux shell.
+
+$ . ~/.bash_profile
+
+unzip fmw_14.1.1.0.0_wls_lite_Disk1_1of1.zip
+
+unzip fmw_14.1.1.0.0_wls_lite_Disk1_1of1.zip
+
+Execute the Generic Installer JAR file by using following java command.
+
+$ java -jar fmw_14.1.1.0.0_wls_lite_generic.jar
+
+
+Note:If you are installing on a Linux server with no graphical support, then you have to configure X11 forwarding by using PuTTY and XMing to get the graphical output at client console.
+
+1. Set the OraInventory directory and click on ‘Next’ button.
+2. You are on the welcome page. Click on ‘Next’.
+3. Select ‘Skip Auto Updates’ and click ‘Next’.
+4. Set the Oracle Home directory here and move to ‘Next’ screen.
+5. Select the components that you want to install on your application server. You can either install Weblogic Server, Coherence or both.
+6. Click on ‘Next’.
+7. Click on ‘Install’ button.
+8. Click on ‘Next’.
+9. Uncheck ‘Automatically Launch the Quickstart Configuration Wizard’ and click on ‘Finish’.
+
+
+
+ref: https://www.centlinux.com/2021/05/install-oracle-weblogic-server-14c-centos-rhel-8.html
+
+
+
+Post-Installation Configurations:
+---------------------------------
+If you are planning to deploy a Fusion Middleware product over your WebLogic application server, then you must skip the configuration step. Because the configurations will be performed by the respective FMW product.
+
+Otherwise, you can configure WebLogic Server by executing following script.
+
+$  /u01/app/oracle/product/14.1.1/oracle_common/common/bin/config.sh
+
+1. Create a Domain for your Weblogic application server.
+2. Select a template to create the domain. Click ‘Next’.
+3. Set a strong password for Weblogic Server administrative user.
+4. Select the Domain Mode and JDK for your Application Server.
+5. Click on ‘Next’.
+6. Click on ‘Create’.
+7. Click on ‘Next’.
+8. Click on ‘Finish’.
+
+WebLogic Server has been configured successfully
+
+
+To grant access of your application server to network clients, allow the default service port of WebLogic server in Linux firewall.
+
+# firewall-cmd --permanent --add-port=7001/tcp
+# firewall-cmd --reload
+
+
+Whenever you start the Weblogic service, it will always ask you for a username / password.
+To automate it, you can define the credentials in boot.properties file.
+
+$ mkdir -p $DOMAIN_HOME/servers/AdminServer/security/
+$ echo "username=weblogic" > $DOMAIN_HOME/servers/AdminServer/security/boot.properties
+$ echo "password=weblogic123" >> $DOMAIN_HOME/servers/AdminServer/security/boot.properties
+
+
+Start the Oracle Weblogic Server 14c by executing following script.
+
+$DOMAIN_HOME/startWebLogic.sh &
+
+
+
+
