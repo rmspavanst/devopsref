@@ -1,0 +1,17 @@
+---
+- hosts: webServers
+  become: yes
+#  gather_facts: false
+
+  tasks:
+    - name: list mod_security package
+      shell: yum list installed | grep mod_security | awk '{print $2}' | cat
+      register: result
+
+    - debug:
+        msg: "{{inventory_hostname}}: mod_security version {{result.stdout}} is installed"
+      when: 'result.changed == true'
+  
+    - debug:
+        msg: "mod_security is not installed"
+      when: 'result.changed == false'

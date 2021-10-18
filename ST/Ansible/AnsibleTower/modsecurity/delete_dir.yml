@@ -1,0 +1,13 @@
+---
+- hosts: webServers
+
+  tasks:
+    - name: Delete content & directory
+      file:
+        state: absent
+        path: /u01/patching/
+      register: dir_deletion
+    
+    - debug: 
+        var: dir_deletion
+    

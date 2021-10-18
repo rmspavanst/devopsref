@@ -1,0 +1,20 @@
+---
+
+- hosts: webServers
+#  gather_facts: false
+
+  tasks:
+    - name: Remove the mod_security package
+      yum:
+        name: mod_security
+        state: absent
+      ignore_errors: yes
+      register: yum_remove_state
+
+    - debug:
+        msg: "mod_security is not removed"
+      when: 'yum_remove_state.changed == false'
+
+    - debug:
+        msg: "mod_security is removed"
+      when: 'yum_remove_state.changed == true'

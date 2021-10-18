@@ -1,0 +1,17 @@
+---
+
+- hosts: webServers
+  become: yes
+  gather_facts: false
+
+  tasks:
+    - name: Transfer file from staging host(Ansible host) to web servers
+      synchronize:
+        src: /u01/patching
+        dest: /u01
+      delegate_to: 192.168.1.161
+      register: file_transfer_status
+
+    - debug:
+        var: file_transfer_status
+

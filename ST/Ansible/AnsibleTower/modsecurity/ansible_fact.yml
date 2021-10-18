@@ -1,0 +1,5 @@
+---
+- hosts: webServers
+  tasks:
+  - debug:
+      var: inventory_hostname

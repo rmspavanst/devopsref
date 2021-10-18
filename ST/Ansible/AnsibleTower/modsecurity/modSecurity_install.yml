@@ -1,0 +1,41 @@
+---
+- hosts: webServers
+#  gather_facts: false
+
+  tasks:
+    - name: Remove the mod_security package
+      yum:
+        name: mod_security
+        state: absent
+      ignore_errors: yes
+      register: yum_remove_state
+
+    - debug:
+        msg: "mod_security is not removed"
+      when: 'yum_remove_state.changed == false'
+
+    - debug:
+        msg: "mod_security is removed"
+      when: 'yum_remove_state.changed == true'
+
+    - name: install mod_security
+      yum:
+        name: /u01/patching/mod_security-2.9.2-9.el8.x86_64.rpm
+        state: present
+      ignore_errors: yes
+      register: yum_install_state
+
+    - debug:
+        var: yum_install_state
+
+    - name: list mod_security package
+      shell: yum list installed | grep mod_security | awk '{print $2}' | cat
+      register: result
+
+    - debug:
+        msg: "{{inventory_hostname}}: mod_security version {{result.stdout}} is installed"
+      when: 'result.changed == true'
+  
+    - debug:
+        msg: "mod_security is not installed"
+      when: 'result.changed == false'
