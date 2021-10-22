@@ -103,6 +103,7 @@ Installing OAS
 # We need Install Framework infrastructure
 
 java -jar fmw_12.2.1.4.0_infrastructure.jar
+
 # pop-up the orcle fusion Middleware 12c installation
 # Skip Auto Update Option, and Select Middleware or you can choose your preferred directory
 Oracle Home: /u01/app/oracle/Middleware
