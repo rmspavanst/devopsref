@@ -1,0 +1,116 @@
+Step 1: Lets install jdk from yum repository
+----------------------------------------------
+
+wget https://download.oracle.com/otn/java/jdk/8u311-b11/4d5417147a92418ea8b615e228bb6935/jdk-8u311-linux-x64.rpm
+sudo yum localinstall jdk-8u311-linux-x64.rpm
+java -version
+
+Step 2: Install Oracle 19c:
+-----------------------------
+
+    Create Oracle group users:
+
+groupadd -g 1501 oinstall
+groupadd -g 1502 dba
+groupadd -g 1503 oper
+groupadd -g 1504 backupdba 
+groupadd -g 1505 dgdba
+groupadd -g 1506 kmdba
+useradd -u 1501 -g oinstall -G dba,oper,backupdba,dgdba oracle
+
+    Setup Directory Structure:
+mkdir -p /u01/app/oracle/product/19.3.0/dbhome_1
+mkdir -p /u02/oradata
+chown -R oracle:oinstall /u01 /u02
+chmod -R 775 /u01 /u02
+
+
+vi .
+Download oracle 19c database from oracle site:
+---------------------------------------------------
+
+unzip LINUX.X64_193000_db_home.zip -d /u01/app/oracle/product/19.3.0/dbhome_1/
+
+
+Setup Prerequisites Automatically:
+------------------------------------
+
+yum -y install oracle-database-preinstall-19c
+
+Change the password for Oracle user:
+--------------------------------------
+
+passwd oracle
+
+Invoke runinstaller:
+--------------------
+su oracle 
+cd /u01/app/oracle/product/19.3.0/dbhome_1/
+./runInstaller
+
+# Select the setup software only option, but if you want to create a database as well as then you can select the first option. (Set Software Only)
+# Here we are going to install single instance database. (Single DB installation)
+# Chose Enterprise Edition option. (Enterprise Edition)
+# Browse oracle base location. (/u01/app/oracle)
+# Inventory Directory (/u01/app/oraInventory)
+# OS system groups privileged. 
+# Root script execution – leave empty
+# Oracle 19c installation prerequisite check
+refer : https://ocptechnology.com/oracle-19c-installation-on-oel-7-step-by-step/
+
+# Execute orainstRoot.sh and root.sh as root user.
+
+[root@digital ~]# /u01/app/oraInventory/orainstRoot.sh
+Changing permissions of /u01/app/oraInventory.
+Adding read,write permissions for group.
+Removing read,write,execute permissions for world.
+
+Changing groupname of /u01/app/oraInventory to oinstall.
+The execution of the script is complete.
+[root@digital ~]# 
+[root@digital ~]# 
+[root@digital ~]# 
+[root@digital ~]# /u01/app/oracle/product/19.3.0/dbhome_1/root.sh
+Performing root user operation.
+
+The following environment variables are set as:
+    ORACLE_OWNER= oracle
+    ORACLE_HOME=  /u01/app/oracle/product/19.3.0/dbhome_1
+
+Enter the full pathname of the local bin directory: [/usr/local/bin]: 
+   Copying dbhome to /usr/local/bin ...
+   Copying oraenv to /usr/local/bin ...
+   Copying coraenv to /usr/local/bin ...
+
+
+Creating /etc/oratab file...
+Entries will be added to the /etc/oratab file as needed by
+Database Configuration Assistant when a database is created
+Finished running generic part of root script.
+Now product-specific root actions will be performed.
+Oracle Trace File Analyzer (TFA - Standalone Mode) is available at :
+    /u01/app/oracle/product/19.3.0/dbhome_1/bin/tfactl
+
+Note :
+1. tfactl will use TFA Service if that service is running and user has been granted access
+2. tfactl will configure TFA Standalone Mode only if user has no access to TFA Service or TFA is not installed
+
+[root@digital ~]# 
+
+Finally your 19c software installation completed.
+
+# Check database installation is working
+oracle@digital bin]$cd /u01/app/oracle/product/19.3.0/dbhome_1/bin
+[oracle@digital bin]$export ORACLE_HOME=/u01/app/oracle/product/19.3.0/dbhome_1/
+[oracle@digital bin]$
+[oracle@digital bin]$ ./sqlplus
+
+SQL*Plus: Release 19.0.0.0.0 - Production on Sun May 2 22:18:55 2021
+Version 19.3.0.0.0
+
+Copyright (c) 1982, 2019, Oracle.  All rights reserved.
+
+Enter user-name:
+
+
+
