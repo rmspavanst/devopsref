@@ -8,6 +8,5 @@ terraform destroy # Enter a value: yes
 # check currect state or desire state
 terraform plan
 terraform apply -auto-approve
-
 # state
 terraform state ## it shows the subcomds
