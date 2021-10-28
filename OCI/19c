@@ -82,15 +82,32 @@ Download oracle 19c database from oracle site:
 unzip LINUX.X64_193000_db_home.zip -d /u01/app/oracle/product/19c/db_1/
 
 
-
-
 Invoke runinstaller:
 --------------------
 su oracle 
 cd /u01/app/oracle/product/19c/db_1/
+
+>> backup the OPatch Directory
+
+mv OPatch OPatch.bak
+
+
 ./runInstaller
 
+lsnrctl start
+# Wait for some time and check status lsnrctl status, it should show the listener name
+sqlplus / as sysdba
+SQL> startup mount
+SQL> alter database open;
+SQL> ALTER PLUGGABLE DATABASE orclpdb open;
+SQL> ALTER SESSION SET CONTAINER = orclpdb;
+SQL> create user test1 identified by test1 ;
 
+sqlplus test1/test1@orclpdb;
+
+select username,password from dba_users; >> to check user amd pwd listener
+
+select username from dba_users order by 1;
 
 
 
