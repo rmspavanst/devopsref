@@ -1,3 +1,26 @@
+1. Download and intall terraform
+
+terraform -v
+
+2. Setup terraform for aws
+
+> generate access key and secret key on aws iam and provide resources access for user
+> Expose resources for specific infrastructure platform (ex: aws, azure, gcp,oci..)
+
+>> for aws install AWS cli and configure..
+
+aws --version
+aws configure
+    AWS Access Key ID : xxxxxx
+    AWS Secret Access Key: XXXXXXXXX
+    Default region name: eu-west-3
+    Default output format: json
+cat ~/.aws/config
+cat ~/.aws/credentials
+
+
+>> to check $aws configure list
+
 cmds:
 -------------
 terraform init
