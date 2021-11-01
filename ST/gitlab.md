@@ -20,7 +20,7 @@ rpm -i  gitlab-ce-14.4.0-ce.0.el7.x86_64.rpm
 
 apt-get install gitlab-ee
 
-gitlab-ctl reconfigure gitlab-ctl start gitlab-ctl status
+gitlab-ctl reconfigure --> gitlab-ctl start --> gitlab-ctl status
 
 gitlab-rails console -e production
 
@@ -35,12 +35,10 @@ sudo gitlab-rake "gitlab:password:reset[johndoe]"
 http://10.170.1.94/
 
 
-
-
 # PostgreSQL connection details
 gitlab_rails['db_adapter'] = 'postgresql'
 gitlab_rails['db_encoding'] = 'utf8'
 gitlab_rails['db_host'] = '20.40.99.114' 
 gitlab_rails['db_port'] = 5432
 gitlab_rails['db_username'] = 'gitlab'
-gitlab_rails['db_password'] = 'gitlab'
+gitlab_rails['db_password'] = 'gitlab******'
