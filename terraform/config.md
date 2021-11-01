@@ -21,7 +21,7 @@ cat ~/.aws/credentials
 
 >> to check $aws configure list
 
-cmds:
+cmds:--->
 -------------
 terraform init
 terraform apply # Enter a value: yes
