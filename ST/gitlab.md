@@ -42,3 +42,31 @@ gitlab_rails['db_host'] = '20.40.99.114'
 gitlab_rails['db_port'] = 5432
 gitlab_rails['db_username'] = 'gitlab'
 gitlab_rails['db_password'] = 'gitlab******'
+
+
+
+ssl:
+-----
+
+mksir /etc/gitlab/ssl
+
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -out git.example.com.crt -keyout git.example.com.key -subj "/CN=git.example.com/O=git.example.com"
+
+cp /etc/gitlab/ssl/git.example.com.crt /etc/gitlab/trusted-certs/
+
+Then configure SSL settings on your /etc/gitlab/gitlab.rb file. First, change external URL from http to https
+
+external_url 'https://git.example.com'
+
+Under the ## GitLab NGINX section, enable Nginx and provide SSL key and certificate paths.
+
+nginx['enable'] = true
+nginx['client_max_body_size'] = '250m'
+nginx['redirect_http_to_https'] = true
+
+nginx['ssl_certificate'] = "/etc/gitlab/ssl/git.example.com.key"
+nginx['ssl_certificate_key'] = "/etc/gitlab/ssl/git.example.com.crt"
+nginx['ssl_protocols'] = "TLSv1.1 TLSv1.2"
+
+
+sudo gitlab-ctl reconfigure
