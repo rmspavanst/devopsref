@@ -1,8 +1,19 @@
+CICD-FLOW:
+-------------
 
+                                       |------>Deocker ----->Nexus Repository
+devteam--->coomit--> github---->Jenkins|------>Gradle ------>SonarQube
+                                       |------>Helm -------->datree.io ----->Kubernetes
+
+Pre-requests: (java, git, curl, wegt, unzip, maven)
+--------------------------------------------------
 
 JAVA 8 installation in ubuntu 16.04
+------------------------------------
 sudo apt-get -y install default-jdk
+
 JAVA 11 installation in ubuntu 16.04
+--------------------------------------
 sudo add-apt-repository ppa:linuxuprising/java
 sudo apt update
 sudo apt-get install oracle-java11-installer
@@ -14,11 +25,15 @@ JAVA 11 installation in GCP machine
 download jdk-11.0.12_linux-x64_bin.tar.gz from https://www.oracle.com/java/technologies/downloads/#java11 and place it under /var/cache/oracle-jdk11-installer-local
 sudo apt-get install oracle-java11-installer-local
 sudo apt install oracle-java11-set-default-local
+
 git installation in ubuntu 16.04
+--------------------------------
 apt-get update
 apt-get install git
 git --version ( to verify git version )
+
 Jenkins installation in ubuntu 16.04
+--------------------------------------
 wget https://updates.jenkins-ci.org/download/war/2.162/jenkins.war ( installs 2.162 version, if you want any other version to be installed visit https://updates.jenkins-ci.org/download/war/ download particular version )
 java -jar jenkins.war ( default runs on 8080 port )
 java -jar jenkins.war --httpPort=5000 ( if you want run on any other port use this, in my case its 5000 port )
@@ -30,15 +45,13 @@ apt-get update
 apt-get install jenkins
 systemctl start jenkins
 systemctl status jenkins
+
 maven installation in ubuntu 16.04
+-----------------------------------
 cd /usr/local
-
 wget https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
-
 sudo tar xvf apache-maven-3.6.3-bin.tar.gz
-
 ln -s apache-maven-3.6.3 apache-maven
-
 sudo vi /etc/profile.d/apache-maven.sh
 
  please insert below lines to /etc/profile.d/apache-maven.sh
@@ -50,12 +63,12 @@ sudo vi /etc/profile.d/apache-maven.sh
 source /etc/profile.d/apache-maven.sh
 
 mvn -version ( to verify maven version )
-
 For more details https://tecadmin.net/install-apache-maven-on-ubuntu/
-
 easy way to install - sudo apt install maven
 
+
 Docker installation in ubuntu 16.04
+------------------------------------
 sudo apt-get update
 sudo apt-get install apt-transport-https ca-certificates curl gnupg-agent software-properties-common
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
@@ -87,7 +100,10 @@ for more details refer https://docs.docker.com/install/linux/docker-ce/ubuntu/#i
     
     - even after following the above commands if you face any issue in ruuning commands then run below command
       chmod 777 /var/run/docker.sock
+
+
 SonarQube Installation in ubuntu 16.04
+---------------------------------------
 Use apt-get to install the required packages.
 
 apt-get update
@@ -174,13 +190,17 @@ run below docker command
 
 docker run --name artifactory -v $JFROG_HOME/artifactory/var/:/var/opt/jfrog/artifactory -d -p 8081:8081 -p 8082:8082 docker.bintray.io/jfrog/artifactory-oss:latest
 
+
 Ansible Installation in ubuntu 16.04
+-------------------------------------
 sudo apt-add-repository ppa:ansible/ansible
 sudo apt-get update
 sudo apt-get install ansible
 For more details - https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-ansible-on-ubuntu-16-04
 
+
 kubernetes installation on ubuntu 16.04 ( kubeadm - single master multi nodes )
+-----------------------------------------------------------------------------------
 Make sure docker installed in master and nodes, make sure master has 2 cpu's
 
 Execute below commands in both master and node
@@ -227,7 +247,9 @@ cd nexus-3.35.0-02/bin
 To access this use http://ip_Address:8081 ( by deafault which will be running on 8081)
 intial password will be present in /opt/sonatype-work/nexus3/admin.password
 
+
 Helm Installation in ubuntu 16.04
+----------------------------------
 curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3
 
 chmod 700 get_helm.sh
