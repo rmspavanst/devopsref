@@ -5,8 +5,18 @@ CICD-FLOW:
 devteam--->coomit--> github---->Jenkins|------>Gradle ------>SonarQube
                                        |------>Helm -------->datree.io ----->Kubernetes
 
+
+pull the code from github -----> Do the static code analysis using sonarqube with the help of gradle sonarqube plugin ----> check the status of quality  gate in sonar --> If sonar check success(if fail:Mark ci as fail & send mail)------> Using multistage dockerfile build the code generate artifact and create docker image ---> Push the image to private docker registry which is nexus ----> Check if any misconfigurations helm charts ------> If check success (fail:Mark ci as fail & send mail) -----> Helm charts push to nexus -----> Mnaual Approval ----> Deploy on K8s cluster ----->> Send api to test app deployment..
+
+
+
 Pre-requests: (java, git, curl, wegt, unzip, maven)
 --------------------------------------------------
+Note: required 5vm's (1.Jenkins, 2. Nexus, 3.SonarQube, 4&5. for K8s cluster)
+
+https://github.com/DeekshithSN/CICD_Java_gradle_application/wiki
+https://github.com/DeekshithSN/CICD_Java_gradle_application
+
 
 JAVA 8 installation in ubuntu 16.04
 ------------------------------------
@@ -236,7 +246,10 @@ Then to verify use below commands
 kubectl get nodes
 kubectl get pods
 Kubectl get service
+
+
 Nexus Installation in ubuntu 16.04
+--------------------------------------------------
 apt-get install wget ( install if you dont have wget )
 java -version ( make sure java is installed which should be java 8 or higher version )
 wget https://download.sonatype.com/nexus/3/latest-unix.tar.gz

@@ -1,0 +1,77 @@
+---
+- hosts: all
+  become: true #yes
+  #remote_user: ec2-user
+  #become_user: root
+  tasks:
+  
+  - name: install wget
+    yum:
+     name: wget
+     state: present
+
+  - name: Download Long Term Jenkins release
+    get_url:
+      url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
+      dest: /etc/yum.repos.d/jenkins.repo
+
+  - name: Import jenkins key from url
+    rpm_key:
+    #ansible.builtin.rpm_key:
+      state: present
+      key: https://pkg.jenkins.io/redhat-stable/jenkins.io.key
+
+  - name: yum update
+    yum:
+      name: '*'
+      state: latest
+
+  - name: Install java
+    yum:
+      name: java-11-openjdk-devel
+      state: present
+
+  - name: Install jenkins
+    command: "yum install jenkins --nobest -y"
+    #yum
+      #name: jenkins 
+      #packages: --nobest
+      #update_cache: yes
+      #state: present
+      #state: latest
+
+  - name: daemon-reload to pick up config changes
+    systemd:
+      daemon_reload: yes
+
+  - name: Start jenkins
+    systemd:
+      name: jenkins
+      state: started
+  
+  - name: enable jenkins
+    systemd:
+     name: jenkins
+     enabled: true
+
+  - name: Open Firewall Port
+    firewalld:
+      zone: public
+      port: 8080/tcp
+      permanent: true
+      state: enabled
+      immediate: true
+
+  - name: sleep for 30 seconds and continue with play
+    wait_for:
+     delay: 30
+     port: 8080
+
+  - name: init password jenkin
+    shell: cat /var/lib/jenkins/secrets/initialAdminPassword
+    changed_when: false
+    register: result
+
+  - name: print init password jenkins
+    debug:
+     var: result.stdout

@@ -1,0 +1,93 @@
+---
+- name: Install docker
+  gather_facts: No
+  hosts: all
+  become: true 
+
+  tasks:
+    - name: Install yum utils
+      yum:
+        name: yum-utils
+        state: latest
+
+    - name: Install device-mapper-persistent-data
+      yum:
+        name: device-mapper-persistent-data
+        state: latest
+
+    - name: Install lvm2
+      yum:
+        name: lvm2
+        state: latest
+
+    - name: Add Docker repo
+      get_url:
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docer-ce.repo
+      
+
+    - name: Enable Docker Edge repo
+      ini_file:
+        dest: /etc/yum.repos.d/docer-ce.repo
+        section: 'docker-ce-edge'
+        option: enabled
+        value: 0
+      
+
+    - name: Enable Docker Test repo
+      ini_file:
+        dest: /etc/yum.repos.d/docer-ce.repo
+        section: 'docker-ce-test'
+        option: enabled
+        value: 0
+    
+
+    - name: Install Docker
+      package:
+        name: docker-ce
+        state: latest
+    
+
+    - name: Start Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+   
+
+    - name: enable docker
+      systemd:
+        name: docker
+        enabled: true
+   
+
+    - name: Add user docker to docker group
+      user:
+        name: docker
+        groups: docker
+        append: yes
+    
+
+    - name: Download and install Docker Compose
+      get_url:
+        url: https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64
+        dest: /usr/local/bin/docker-compose
+        mode: 0755
+      command: "sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose"
+      
+    # - name: Download and install Docker Compose
+    #   command: sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+
+    # - name: Download and install Docker Compose  
+    #   command: "sudo chmod +x /usr/local/bin/docker-compose"
+    
+    # - name: Download and install Docker Compose
+    #   command: "sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose"
+      #get_url:
+        #url: https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64
+        #dest: /usr/local/bin/docker-compose
+        #mode: 0755
+      # when:
+      #   - docker_compose_check.msg is defined
+      #   - docker_compose_check.msg.find('No such file or directory') != -1
+      

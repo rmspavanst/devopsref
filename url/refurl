@@ -8,3 +8,7 @@ https://vinodhakumara2681997.medium.com/ansible-role-to-install-jenkins-on-any-p
 docker:
 https://www.linkedin.com/pulse/how-launch-manage-docker-through-ansible-playbook-abhishek-biswas
 https://www.rechberger.io/tutorial-install-docker-using-ansible-on-a-remote-server/
+
+package-install:
+https://github.com/ansible-ThoTeam/nexus3-oss
+
