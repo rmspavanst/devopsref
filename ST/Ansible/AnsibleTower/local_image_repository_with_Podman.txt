@@ -1,0 +1,144 @@
+Create a local image repository with Podman:
+
+
+>>>> For Disconnected Environment
+Download:
+# podman pull docker.io/library/registry:2
+# podman images
+REPOSITORY                                                            TAG         IMAGE ID      CREATED       SIZE
+docker.io/library/registry                                            2           b2cb11db9d3d  2 months ago  26.8 MB
+# podman save -o docker.io.library.registry2.tar b2cb11db9d3d
+
+
+Copy & Load: 
+[root@ansible4 ~]# podman load -i docker.io.library.registry2.tar 
+[root@ansible4 ~]# podman tag b2cb11db9d3d docker.io/library/registry:2 
+>>>>
+
+[root@ansible4 ~]# mkdir -p /var/lib/registry
+
+
+[root@ansible4 ~]# podman run --privileged -d --name image-registry -p 5000:5000 -v /var/lib/registry:/var/lib/registry --restart=always registry:2
+
+Resolved "registry" as an alias (/etc/containers/registries.conf.d/000-shortnames.conf)
+Trying to pull docker.io/library/registry:2...
+Getting image source signatures
+Copying blob b215d0b40846 done  
+Copying blob 6a428f9f83b0 done  
+Copying blob 90cad49de35d done  
+Copying blob 6f7e10a4e907 done  
+Copying blob 429305b6c15c done  
+Copying config b2cb11db9d done  
+Writing manifest to image destination
+Storing signatures
+117fe15fb67459e2a6779db33c66ec3cabec17a61ec332b22161dc9b30c72652
+
+
+[root@ansible4 ~]# podman images
+REPOSITORY                                                            TAG         IMAGE ID      CREATED       SIZE
+registry.redhat.io/ansible-automation-platform-20-access/ee-29-rhel8  latest      e61302ef4941  2 weeks ago   794 MB
+docker.io/library/registry                                            2           b2cb11db9d3d  2 months ago  26.8 MB
+
+
+[root@ansible4 ~]# sudo vi /etc/containers/registries.conf
+# Registries that do not use TLS when pulling images or uses self-signed
+# certificates.
+[registries.insecure]
+registries = ['localhost:5000']
+
+
+
+[root@ansible4 ~]# sudo systemctl restart podman
+[root@ansible4 ~]# sudo systemctl status podman
+● podman.service - Podman API Service
+   Loaded: loaded (/usr/lib/systemd/system/podman.service; static; vendor preset: disabled)
+   Active: inactive (dead) since Wed 2021-11-03 19:36:50 +08; 387ms ago
+     Docs: man:podman-system-service(1)
+  Process: 26979 ExecStart=/usr/bin/podman $LOGGING system service (code=exited, status=0/SUCCESS)
+ Main PID: 26979 (code=exited, status=0/SUCCESS)
+
+Nov 03 19:36:45 ansible4.jazakallah.info systemd[1]: Starting Podman API Service...
+Nov 03 19:36:45 ansible4.jazakallah.info systemd[1]: Started Podman API Service.
+Nov 03 19:36:45 ansible4.jazakallah.info podman[26979]: time="2021-11-03T19:36:45+08:00" level=info msg="/usr/bin/podman filtering at l>
+Nov 03 19:36:45 ansible4.jazakallah.info podman[26979]: time="2021-11-03T19:36:45+08:00" level=info msg="Not using native diff for over>
+Nov 03 19:36:45 ansible4.jazakallah.info podman[26979]: time="2021-11-03T19:36:45+08:00" level=info msg="Found CNI network podman (type>
+Nov 03 19:36:45 ansible4.jazakallah.info podman[26979]: time="2021-11-03T19:36:45+08:00" level=info msg="Setting parallel job count to >
+Nov 03 19:36:45 ansible4.jazakallah.info podman[26979]: time="2021-11-03T19:36:45+08:00" level=info msg="using systemd socket activatio>
+Nov 03 19:36:45 ansible4.jazakallah.info podman[26979]: time="2021-11-03T19:36:45+08:00" level=info msg="using API endpoint: ''"
+Nov 03 19:36:45 ansible4.jazakallah.info podman[26979]: time="2021-11-03T19:36:45+08:00" level=info msg="API server listening on \"/run>
+Nov 03 19:36:50 ansible4.jazakallah.info systemd[1]: podman.service: Succeeded.
+
+
+[root@ansible4 ~]# podman ps -a
+CONTAINER ID  IMAGE                         COMMAND               CREATED        STATUS            PORTS                   NAMES
+117fe15fb674  docker.io/library/registry:2  /etc/docker/regis...  2 minutes ago  Up 2 minutes ago  0.0.0.0:5000->5000/tcp  registry
+
+
+[root@ansible4 ~]# podman images
+REPOSITORY                                                            TAG         IMAGE ID      CREATED       SIZE
+registry.redhat.io/ansible-automation-platform-20-access/ee-29-rhel8  latest      e61302ef4941  2 weeks ago   794 MB
+docker.io/library/registry                                            2           b2cb11db9d3d  2 months ago  26.8 MB
+
+[root@ansible4 ~]# podman tag e61302ef4941 localhost:5000/ee-29-rhel8
+[root@ansible4 ~]# podman images
+REPOSITORY                                                            TAG         IMAGE ID      CREATED       SIZE
+registry.redhat.io/ansible-automation-platform-20-access/ee-29-rhel8  latest      e61302ef4941  2 weeks ago   794 MB
+localhost:5000/ee-29-rhel8                                            latest      e61302ef4941  2 weeks ago   794 MB
+docker.io/library/registry                                            2           b2cb11db9d3d  2 months ago  26.8 MB
+
+
+[root@ansible4 ~]# podman push localhost:5000/ee-29-rhel8
+Getting image source signatures
+Copying blob 0b911edbb97f done  
+Copying blob 54e42005468d done  
+Copying blob 651388d6b512 done  
+Copying blob eac4dc81f86d done  
+Copying config e61302ef49 done  
+Writing manifest to image destination
+Storing signatures
+
+[root@ansible4 ~]# podman search ee-29-rhel8
+[root@ansible4 ~]# podman search localhost:5000/ee-29-rhel8
+INDEX           NAME                        DESCRIPTION  STARS       OFFICIAL    AUTOMATED
+localhost:5000  localhost:5000/ee-29-rhel8               0                       
+
+
+
+Adding the container to systemd:
+
+
+[root@ansible4 ~]# podman generate systemd \
+>     --new --name image-registry \
+>     > /etc/systemd/system/image-registry.service
+
+[root@ansible4 ~]# ls -al /etc/systemd/system/image-registry.service 
+-rw-r--r--. 1 root root 1015 Nov  3 20:09 /etc/systemd/system/image-registry.service
+[root@ansible4 ~]# cat /etc/systemd/system/image-registry.service
+# container-image-registry.service
+# autogenerated by Podman 3.2.3
+# Wed Nov  3 20:09:41 +08 2021
+
+[Unit]
+Description=Podman container-image-registry.service
+Documentation=man:podman-generate-systemd(1)
+Wants=network.target
+After=network-online.target
+RequiresMountsFor=%t/containers
+
+[Service]
+Environment=PODMAN_SYSTEMD_UNIT=%n
+Restart=on-failure
+TimeoutStopSec=70
+ExecStartPre=/bin/rm -f %t/container-image-registry.pid %t/container-image-registry.ctr-id
+ExecStart=/usr/bin/podman run --conmon-pidfile %t/container-image-registry.pid --cidfile %t/container-image-registry.ctr-id --cgroups=no-conmon --replace --privileged -d --name image-registry -p 5000:5000 -v /var/lib/registry:/var/lib/registry --restart=always registry:2
+ExecStop=/usr/bin/podman stop --ignore --cidfile %t/container-image-registry.ctr-id -t 10
+ExecStopPost=/usr/bin/podman rm --ignore -f --cidfile %t/container-image-registry.ctr-id
+PIDFile=%t/container-image-registry.pid
+Type=forking
+
+[Install]
+WantedBy=multi-user.target default.target
+[root@ansible4 ~]# 
+
+
+
