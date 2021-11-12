@@ -1,4 +1,14 @@
 
+configure GitLab for HA
+=======================
+https://forge.etsi.org/rep/help/administration/high_availability/gitlab.md
+
+Configure PostgreSQL for HA for GitLab
+======================================
+https://forge.etsi.org/rep/help/administration/high_availability/database.md
+
+
+
 
 sudo dnf install -y curl policycoreutils openssh-server perl
 # Enable OpenSSH server daemon if not enabled: sudo systemctl status sshd
