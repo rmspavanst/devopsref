@@ -1,0 +1,120 @@
+To Download Images:
+[root@bastion ~]# podman login registry.redhat.io
+Username: mh2ice
+Password: 
+Login Succeeded!
+
+
+[root@bastion images]# podman search ee-minimal-rhel8
+INDEX      NAME                                                                             DESCRIPTION                                      STARS   OFFICIAL  AUTOMATED
+redhat.io  registry.redhat.io/ansible-automation-platform-20-early-access/ee-minimal-rhel8  Ansible Automation Platform minimal executio...  0                 
+
+
+[root@bastion images]# podman pull registry.redhat.io/ansible-automation-platform-20-early-access/ee-minimal-rhel8:latest
+Trying to pull registry.redhat.io/ansible-automation-platform-20-early-access/ee-minimal-rhel8:latest...
+Getting image source signatures
+Checking if image destination supports signatures
+Copying blob fbe263a3775e skipped: already exists  
+Copying blob dde93efae2ff skipped: already exists  
+Copying blob 94249d6f79d2 skipped: already exists  
+Copying blob ba04c4096899 [--------------------------------------] 0.0b / 0.0b
+Copying config 1691165f01 done  
+Writing manifest to image destination
+Storing signatures
+1691165f01f7bd8280ae375a722215dcdca8c23a32ff1ca0db060ba543e79c32
+
+
+
+[root@bastion images]# podman pull registry.redhat.io/ansible-automation-platform-20-early-access/ee-supported-rhel8:latest
+Trying to pull registry.redhat.io/ansible-automation-platform-20-early-access/ee-supported-rhel8:latest...
+Getting image source signatures
+Checking if image destination supports signatures
+Copying blob dde93efae2ff skipped: already exists  
+Copying blob 94249d6f79d2 skipped: already exists  
+Copying blob ba04c4096899 skipped: already exists  
+Copying blob 8f4ce4546582 done  
+Copying blob fbe263a3775e done  
+Copying config a5abcbcfe2 done  
+Writing manifest to image destination
+Storing signatures
+a5abcbcfe2ead18efcea5855e31bcff0bd2fcb71ebecc326584fac5fb2878e91
+
+
+[root@bastion images]# podman pull registry.redhat.io/ansible-automation-platform-20-early-access/ee-29-rhel8:latest
+Trying to pull registry.redhat.io/ansible-automation-platform-20-early-access/ee-29-rhel8:latest...
+Getting image source signatures
+Checking if image destination supports signatures
+Copying blob 725b8f697ed5 done  
+Copying blob 94249d6f79d2 done  
+Copying blob ba04c4096899 done  
+Copying blob dde93efae2ff done  
+Copying config e61302ef49 done  
+Writing manifest to image destination
+Storing signatures
+e61302ef4941f4a2b2562d70a9cfb1ba346ed0ebe6862b1259d57f101c0caacb
+
+
+...  0                 
+[root@bastion images]# podman images
+REPOSITORY                                                                                             TAG     IMAGE ID      CREATED       SIZE
+registry.redhat.io/ansible-automation-platform-20-early-access/ee-supported-rhel8                      latest  a5abcbcfe2ea  2 weeks ago   1 GB
+registry.redhat.io/ansible-automation-platform-20-early-access/ee-29-rhel8                             latest  e61302ef4941  2 weeks ago   794 MB
+registry.redhat.io/ansible-automation-platform-20-early-access/ee-minimal-rhel8                        latest  1691165f01f7  2 weeks ago
+
+
+[root@bastion images]# podman save -o ee-29-rhel8.tar e61302ef4941
+
+[root@bastion images]# podman save -o ee-supported-rhel8.tar a5abcbcfe2ea
+
+[root@bastion images]# podman save -o ee-minimal-rhel8.tar 1691165f01f7
+
+[root@bastion images]# ll
+total 2139464
+-rw-r--r--. 1 root root  794067456 Nov  3 13:36 ee-29-rhel8.tar
+-rw-r--r--. 1 root root  394371072 Nov  3 13:47 ee-minimal-rhel8.tar
+-rw-r--r--. 1 root root 1002367488 Nov  3 13:47 ee-supported-rhel8.tar
+
+
+
+Load the images:
+
+[mhaque@munshi-lab images]$ podman images
+REPOSITORY  TAG         IMAGE ID    CREATED     SIZE
+
+[mhaque@munshi-lab images]$ ls
+ee-29-rhel8.tar  ee-minimal-rhel8.tar  ee-supported-rhel8.tar
+[mhaque@munshi-lab images]$ podman load -i ee-29-rhel8.tar
+Getting image source signatures
+Copying blob 54e42005468d done  
+Copying blob 0b911edbb97f done  
+Copying blob 651388d6b512 done  
+Copying blob eac4dc81f86d done  
+Copying config e61302ef49 done  
+Writing manifest to image destination
+Storing signatures
+Loaded image(s): sha256:e61302ef4941f4a2b2562d70a9cfb1ba346ed0ebe6862b1259d57f101c0caacb
+
+[mhaque@munshi-lab images]$ podman images
+REPOSITORY  TAG         IMAGE ID      CREATED      SIZE
+<none>      <none>      e61302ef4941  2 weeks ago  794 MB
+
+
+
+[mhaque@munshi-lab images]$ podman tag e61302ef4941 registry.redhat.io/ansible-automation-platform-20-early-access/ee-supported-rhel8:latest
+
+[mhaque@munshi-lab images]$ podman images
+REPOSITORY                                                                         TAG         IMAGE ID      CREATED      SIZE
+registry.redhat.io/ansible-automation-platform-20-early-access/ee-supported-rhel8  latest      e61302ef4941  2 weeks ago  794 MB
+
+
+
+[mhaque@munshi-lab images]$ 
+
+Note: make sure the "registry.redhat.io/ansible-automation-platform-20-early-access/ee-supported-rhel8:latest" tag name is same as the "Image" name in the Execution Environments setting in the Ansible GUI.
+ 
+
+Do the same for the others two images if needed.
+
+
+
+Error: Error initializing source docker://registry.redhat.io/ansible-automation-platform-20-early-access/ee-supported-rhel8:2.0.1: error pinging docker registry registry.redhat.io: Get "https://registry.redhat.io/v2/": dial tcp: lookup registry.redhat.io on [::1]:53: read udp [::1]:60710->[::1]:53: read: connection refused
