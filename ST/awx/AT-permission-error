@@ -1,0 +1,30 @@
+[awx@PRDANSPLAT01 ~]$ getcap /usr/bin/newuidmap; stat /usr/bin/newuidmap
+/usr/bin/newuidmap = cap_setuid+ep
+File: /usr/bin/newuidmap
+Size: 44752 Blocks: 88 IO Block: 4096 regular file
+Device: fd00h/64768d Inode: 66871 Links: 1
+Access: (4755/-rwsr-xr-x) Uid: ( 0/ root) Gid: ( 0/ root)
+Context: system_u:object_r:bin_t:s0
+Access: 2021-11-15 18:23:10.448415138 +0800
+Modify: 2020-10-26 21:11:02.000000000 +0800
+Change: 2021-11-12 15:45:21.717251995 +0800
+Birth: -
+
+
+
+chmod u-s /usr/bin/newuidmap
+** permission was 4755 initially, need to change to 0755
+
+
+
+[root@PRDANSPLAT01 etc]# getcap /usr/bin/newgidmap; stat /usr/bin/newgidmap
+/usr/bin/newgidmap = cap_setgid+ep
+File: /usr/bin/newgidmap
+Size: 44784 Blocks: 88 IO Block: 4096 regular file
+Device: fd00h/64768d Inode: 66869 Links: 1
+Access: (4755/-rwsr-xr-x) Uid: ( 0/ root) Gid: ( 0/ root)
+Context: system_u:object_r:bin_t:s0
+Access: 2021-11-16 12:06:25.589316835 +0800
+Modify: 2020-10-26 21:11:02.000000000 +0800
+Change: 2021-11-12 15:44:47.397253124 +0800
+Birth: -
