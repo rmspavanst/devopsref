@@ -1,0 +1,38 @@
+
+configure GitLab for HA
+=======================
+https://forge.etsi.org/rep/help/administration/high_availability/gitlab.md
+
+Configure PostgreSQL for HA for GitLab
+======================================
+https://forge.etsi.org/rep/help/administration/high_availability/database.md
+
+PostgresDB:
+============
+https://docs.gitlab.com/ee/install/requirements.html#database
+
+https://docs.gitlab.com/omnibus/settings/database.html#seed-the-database-fresh-installs-only
+
+https://docs.gitlab.com/omnibus/settings/database.html#using-a-non-packaged-postgresql-database-management-server
+
+- Initialize the database and activate gitlab features:
+========================================================
+https://www.howtoforge.com/tutorial/how-to-install-gitlab-with-postgresql-and-nginx-on-ubuntu-15-04/
+
+
+ubuntu:
+----------
+
+sudo apt-get update
+sudo apt-get install -y curl openssh-server ca-certificates tzdata perl
+
+###Next, install Postfix to send notification emails. If you want to use another solution to send emails please skip this step and configure an external SMTP server after GitLab has been installed.
+
+sudo apt-get install -y postfix
+
+curl https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.deb.sh | sudo bash
+
+sudo EXTERNAL_URL="https://gitlab.example.com" apt-get install gitlab-ee
+
+cat /etc/gitlab/initial_root_password
+

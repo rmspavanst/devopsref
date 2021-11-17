@@ -1,11 +1,5 @@
 
-configure GitLab for HA
-=======================
-https://forge.etsi.org/rep/help/administration/high_availability/gitlab.md
 
-Configure PostgreSQL for HA for GitLab
-======================================
-https://forge.etsi.org/rep/help/administration/high_availability/database.md
 
 
 
@@ -30,9 +24,48 @@ rpm -i  gitlab-ce-14.4.0-ce.0.el7.x86_64.rpm
 
 apt-get install gitlab-ee
 
+Set the port in /etc/gitlab/gitlab.rb
+external_port "8888"
+
+Then run reconfigure:
+gitlab-ctl reconfigure
+
+
+
+
+Set port in /var/opt/gitlab/gitlab-rails/etc/gitlab.yml
+production: &base
+  #
+  # 1. GitLab app settings
+  # ==========================
+
+  ## GitLab settings
+  gitlab:
+    ## Web server settings (note: host is the FQDN, do not include http://)
+    host: gitlab.blitting.com
+    port: 8888
+    https: false
+
+Then restart gitlab
+
+gitlab-ctl stop
+gitlab-ctl start
+
+cd /etc/gitlab/
+vi gitlab.rd
+externan_url: localhost:8888
+
+
 gitlab-ctl reconfigure --> gitlab-ctl start --> gitlab-ctl status
 
+
+
 gitlab-rails console -e production
+
+to create user:
+User.create!(username: "test", email: "test@example.com", password: "test", password_confirmation: "test", is_admin: true, is_moderator: true)
+
+
 
 to reset root password
 
@@ -80,3 +113,84 @@ nginx['ssl_protocols'] = "TLSv1.1 TLSv1.2"
 
 
 sudo gitlab-ctl reconfigure
+
+
+
+to connect external PGSQL DB--- 
+----------------------------------------
+
+6. Database
+In GitLab 12.1 and later, only PostgreSQL is supported. In GitLab 14.0 and later, we require PostgreSQL 12+.
+Install the database packages.
+
+For Ubuntu 20.04 and later:
+
+sudo apt install -y postgresql postgresql-client libpq-dev postgresql-contrib
+
+For Ubuntu 18.04 and earlier, the available PostgreSQL doesn’t meet the minimum version requirement. You need to add PostgreSQL’s repository:
+
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+sudo apt update
+sudo apt -y install postgresql-12 postgresql-client-12 libpq-dev
+
+Verify the PostgreSQL version you have is supported by the version of GitLab you’re installing:
+
+psql --version
+
+Start the PostgreSQL service and confirm that the service is running:
+
+sudo service postgresql start
+sudo service postgresql status
+
+Create a database user for GitLab:
+
+sudo -u postgres psql -d template1 -c "CREATE USER git CREATEDB;"
+
+Create the pg_trgm extension:
+
+sudo -u postgres psql -d template1 -c "CREATE EXTENSION IF NOT EXISTS pg_trgm;"
+
+Create the btree_gist extension (required for GitLab 13.1+):
+
+sudo -u postgres psql -d template1 -c "CREATE EXTENSION IF NOT EXISTS btree_gist;"
+
+Create the GitLab production database and grant all privileges on the database:
+
+sudo -u postgres psql -d template1 -c "CREATE DATABASE gitlabhq_production OWNER git;"
+
+Try connecting to the new database with the new user:
+
+sudo -u git -H psql -d gitlabhq_production
+
+Check if the pg_trgm extension is enabled:
+
+SELECT true AS enabled
+FROM pg_available_extensions
+WHERE name = 'pg_trgm'
+AND installed_version IS NOT NULL;
+
+If the extension is enabled this produces the following output:
+
+enabled
+---------
+ t
+(1 row)
+
+Check if the btree_gist extension is enabled:
+
+SELECT true AS enabled
+FROM pg_available_extensions
+WHERE name = 'btree_gist'
+AND installed_version IS NOT NULL;
+
+If the extension is enabled this produces the following output:
+
+enabled
+---------
+ t
+(1 row)
+
+Quit the database session:
+
+gitlabhq_production> \q
