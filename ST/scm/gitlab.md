@@ -42,7 +42,7 @@ production: &base
   ## GitLab settings
   gitlab:
     ## Web server settings (note: host is the FQDN, do not include http://)
-    host: gitlab.blitting.com
+    host: gitlab.example.com
     port: 8888
     https: false
 
