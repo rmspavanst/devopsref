@@ -59,7 +59,16 @@ rpm -e gitlab
 
 rm -rf /opt/gitlab/ /var/opt/gitlab/ /etc/gitlab/ /var/log/gitlab/
 
+sudo rpm -e gitlab
 
+sudo yum remove "selinux-policy*"
 
+dnf reinstall "selinux-policy*"
 
+sestatus
 
+sudo setenforce 0
+
+/etc/selinux/config
+
+rpm -qa | grep gitlab
