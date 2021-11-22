@@ -36,3 +36,30 @@ sudo EXTERNAL_URL="https://gitlab.example.com" apt-get install gitlab-ee
 
 cat /etc/gitlab/initial_root_password
 
+
+pre-request:
+===============
+
+policycoreutils-python-utils
+
+
+
+uninstall:
+=============
+ps -ef | grep gitlab
+
+sudo gitlab-ctl stop
+
+sudo gitlab-ctl uninstall
+sudo gitlab-ctl cleanse
+
+sudo gitlab-ctl remove-accounts
+
+rpm -e gitlab
+
+rm -rf /opt/gitlab/ /var/opt/gitlab/ /etc/gitlab/ /var/log/gitlab/
+
+
+
+
+
