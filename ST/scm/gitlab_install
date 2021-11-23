@@ -72,3 +72,106 @@ sudo setenforce 0
 /etc/selinux/config
 
 rpm -qa | grep gitlab
+
+
+Create a new Linux user and configure the PostgreSQL database
+--------------------------------------------------------------
+
+In this step, we will create a new Linux system user called "git" with the home directory "/home/git". Gitlab will run as git user later.
+Create new user git with the adduser command:
+
+# sudo adduser --disabled-login --gecos 'GitLab' git
+
+Now we configure the database for gitlab. Gitlab supports MySQL and PostgreSQL, in this tutorial we will use the recommended database type PostGreSQL.
+Install PostgreSQL with the apt command below:
+
+# sudo apt-get install -y postgresql postgresql-client libpq-dev
+
+Once it is done, log in to PostgreSQL and create new role/user called "git" for gitlab:
+
+# sudo -u postgres psql -d template1
+CREATE USER git CREATEDB;
+
+Then create new database for gitlab called "gitlabhq_production" and grant the database to git user/role:
+
+# CREATE DATABASE gitlabhq_production OWNER git;
+
+Now exit for the postgresql shell and test the new role/user with the database that we have created:
+
+# \q
+# sudo -u git -H psql -d gitlabhq_production
+
+New system user called "git" has been created.
+New role/user "git" for psotgreSQL which has been granted to the gitlab database "gitlabhq_production" has been created too.
+
+
+HQ_Production:
+--------------------
+
+# CentOS/Red Hat
+yum install nfs-utils nfs-utils-lib
+
+
+sudo dnf install -y curl policycoreutils openssh-server perl
+# Enable OpenSSH server daemon if not enabled: sudo systemctl status sshd
+sudo systemctl enable sshd
+sudo systemctl start sshd
+# Check if opening the firewall is needed with: sudo systemctl status firewalld
+sudo firewall-cmd --permanent --add-service=http
+sudo firewall-cmd --permanent --add-service=https
+sudo systemctl reload firewalld
+
+sudo dnf install postfix
+sudo systemctl enable postfix
+sudo systemctl start postfix
+
+curl https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.rpm.sh | sudo bash
+or
+# download the pkg on https://packages.gitlab.com/gitlab/gitlab-ce
+# rpm -i  gitlab-ce-14.4.0-ce.0.el7.x86_64.rpm
+
+# sudo EXTERNAL_URL="https://gitlab.example.com" dnf install -y gitlab-ee
+
+Database Configuration
+The next step is to configure the GitLab DB settings, we use postgreSQL for our database. Copy the configuration file and change the permissions:
+
+sudo -u git -H cp config/database.yml.postgresql config/database.yml
+sudo -u git -H chmod o-rwx config/database.yml
+
+Initialize the database by running
+# sudo gitlab-rake gitlab:setup
+
+Edit the /etc/gitlab/gitlab.rb
+
+external_url 'https://gitlab.example.com'
+
+# Prevent GitLab from starting if NFS data mounts are not available
+high_availability['mountpoint'] = '/var/opt/gitlab/git-data'
+
+# Disable components that will not be on the GitLab application server
+roles ['application_role']
+nginx['enable'] = true
+
+# PostgreSQL connection details
+gitlab_rails['db_adapter'] = 'postgresql'
+gitlab_rails['db_encoding'] = 'unicode'
+gitlab_rails['db_host'] = '10.1.0.5' # IP/hostname of database server
+gitlab_rails['db_password'] = 'DB password'
+
+# Redis connection details
+gitlab_rails['redis_port'] = '6379'
+gitlab_rails['redis_host'] = '10.1.0.6' # IP/hostname of Redis server
+gitlab_rails['redis_password'] = 'Redis Password'
+
+# Ensure UIDs and GIDs match between servers for permissions via NFS
+user['uid'] = 9000
+user['gid'] = 9000
+web_server['uid'] = 9001
+web_server['gid'] = 9001
+registry['uid'] = 9002
+registry['gid'] = 9002
+
+
+Run sudo gitlab-ctl reconfigure to compile the configuration.
+
+
