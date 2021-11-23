@@ -16,6 +16,9 @@ https://github.com/ansible-ThoTeam/nexus3-oss
 
 AWS:
 -------
-
 https://www.knowledgehut.com/practice-tests/aws-solutions-architect-associate
+
+CKA:
+------
+https://free-braindumps.com/linux-foundation/free-cka-braindumps.html?p=2
 
