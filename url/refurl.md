@@ -12,3 +12,10 @@ https://www.rechberger.io/tutorial-install-docker-using-ansible-on-a-remote-serv
 package-install:
 https://github.com/ansible-ThoTeam/nexus3-oss
 
+
+
+AWS:
+-------
+
+https://www.knowledgehut.com/practice-tests/aws-solutions-architect-associate
+
