@@ -1,4 +1,11 @@
 date ; ps -ef | grep date
 
 
+find./ -type f -exec grep -l "text to find" {} ;
+find / -type f -exec grep -H 'text-to-find-here' {} \;
 
+grep --include=\*.{c,h} -rnw '/path/to/somewhere/' -e "pattern"
+
+grep --exclude-dir={dir1,dir2,*.dst} -rnw '/path/to/somewhere/' -e "pattern"
+
+ack 'text-to-find-here'
