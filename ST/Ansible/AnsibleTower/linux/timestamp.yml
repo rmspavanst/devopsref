@@ -5,3 +5,8 @@
           msg: "the current date is {{ ansible_date_time.date }} {{ ansible_date_time.time }}"
 
 ## msg: "{{ lookup ('pipe','date +%Y-%m-%d %H:%M:%S') }}"
+
+---
+- host: all
+  vars:
+    time: "{{ lookup('pipe', 'date -d \"1 day ago\" +\"%Y%m%d\"')}}"
