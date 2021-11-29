@@ -1,5 +1,13 @@
-to gett time and elapsed time
+to gett time and elapsed time:
+-------------------------------
 
 # vi /etc/ansible/ansibel.cfg
 
 callback_whitelist = profile_tasks
+
+
+
+## resume the execution task form same place where it failed:
+--------------------------------------------------------------
+
+ansible-playbook --forks=10 myscript.yml --limit limit1 --start-at-task='install java'
