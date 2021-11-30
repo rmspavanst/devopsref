@@ -17,7 +17,6 @@
     - name: "Get Workflow node id for this job"
       uri:
         url: "{{ tower_base_url }}/workflow_job_nodes/?job_id={{ job_id }}"
-        validate_certs: "{{ tower_verify_ssl }}"
         force_basic_auth: true
         user: "{{ tower_username }}"
         password: "{{ tower_password }}"
@@ -26,7 +25,6 @@
     - name: "Get parent workflow nodes for this workflow node"
       uri:
         url: "{{ tower_base_url }}/workflow_job_nodes/?success_nodes={{ result.json.results[0].id }}"
-        validate_certs: "{{ tower_verify_ssl }}"
         force_basic_auth: true
         user: "{{ tower_username }}"
         password: "{{ tower_password }}"
