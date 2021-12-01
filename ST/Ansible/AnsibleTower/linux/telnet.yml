@@ -41,3 +41,23 @@
         - 80443
 ...
 
+# #!/usr/bin/python
+# import socket;
+# sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# result = sock.connect_ex(('nagios.company.com',5666))
+# if result == 0:
+#    print "OK"
+# else:
+#    print "Not OK"
+# the playbook, nagios.yml
+
+# - name: Nagios connectivity test
+#   hosts: all
+#   tasks:
+#     - name: script
+#       script: /tmp/nagios.py
+#       register: nagios
+#     - debug: msg="{{ nagios.stdout }}"
+# the run command to filter the hosts that can't connect
+
+# ansible-playbook /tmp/nagios.yml | grep -B1 Not\ OK
