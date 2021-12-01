@@ -8,4 +8,15 @@
       #remote_user: ansible
 ...
 
+---
 
+- name: show version
+  hosts: telnet
+  gather_facts: false
+  connection: local
+  tasks:
+    - name: telnet sw
+      telnet:
+        command:
+          - terminal length 0
+          - show version

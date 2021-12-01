@@ -1,0 +1,43 @@
+---
+- hosts: all
+  gather_facts: False
+  tasks:
+    - name: check if github.com:22 is accessible
+      wait_for:
+        host: github.com
+        port: 22
+        state: started
+        delay: 0
+        timeout: 1
+
+    - name: check if 192.168.33.12:25 is accessible
+      wait_for:
+        host: 192.168.33.12
+        port: 25
+        state: started
+        delay: 0
+        timeout: 1
+        search_regex: Postfix
+...
+
+---
+- hosts: all
+  tasks:
+    - shell: nc -z -w 1 -G 1 my.hostname.com {{ item }} || echo "Port {{ item }} is closed"
+      with_items: [80,443,8443]
+    
+    #or
+    - name: Check all port numbers are accessible from the current host
+      wait_for:
+        host: mywebserver.com
+        port: "{{ item }}"
+        state: started         # Port should be open
+        delay: 0               # No wait before first check (sec)
+        timeout: 3             # Stop checking after timeout (sec)
+      ignore_errors: yes
+      with_items:
+        - 443
+        - 80
+        - 80443
+...
+
