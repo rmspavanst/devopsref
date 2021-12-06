@@ -27,5 +27,8 @@ Ansible:
 --------
 
 https://www.golinuxcloud.com/provision-aws-using-ansible/
+https://people.redhat.com/grieger/summit2020_labs/ansible-tower-advanced/1-intro/
+
+
 
 
