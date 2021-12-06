@@ -1,0 +1,36 @@
+---
+- hosts: all
+  gather_facts: yes
+  tasks:
+  - name: Print a message
+    ansible.builtin.debug:
+      msg: "Always runs"
+    tags:
+    - always
+  
+  - name: Print a message
+    ansible.builtin.debug:
+      msg: "runs when you use tag1"
+    tags:
+    - never
+
+
+---
+
+- name: Print a message
+  ansible.builtin.debug:
+    msg: "runs when you use tag1"
+  tags:
+  - tag1
+
+- name: Print a message
+  ansible.builtin.debug:
+    msg: "runs when you use tag2"
+  tags:
+  - tag2
+
+- name: Print a message
+  ansible.builtin.debug:
+    msg: "runs when you use tag3"
+  tags:
+  - tag3

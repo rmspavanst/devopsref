@@ -22,3 +22,10 @@ CKA:
 ------
 https://free-braindumps.com/linux-foundation/free-cka-braindumps.html?p=2
 
+
+Ansible:
+--------
+
+https://www.golinuxcloud.com/provision-aws-using-ansible/
+
+
