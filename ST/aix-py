@@ -1,0 +1,49 @@
+Step-1:
+---------
+Download python install software from website
+
+http://www.aixtools.net/index.php/python3
+or
+http://download.aixtools.net/tools/aixtools.python.py39.3.9.1.0.I
+
+
+Step-2:
+---------
+ftp pyton install software "aixtools.python.py39.3.9.1.0.I" to path /tmp/pyinstall
+
+Step-3:
+-------
+
+smit install
+->  Install and Update Software
+->  Install Software
+->  INPUT device / directory for software </tmp/pyinstall>
+->  SOFTWARE to install: aixtools.python3
+->  ACCEPT new license agreements? yes
+
+Press "ENTER" 2 times.
+
+# cd /opt/bin
+# ls -l
+
+ln -sf /opt/bin/python3 /usr/bin/python
+ls -l /usr/bin/python
+
+lslpp -l | grep -i python (will show .adt, .rte, .man.en_US)
+
+run the below commands
+
+lslpp -h aixtools.python******.adt
+
+lslpp -h aixtools.python******.rte
+
+lslpp -h aixtools.python******.man.en_US
+
+Step-4:
+----------
+
+check python is installed or not
+
+$ python
+
+
