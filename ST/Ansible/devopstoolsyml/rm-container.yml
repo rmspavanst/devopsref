@@ -1,0 +1,16 @@
+---
+- hosts: all
+  gather_facts: yes
+
+  tasks: 
+    - name: stop the nginx docker container
+      command: docker stop nginx-server
+
+    - name: remove nginx docker container
+      command: docker rm nginx-server
+    
+    - name: remove nginx docker container
+      command: docker rmi nginx:latest
+    
+    - debug:
+        msg: "nginx container removed successfully"
