@@ -5,6 +5,7 @@
   tasks: 
     - name: pull the nginx image
       command: docker pull nginx:latest
+      ignore_errors: yes
     
     - name: run nginx container
       command: docker run -d -p 9080:80 --name nginx-server nginx:latest
