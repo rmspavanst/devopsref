@@ -29,6 +29,13 @@ Ansible:
 https://www.golinuxcloud.com/provision-aws-using-ansible/
 https://people.redhat.com/grieger/summit2020_labs/ansible-tower-advanced/1-intro/
 
+https://devopscon.io/blog/ansible-tutorial-multi-tier-deployment-with-ansible/ (playbook-MULTI-TIER DEPLOYMENT WITH ANSIBLE)
+https://cloudacademy.com/blog/building-ansible-playbooks-step-by-step/
+
+
+
+
+
 
 
 

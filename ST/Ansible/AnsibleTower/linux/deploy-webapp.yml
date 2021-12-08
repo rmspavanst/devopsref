@@ -1,0 +1,38 @@
+---
+- hosts: webservers
+  sudo: yes
+
+  vars:
+    app_name: PleaseDeployMe
+    repo_url: https://github.com/xxxxx.xxx.git
+    repo_remote: origin
+    repo_version: master
+    webapps_dir: /deployed
+    virtualenv_root: /deployed/PleaseDeployMe/mac
+  
+  tasks:
+    
+    - name: git pull project
+      git: repo={{repo_url}} dest={{webapps_dir}}/{{app_name}} vesrion=master
+
+      notify:
+        - restart app
+    
+    - name: install things
+      pip: name=virtualenv
+
+    - name: Crate virtualenv
+      command: virtualenv /deployed/PleaseDeployMe/venv
+
+    - name: activate virtualenv
+      command: /bin/bash /deployed/PleaseDeployMe/venv/bin/activate
+
+    - name: run supervisord
+      command: "supervisord -c /deployed/PleaseDeployMe/supervisord.conf"
+
+    - name: begin flask app
+      supervisorctl: name=flask_app state=started
+
+  handlers:
+    - name: restart app
+      supervisorctl: name={{app_name}} state=restarted

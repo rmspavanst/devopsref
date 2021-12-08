@@ -1,0 +1,49 @@
+---
+- name: "JBoss Web Server installation and configuration"
+  hosts: "all"
+  become: yes
+  collections:
+    – middleware_automation.jws
+  tasks :
+  vars:
+    tomcat_version: 9.0.50
+    tomcat_base_url: https://archive.apache.org/dist/tomcat/tomcat-9/v
+    tomcat_download_url: "{{ tomcat_base_url }}{{ tomcat_version }}/bin/apache-tomcat-{{tomcat_version}}.zip"
+    tomcat_install_dir: /opt
+    tomcat_zipfile: "{{tomcat_install_dir}}/tomcat.zip"
+    tomcat_java_version: 1.8.0
+    tomcat_setup: true
+  collections:
+    - middleware_automation.jws
+  roles:
+    - jws
+  pre_tasks:
+    - name: "Download latest Apache Tomcat Zipfile from {{ tomcat_download_url }}."
+      get_url:
+        url: "{{ tomcat_download_url }}"
+        dest: "{{ tomcat_zipfile }}"
+      when:
+        - tomcat_download_url is defined
+  tasks:
+    - name: " Checks that server is running"
+      uri:
+        url: "http://localhost:8080/"
+        status_code: 404
+        return_content: no
+
+    - name: "Deploy demo webapp"
+      get_url:
+        url: 'https://people.redhat.com/~rpelisse/info-1.0.war'
+        dest: "{{ tomcat_home }}/webapps/info.war"
+      notify:
+        - Restart Tomcat service
+
+  post_tasks:
+    - name: "Sleep for {{ tomcat_sleep }} seconds to let Tomcat starts "
+      wait_for:
+        timeout: "{{ tomcat_sleep }}"
+
+    - name: "Test application"
+      get_url:
+        url: "http://localhost:8080/info/"
+        dest: /tmp/info.txt
