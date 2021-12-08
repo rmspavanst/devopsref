@@ -1,5 +1,5 @@
 ---
-- hosts: appservers
+- hosts: all
   gather_facts: false
   become: true
   tasks:
@@ -43,15 +43,8 @@
 
   - name: sleep for 30 seconds and continue with play
     wait_for:
-     delay: 30
-     port: 8080
-
-  - name: Ensure port 8080 added to firewalld
-    firewalld:
-      port: 8080/tcp
-      state: enabled
-      permanent: yes
-      immediate: yes
+      delay: 30
+      port: 8080
 
   - name: init password jenkin
     shell: cat /var/lib/jenkins/secrets/initialAdminPassword
@@ -61,3 +54,26 @@
   - name: print init password jenkins
     debug:
      var: result.stdout
+
+  - name: sleep for 30 seconds and continue with play
+    wait_for:
+      delay: 30
+  
+  - name: Change the defult jenkins port 8080 to 9085
+    replace:
+      dest: /etc/sysconfig/jenkins
+      regexp: 'JENKINS_PORT="8080"'
+      replace: 'JENKINS_PORT="9081"'
+      backup: yes
+ 
+  - name: start jenkins
+    systemd:
+     name: jenkins
+     state: restarted
+ 
+  - name: Ensure port 9081 added to firewalld
+    firewalld:
+      port: 9081/tcp
+      state: enabled
+      permanent: yes
+      immediate: yes

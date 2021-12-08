@@ -1,31 +1,26 @@
 ---
-- hosts: appServers
+- hosts: all
   gather_facts: false
   become: true
   tasks:
   
-  - name: uninstall wget
-    yum:
-     name: wget
-     state: absent
-
   - name: uninstall openjdk
     yum:
-     name: java-1.8.0-openjdk
-     state: absent
-    
+    # name: java-1.8.0-openjdk
+    # state: absent
+      name: java-11-openjdk-devel
+      state: absent
+
   - name: uninstall jenkins
     yum:
      name: jenkins
      state: absent
-    
- 
     
   - name: Remove Jenkins folder
     shell: rm -rf  /var/lib/jenkins
     changed_when: false
     register: result
     
-  - name: print init password jenkins
+  - name: disply result
     debug:
-     var: result.stdout
+      var: result.stdout
