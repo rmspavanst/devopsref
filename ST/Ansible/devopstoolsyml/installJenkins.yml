@@ -46,6 +46,13 @@
      delay: 30
      port: 8080
 
+  - name: Ensure port 8080 added to firewalld
+    firewalld:
+      port: 8080/tcp
+      state: enabled
+      permanent: yes
+      immediate: yes
+
   - name: init password jenkin
     shell: cat /var/lib/jenkins/secrets/initialAdminPassword
     changed_when: false
