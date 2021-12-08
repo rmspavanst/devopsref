@@ -4,6 +4,11 @@
   become: true
   tasks:
 
+  - name: yum update
+    yum:
+      name: '*'
+      state: latest
+
   - name: install wget
     yum:
      name: wget
@@ -29,7 +34,11 @@
   - name: install jenkins
     yum:
      name: jenkins
-     state: present
+     state: latest
+
+  - name: daemon-reload to pick up config changes
+    ansible.builtin.systemd:
+      daemon_reload: yes
 
   - name: start jenkins
     systemd:
