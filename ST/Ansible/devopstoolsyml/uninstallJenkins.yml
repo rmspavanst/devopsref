@@ -23,4 +23,4 @@
     
   - name: disply result
     debug:
-      msg: Jenkins uninstalled 
+      msg: "Jenkins uninstalled successfully"
