@@ -2,16 +2,16 @@
 
 - include_tasks: block.yml
   when: inventory_hostname in gitlab_ips
-  tags: [tag1]
+  
 
-- include_tasks: always.yml
-  when: inventory_hostname in gitlab_ips 
-  tags: [tag2]
+# - include_tasks: always.yml
+#   when: inventory_hostname in gitlab_ips 
 
-- include_tasks: selection.yml
-  when: inventory_hostname in gitlab_ips
-  tags: [tag3]
 
-- include_tasks: handlers.yml
-  when: inventory_hostname in gitlab_ips
-  tags: [tag4] 
+# - include_tasks: selection.yml
+#   when: inventory_hostname in gitlab_ips
+
+
+#- include_tasks: handlers.yml
+#  when: inventory_hostname in gitlab_ips
+

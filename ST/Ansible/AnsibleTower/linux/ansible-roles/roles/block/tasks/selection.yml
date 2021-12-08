@@ -18,5 +18,4 @@
   always:
     - debug:
         msg: "This always executes"
-  tags:
-    - tag3        
+       

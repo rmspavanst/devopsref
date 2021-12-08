@@ -11,6 +11,5 @@
    rescue:
      - debug:
          msg: 'I caught an error, can do stuff here to fix it, :-)'
-   tags:
-     - tag1
+
    
