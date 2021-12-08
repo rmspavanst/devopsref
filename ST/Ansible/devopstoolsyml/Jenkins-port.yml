@@ -4,21 +4,21 @@
   become: true
   tasks:
 
-  - name: Change the defult jenkins port 8080 to 9081
+  - name: Change the defult jenkins port 8080 to 9085
     replace:
       dest: /etc/sysconfig/jenkins
       regexp: 'JENKINS_PORT="8080"'
       replace: 'JENKINS_PORT="9085"'
       backup: yes
-    debug:
-      msg: "Jenkis Default port changed successfully"
+      debug:
+        msg: "Jenkis Default port changed successfully"
  
   - name: start jenkins
     systemd:
      name: jenkins
      state: reloaded
-    debug:
-      msg: "Jenkis reloaded successfully"
+     debug:
+       msg: "Jenkis reloaded successfully"
 
   - name: Ensure port 9085 added to firewalld
     firewalld:
@@ -26,5 +26,5 @@
       state: enabled
       permanent: yes
       immediate: yes
-    debug:
-      msg: "Jenkis port added to firewalld"
+      debug:
+        msg: "Jenkis port added to firewalld"
