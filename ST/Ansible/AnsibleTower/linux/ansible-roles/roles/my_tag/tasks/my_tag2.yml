@@ -1,0 +1,19 @@
+---
+
+- name: Print a message
+  ansible.builtin.debug:
+    msg: "runs when you use tag7"
+  tags:
+  - tag7
+
+- name: Print a message
+  ansible.builtin.debug:
+    msg: "runs when you use tag8"
+  tags:
+  - tag8
+
+- name: Print a message
+  ansible.builtin.debug:
+    msg: "runs when you use tag9"
+  tags:
+  - tag9

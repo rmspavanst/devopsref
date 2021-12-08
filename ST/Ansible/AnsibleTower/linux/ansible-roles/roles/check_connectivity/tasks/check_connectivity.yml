@@ -1,0 +1,6 @@
+---
+- name: testconnection
+  ping: 
+
+- debug:
+    msg: "Connectivity test is successfull"

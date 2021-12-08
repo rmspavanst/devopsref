@@ -1,0 +1,22 @@
+#Block with all sections-The tasks in the block would execute normally, if there is any error the rescue section would get executed with whatever you need to do to recover from the previous error. The always section runs no matter what previous error did or did not occur in the block and rescue sections. It should be noted that the play continues if a rescue section completes successfully as it ‘erases’ the error status (but not the reporting), this means it won’t trigger max_fail_percentage nor any_errors_fatal configurations but will appear in the playbook statistics.
+---
+- name: Attempt and graceful roll back demo
+  block:
+    - debug:
+        msg: 'I execute normally'
+    - name: i force a failure
+      command: /bin/false
+    - debug:
+        msg: 'I never execute, due to the above task failing, :-('
+  rescue:
+    - debug:
+        msg: 'I caught an error'
+    - name: i force a failure in middle of recovery! >:-)
+      command: /bin/false
+    - debug:
+        msg: 'I also never execute :-('
+  always:
+    - debug:
+        msg: "This always executes"
+  tags:
+    - tag3        

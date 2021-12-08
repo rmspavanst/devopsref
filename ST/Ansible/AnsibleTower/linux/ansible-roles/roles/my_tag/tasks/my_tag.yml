@@ -1,0 +1,26 @@
+---
+
+- name: Print a message
+  ansible.builtin.debug:
+    msg: "runs when you use tag1"
+  tags:
+  - tag1
+
+- name: Print a message
+  ansible.builtin.debug:
+    msg: "runs when you use tag2"
+  tags:
+  - tag2
+
+
+- name: Print a message
+  ansible.builtin.debug:
+    msg: "runs when you use tag3"
+  tags:
+  - tag3
+
+# Pause for 5 sec to build app cache.
+- pause:
+    seconds: 5
+  tags:
+  - tag3   

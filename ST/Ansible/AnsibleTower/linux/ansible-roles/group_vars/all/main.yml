@@ -1,0 +1,24 @@
+---
+#AWX is running in centos
+awx_ip: "10.170.1.116"
+
+############gitlab machines ############
+gitlab_ips: [
+    "10.170.1.118",
+]
+
+test_server_ip: "10.170.1.79"
+
+### Workflow elapsed time ###
+
+workflow_time: "{{ lookup('pipe', 'date +\"%Y-%m-%d %T\"') }}"
+workflow_end_time: "{{ lookup('pipe', 'date +\"%Y-%m-%d %T\"') }}"
+
+elapsed: "{{ ( ( workflow_end_time - workflow_time ).total_seconds() / 3600 ) | int }}"
+
+##"{{ lookup('pipe', 'date +\"%Y-%m-%d %H:%M:%S\"') }}"
+
+##"{{ lookup('pipe', 'date -d \"1 day ago\" +\"%Y%m%d\"') }}"
+##"{{ lookup('pipe','date +%Y-%m-%d %H:%M:%S') }}"
+
+pause_duration: 5

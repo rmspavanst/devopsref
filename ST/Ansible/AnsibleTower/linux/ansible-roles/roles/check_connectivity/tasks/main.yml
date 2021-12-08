@@ -1,0 +1,7 @@
+---
+- debug: msg="{{ workflow_time }}"
+  when: inventory_hostname in test_server_ip
+
+- include_tasks: check_connectivity.yml
+
+

@@ -1,0 +1,13 @@
+---
+
+- include_tasks: my_tag.yml
+  when: inventory_hostname in gitlab_ips
+  tags: [tag1, tag2,  tag3]
+
+- include_tasks: my_tag1.yml
+  when: inventory_hostname in test_server_ip 
+  tags: [tag4, tag5, tag6]
+
+- include_tasks: my_tag2.yml
+  when: inventory_hostname in awx_ip
+  tags: [tag9, tag8, tag7]  
