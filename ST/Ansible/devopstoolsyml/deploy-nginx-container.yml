@@ -9,6 +9,7 @@
     
     - name: run nginx container
       command: docker run -d -p 9080:80 --name nginx-server nginx:latest
+      ignore_errors: yes
 
     - debug: 
         msg: "nginx container started successfully"
