@@ -8,7 +8,7 @@
     yum:
     # name: java-1.8.0-openjdk
     # state: absent
-      name: java-11-openjdk-devel
+      name: java*
       state: absent
 
   - name: uninstall jenkins
