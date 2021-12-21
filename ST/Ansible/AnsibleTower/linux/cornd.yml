@@ -1,0 +1,42 @@
+---
+
+- name: create file and add crontab entry
+  file:
+    path: "/mnt/sync/script1.sh"
+    state: directory
+    mode: '0755'
+
+- name: upload script1.sh
+  copy:
+    src: "script1.sh"
+    dest: "/mnt/sync/script1.sh"
+    mode: 755
+    owner: user1
+    group: group1
+    backup: yes
+
+- name: cron job to for script1.sh
+  cron:
+    name: script1
+    weekday: "1"
+    hour: "1"
+    cron_file: "/var/spool/cron/user1"
+    user: user1
+    job: "/mnt/sync/script1.sh"
+    
+ 
+ 
+ - name: "cron"
+  hosts: localhost
+  tasks:
+    - cron:
+        name: "test"
+        job: "/bin/true"
+        minute: "0"
+        hour: "9"
+        state: present #absent
+        disabled: True
+According to the documentation, this should work since ansible 2.0. Important for this to work is, that disabled: True only has effect if state: present is set. A crontab -l lists:
+
+#Ansible: test
+#0 9 * * * /bin/true
