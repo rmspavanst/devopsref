@@ -1,0 +1,14 @@
+---
+- hosts: win
+  vars:
+    mysrc: 'C:\Windows\System32\drivers\etc\hosts'
+
+  tasks:
+    - name: find and replace in windows hosts
+      win_lineinfile:
+        path: "{{ mysrc }}"
+        backrefs: yes
+        regex: '^10\.170\.1\.115'
+        line: '10.170.1.116'
+      register: result_output
+
