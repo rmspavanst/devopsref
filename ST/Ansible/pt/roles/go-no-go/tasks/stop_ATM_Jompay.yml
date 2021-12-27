@@ -1,0 +1,44 @@
+---
+- block:
+  - debug:
+      msg: "{{ stop_ATM_Jompay }}- Bringing down ATM JomPay Listner"
+      
+  - stat:
+      path: "{{ Stop_ATM_JomPAY_Listener_script }}"
+    register: ATM_JomPAY_path 
+    
+  - fail:
+      msg: "{{ stop_ATM_Jompay }}- ATM JomPAY Listener path {{ Stop_ATM_JomPAY_Listener_script }}  doesn't exist."
+    when: not ATM_JomPAY_path.stat.exists
+    
+  - name: "{{ stop_ATM_Jompay }}- Stop the ATM JomPAY Listener"
+    command: " {{ Stop_ATM_JomPAY_Listener_script }} "
+    register: stop_ATM_JomPAY_Listener
+ 
+  - debug:
+      var: stop_ATM_JomPAY_Listener.stdout
+
+  - pause:
+      seconds: "{{pause_duration}}"
+
+  - name: "{{ stop_ATM_Jompay }}- IBConnectorListener: Checking the status of IBConnectorListener"
+    shell: 'netstat -an | grep "8899" | grep "LISTEN" | wc -l'
+    ignore_errors: yes
+    changed_when: false
+    register: ATM_JomPAY_Listener_status
+
+  - debug:
+      var: ATM_JomPAY_Listener_status.stdout | trim
+
+  - name: "{{ stop_ATM_Jompay }}- IBConnectorListener: Reporting the status of ATM_JomPAY Listener. "
+    fail:
+      msg: "{{ stop_ATM_Jompay}}- Service apache is running."
+    when: ATM_JomPAY_Listener_status.stdout | trim != '0'
+
+  - debug:
+      msg: "{{ stop_ATM_Jompay }}- ATM JomPAY Listener successfully stopped."
+
+  tags:
+    - A18
+    - B8 
+

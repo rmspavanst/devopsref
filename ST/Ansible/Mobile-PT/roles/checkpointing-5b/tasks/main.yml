@@ -1,0 +1,24 @@
+---
+
+- include_tasks: "{{ role_path }}/../stop_services/tasks/update_db.yml"
+  vars:
+    - tbl_update: "update BANKISLAMMBUAT1.tb_abnf_promotion_master set auth_status='A' where content_id='890' and screen_id='DownTime';"
+    - update_check: "select auth_status from BANKISLAMMBUAT1.tb_abnf_promotion_master where content_id='890' and screen_id='DownTime';"
+    - expected_op: "A"
+  when: inventory_hostname==dr_db_ip
+
+- block:
+  - include_tasks: "{{ role_path }}/../stop_services/tasks/stop_apache_servers.yml"
+  become: yes
+  become_user: root  
+  when: inventory_hostname in dev_dr_apache_server_ips
+
+- include_tasks: "{{ role_path }}/../stop_services/tasks/stop_jboss_modules.yml"
+  when: inventory_hostname==dev_dr_jboss_server_ip
+
+- include_tasks: "{{ role_path }}/../stop_services/tasks/stop_jboss_instances.yml"
+  when: inventory_hostname in dev_dr_jboss_instances_ip
+
+- include_tasks: "{{ role_path }}/../checkpointing-1/tasks/stop_springcloud.yml"
+  when: inventory_hostname in dev_dr_jboss_instances_ip
+

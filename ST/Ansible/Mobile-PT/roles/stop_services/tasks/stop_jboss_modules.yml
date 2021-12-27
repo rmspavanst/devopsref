@@ -1,0 +1,96 @@
+---
+- block:
+  #verify if the stop banking script exist or not
+  #st stands for status
+  #st_bank_script_path refers to the status of bank script path
+  - stat:
+      path: "{{ jboss_stop_banking_script }}"
+    register: st_bank_script_path
+
+  - fail:
+      msg: "{{ stop_JBoss_module_act_no }}- Stop banking script {{ jboss_stop_banking_script }} doesn't exist"
+    when: not st_bank_script_path.stat.exists
+
+  #verify if the stop reporting script exist or not
+  - stat:
+      path: "{{ jboss_stop_reporting_script }}"
+    register: st_reporting_script_path
+
+  - fail:
+      msg: "{{ stop_JBoss_module_act_no }}- Stop reporting script {{ jboss_stop_reporting_script }} doesn't exist"
+    when: not st_reporting_script_path.stat.exists
+
+  #verify if the stop admin script exist or not
+  - stat:
+      path: "{{ jboss_stop_admin_script }}"
+    register: st_admin_script_path
+
+  - fail:
+      msg: "{{ stop_JBoss_module_act_no }}- Stop banking script {{ jboss_stop_admin_script }} doesn't exist"
+    when: not st_admin_script_path.stat.exists
+
+  - stat:
+      path: "{{ jboss_eap_path }}"
+    register: st_eap_path
+
+  - fail:
+      msg: "{{ stop_JBoss_module_act_no }}- Jboss EAP path {{ jboss_eap_path }} doesn't exist"
+    when: not st_eap_path.stat.exists
+
+  - name: "{{ stop_JBoss_module_act_no }}- Stopping banking module"
+    shell:
+      cmd: bash -l "{{ jboss_stop_banking_script }}"
+    ignore_errors: yes
+
+  - name: "{{ stop_JBoss_module_act_no }}- Stopping reporting module"
+    shell:
+      cmd: bash -l "{{ jboss_stop_reporting_script }}"
+    ignore_errors: yes
+
+  - name: "{{ stop_JBoss_module_act_no }}- Stopping admin module"
+    shell:
+      cmd: bash -l "{{ jboss_stop_admin_script }}"
+    ignore_errors: yes
+
+  - pause:
+      seconds: "{{ pause_duration }}"
+
+  #Verify if the banking, admin and reporting processes are stopped, by retrieving the PIDs
+  - name: "{{ stop_JBoss_module_act_no }}- Check if banking module is stopped"
+    shell: ps -ef | grep Banking
+    ignore_errors: yes
+    changed_when: false
+    register: bank_module_status
+
+  - name: "{{ stop_JBoss_module_act_no }}- Check if reporting module is stopped"
+    shell: ps -ef | grep Reporting
+    ignore_errors: yes
+    changed_when: false
+    register: report_module_status
+
+  - name: "{{ stop_JBoss_module_act_no }}- Check if admin module is stopped"
+    shell: ps -ef | grep Admin
+    ignore_errors: yes
+    changed_when: false
+    register: admin_module_status
+
+  - fail:
+      msg: "{{ stop_JBoss_module_act_no }}- Banking module is not stopped. Please check."
+    when: '"Server:Banking" in bank_module_status.stdout'
+
+  - fail:
+      msg: "{{ stop_JBoss_module_act_no }}- Reporting module is not stopped. Please check."
+    when: '"Server:Reporting" in report_module_status.stdout'
+
+  - fail:
+      msg: "{{ stop_JBoss_module_act_no }}- Admin module is not stopped. Please check."
+    when: '"Server:Admin" in admin_module_status.stdout'
+
+  - debug:
+      msg: "{{ stop_JBoss_module_act_no }}- Banking, reporting and admin modules are successfully stopped."
+
+  tags:
+    - P13
+    - B3
+    - A2
+

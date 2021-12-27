@@ -1,0 +1,12 @@
+---
+
+- include_tasks: prelim.yml
+  when: inventory_hostname==conn_test_from_ip
+  tags:
+    - P7
+  
+- include_tasks: check_connectivity.yml
+  when: inventory_hostname==conn_test_from_ip
+  tags:
+    - P7
+

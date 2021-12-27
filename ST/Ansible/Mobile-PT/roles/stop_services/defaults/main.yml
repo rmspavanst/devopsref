@@ -1,0 +1,10 @@
+---
+
+update_db_act_no: "P11"
+cache_refresh_act_no: "P11.1"
+stop_apache_act_no: "P12"
+stop_JBoss_module_act_no: "P13"
+stop_JBoss_act_no: "P14"
+update_etc_hosts_act_no: "P16"
+
+

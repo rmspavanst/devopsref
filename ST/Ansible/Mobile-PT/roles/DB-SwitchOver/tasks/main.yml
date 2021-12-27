@@ -1,0 +1,9 @@
+---
+
+- block:
+  - include_tasks: DataGuard_SwitchOver.yml
+  become: yes
+  become_user: root
+  when: inventory_hostname in db_ip
+  tags:
+    - A7

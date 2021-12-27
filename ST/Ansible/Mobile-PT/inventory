@@ -1,0 +1,28 @@
+[linux_rhel]
+# 172.31.127.177 ansible_ssh_user=root ansible_ssh_pass=""
+# 172.31.127.178 ansible_ssh_user=root ansible_ssh_pass=""
+# 172.31.127.179 ansible_ssh_user=root ansible_ssh_pass=""
+# 172.31.131.164 ansible_ssh_user=root ansible_ssh_pass=""
+# 172.31.131.165 ansible_ssh_user=root ansible_ssh_pass=""
+# 172.31.222.225 
+# 172.31.222.226
+# 172.31.127.185
+# 172.31.127.186
+172.31.222.227
+172.31.127.187
+
+
+[solaris]
+# 10.22.80.89 ansible_ssh_user=root ansible_ssh_pass="" ansible_ssh_become=oracle
+10.22.80.82
+
+[linux_rhel_7_8]
+# 172.31.222.249 ansible_ssh_user=root ansible_ssh_pass=""
+# 172.31.222.250 ansible_ssh_user=root ansible_ssh_pass=""
+# 172.31.222.251 ansible_ssh_user=root ansible_ssh_pass=""
+# 172.31.33.196 ansible_ssh_user=root ansible_ssh_pass=""
+# 172.31.33.197 ansible_ssh_user=root ansible_ssh_pass=""
+
+[jboss]
+# 172.31.127.177 ansible_ssh_user=root ansible_ssh_pass=""
+172.31.127.187

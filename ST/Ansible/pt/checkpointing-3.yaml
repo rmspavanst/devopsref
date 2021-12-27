@@ -1,0 +1,14 @@
+---
+
+- hosts:
+    - all
+  gather_facts: false
+
+  tasks:
+   - include_role:
+       name: checkpointing-3
+     tags: [A51,B3,B6,B7,B8,B9,B10,B11]
+  
+  any_errors_fatal: true
+
+

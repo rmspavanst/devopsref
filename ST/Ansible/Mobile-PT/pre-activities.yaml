@@ -1,0 +1,13 @@
+---
+#Main playbook to run the check connectivity.
+- hosts:
+    - all
+  gather_facts: no
+  become: yes
+  become_user: uatmbapp
+
+  tasks:
+   - include_role:
+       name: pre-activities
+     tags: [P7]
+  any_errors_fatal: true

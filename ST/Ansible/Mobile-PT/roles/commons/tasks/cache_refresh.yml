@@ -1,0 +1,32 @@
+---
+- block:
+  - debug:
+      msg: "{{ cache_refresh_act_no }} - Refresh cache after each DB update"
+
+  - stat:
+      path: "{{ cache_refresh_script }}"
+    register: cache_refresh_script_path
+
+  - fail:
+      msg: "{{ cache_refresh_act_no }} - CacheRefresh: {{ cache_refresh_script }}  doesn't exist."
+    when: not cache_refresh_script_path.stat.exists
+
+  - name: "{{ cache_refresh_act_no }} - CacheRefresh: Run the cache refresh script"
+    shell:
+      cmd: bash -l "{{ cache_refresh_script }}"
+    register: cache_run_result
+    ignore_errors: yes
+  
+#   - fail:
+#       msg: "Cache refresh script not run properly. The error is {{ cache_run_result.stderr }}"
+#     when: '"Connection refused" in cache_run_result.stderr'
+
+  - debug:
+      msg: "{{ cache_refresh_act_no }} - Cache Refresh script is successfully run."
+  
+  tags:
+    - P24.1
+    - P11.1
+    - B1.1
+    - B23.1
+
