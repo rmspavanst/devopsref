@@ -24,6 +24,10 @@ $ grep -rlw --exclude="*.txt" -e "tecadmin" /var/log
 ## Exclude Some Directories from Search
 $ grep -rlw --exclude-dir="*http*" -e "tecadmin" /var/log
 
+#to check yum installed list
+$ sudo yum list installed # to chceck count | wc -l
+
+
 
 
 
