@@ -1,0 +1,25 @@
+---
+- block:
+  - debug:
+      msg: "{{ Update_host_CDB_Server }}- updated /etc/hosts file on CDB Server"
+
+  - name: " update the /etc/hosts file"
+    community.windows.win_lineinfile:
+      path: "{{ CDB_host_path }}"
+      backrefs: yes
+      regexp: "{{ CDB_line_to_find }}"
+      line: "{{ CDB_line_to_update }}"
+      state: present
+    register: result
+
+  - debug:
+      msg: "{{ Update_host_CDB_Server }}- IP address Updated."
+    when: result.changed
+
+  - debug:
+      msg: "{{ Update_host_CDB_Server }}- IP address not Updated."
+    when: not result.changed
+
+  tags:
+    - B29
+    - A34

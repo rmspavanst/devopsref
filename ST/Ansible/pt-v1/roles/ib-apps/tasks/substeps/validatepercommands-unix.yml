@@ -1,0 +1,62 @@
+    - block:
+      - name: "Unix check command for steps {{ steps[activitynumber].activity }} command: {{ commanditem.command }}"
+        shell: "{{ commanditem.command }}"
+        register: outputcommand
+        become_user: "{{ commanditem.runas }}"
+        become: true
+        ignore_errors: true
+
+      - name: "Unix set fact command for steps {{ steps[activitynumber].activity }} command: {{ commanditem.command }}"
+        set_fact:
+          commandstatus: "{{ outputcommand.stdout if outputcommand.stdout |length > 0 else 'ERROR:'+outputcommand.stderr }}"
+      when: commanditem.validatetype == 'command'
+
+    - block:
+      - name: "Unix check command for steps {{ steps[activitynumber].activity }} command: {{ commanditem.command }}"
+        shell: "{{ commanditem.command }}"
+        register: outputcommand
+        become_user: "{{ commanditem.runas }}"
+        become: true
+        ignore_errors: true
+        retries: "{{ commanditem.retries }}"
+        delay: "{{ commanditem.delay }}"
+        until: outputcommand.stdout == commanditem.expectedoutput
+
+      - name: "Unix set fact command for steps {{ steps[activitynumber].activity }} command: {{ commanditem.command }}"
+        set_fact:
+          commandstatus: "{{ outputcommand.stdout if outputcommand.stdout |length > 0 else 'ERROR:'+outputcommand.stderr }}"
+      when: commanditem.validatetype == 'commandwaitfor'      
+
+    - block:
+      - name: "Unix set fact command for steps {{ steps[activitynumber].activity }} from remediate output"
+        set_fact:
+          commandstatus: "{{ remediateoutputcommand.stdout if remediateoutputcommand.stdout |length > 0 else 'ERROR:'+remediateoutputcommand.stderr }}"
+      when: commanditem.validatetype == 'remediateoutputcommand' 
+
+    - name: Unix Set stats for port connection check
+      set_stats:
+        data:
+            "step{{activitynumber}}": "{{ inventory_hostname }} -> {{ commandstatus }}|||||"     
+               
+    - name: "Unix set validation pattern for steps {{ steps[activitynumber].activity }} command: {{ commanditem.command }}"
+      set_fact:
+        commandvalidationpattern: "{{ commanditem.expectedoutput }}"
+
+    - name: "Unix Compare validation using contain for steps {{ steps[activitynumber].activity }} command: {{ commanditem.command }}"
+      set_fact:
+        commandvalidationstatus: "{{ 'Command NOT OK for '+commanditem.command+' '+commandstatus if (commandstatus | regex_search (commandvalidationpattern)) == None else 'Command OK for '+commanditem.command+' '+commandstatus  }}"
+      when: commanditem.isexact == false
+
+    - name: "Unix Compare validation with exact for steps {{ steps[activitynumber].activity }} command: {{ commanditem.command }}"
+      set_fact:
+        commandvalidationstatus: "{{ 'Command NOT OK for '+commanditem.command if (commandstatus != commandvalidationpattern) else 'Command OK for '+commanditem.command+' '+commandstatus  }}"
+      when: commanditem.isexact == true 
+
+    - name: "Unix add validation into list for steps {{ steps[activitynumber].activity }} command: {{ commanditem.command }}"
+      set_fact:
+        commandvalidationstatuslist: "{{ commandvalidationstatuslist + [commandvalidationstatus] }}"
+
+    - name: "Unix toggle validation failed for {{ steps[activitynumber].activity }}"
+      set_fact:
+        validationfailed: true
+      when: (commandvalidationstatus | regex_search('Command OK')) == None

@@ -1,0 +1,20 @@
+---
+#
+# Copyright 2021
+##
+- name: "initialize variable for {{ activitynumber }}"
+  set_fact:
+    perportstatuslist: []
+- name: 
+  include_tasks: "substeps/validateperports-{{ ostype }}.yml"
+  loop: "{{ steps[activitynumber].validationports }}"
+  loop_control:
+    index_var: portidx
+    loop_var: portitem
+
+- name: "number of validation result witn number of test for {{ activitynumber }}"
+  assert:
+    that: 
+      - steps[activitynumber].validationports | length == perportstatuslist | length
+    fail_msg: "One of the port validation failed"
+

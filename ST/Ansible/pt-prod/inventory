@@ -1,0 +1,62 @@
+[aix]
+172.31.20.34 ansible_user=ansible
+172.31.20.35 ansible_user=ansible
+172.31.20.38 ansible_user=ansible
+172.31.20.39 ansible_user=ansible
+172.31.20.40 ansible_user=ansible
+172.31.20.41 ansible_user=ansible
+172.31.17.114 ansible_user=ansible
+172.31.17.115 ansible_user=ansible
+172.31.17.116 ansible_user=ansible
+172.31.17.117 ansible_user=ansible
+172.31.17.118 ansible_user=ansible
+172.31.17.119 ansible_user=ansible
+172.31.17.122 ansible_user=ansible
+172.31.17.123 ansible_user=ansible
+172.31.17.124 ansible_user=ansible
+172.31.17.125 ansible_user=ansible
+
+[aix-dr]
+172.31.120.50 ansible_user=ansible
+172.31.120.51 ansible_user=ansible
+172.31.120.52 ansible_user=ansible
+172.31.120.53 ansible_user=ansible
+172.31.120.54 ansible_user=ansible
+172.31.116.178 ansible_user=ansible
+172.31.116.181 ansible_user=ansible
+172.31.116.182 ansible_user=ansible
+172.31.116.183 ansible_user=ansible
+172.31.116.184 ansible_user=ansible
+172.31.116.185 ansible_user=ansible
+172.31.116.186 ansible_user=ansible
+
+
+[solaris]
+10.20.80.2
+10.20.80.3
+10.22.80.2
+172.31.27.177
+172.31.27.178
+172.31.27.179
+172.31.31.164
+172.31.31.165
+
+
+
+[win]
+172.31.28.9  #PRDMBAPISVR01 
+172.31.28.10 #PRDMBAPISVR02
+#DRMBAPISVR01
+#DRMBAPISVR02
+172.31.26.49 #PRDEBKAPP01
+172.31.26.50 #PRDEBKAPP02
+
+[win:vars]
+ansible_user=ansible
+ansible_connection=winrm
+ansible_winrm_server_cert_validation=ignore
+
+
+
+
+

@@ -1,0 +1,25 @@
+---
+- block:
+  - debug:
+      msg: "{{ dr_update_GO_mobile_host }}- updated /etc/hosts file"
+
+  - name: "update the /etc/hosts file"
+    lineinfile:
+      path: /etc/hosts
+      regexp: "{{ line_to_find }}"
+      line: "{{ line_to_update }}"
+      state: present
+      backrefs: yes
+    register: result
+    
+  - debug:
+      msg: "{{ dr_update_GO_mobile_host }}- IP address Updated."
+    when: result.changed
+
+  - debug:
+      msg: "{{ dr_update_GO_mobile_host }}- IP address not Updated."
+    when: not result.changed
+
+  tags:
+    - A42
+

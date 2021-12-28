@@ -1,0 +1,9 @@
+---
+
+- block:
+    - include_tasks: bring_down_web.yml
+      when: inventory_hostname in prod_web_ips
+      tags: [B35,B36,B37,B38,B39,B40]
+  become: yes
+
+

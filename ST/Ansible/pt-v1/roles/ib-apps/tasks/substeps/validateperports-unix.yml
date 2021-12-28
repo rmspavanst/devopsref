@@ -1,0 +1,28 @@
+  # - block:
+    - name: "Unix check ports for steps {{ steps[activitynumber].activity }} port: {{ portitem.server }}:{{ portitem.port }}"
+      wait_for:
+        port: "{{ portitem.port }}"
+        host: "{{ portitem.server }}"
+        timeout: 2
+        connect_timeout: 2
+      register: outputport
+      #become: true
+      ignore_errors: true
+
+    - name: "Unix set fact ports for steps {{ steps[activitynumber].activity }}  port: {{ portitem.server }}:{{ portitem.port }}"
+      set_fact:
+        perportstatus: "{{ portitem.server }}:{{ portitem.port }} -> {{ outputport.msg | default('Port OK') }}" 
+    - name: Unix Set stats for port connection check
+      set_stats:
+        data:
+            "step{{activitynumber}}": "{{ inventory_hostname }} to {{ perportstatus }}|||||"     
+    - name: Unix ports validation status
+      set_fact:
+        perportstatuslist: "{{ perportstatuslist + [perportstatus] }}"    
+        
+    - name: "Unix toggle validation failed for {{ steps[activitynumber].activity }}"
+      set_fact:
+        validationfailed: true
+      when: (perportstatus | regex_search('Port OK')) == None
+                    
+    # when: ostype == 'unix'

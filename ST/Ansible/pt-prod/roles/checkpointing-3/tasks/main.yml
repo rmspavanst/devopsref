@@ -1,0 +1,32 @@
+---
+
+- block:
+    - include_tasks: "{{ role_path }}/../go-no-go/tasks/update_db.yml"
+      vars:
+        - tbl_update: "update BANKISLAMMBUAT1.IB_Test set auth_status='U' where content_id='890' and screen_id='DownTime';"
+        - update_check: "select auth_status from BANKISLAMMBUAT1.IB_Test where content_id='890' and screen_id='DownTime';"
+        - expected_op: "U"
+      when: inventory_hostname==prod_db_server_ip
+      tags:
+       - A51
+
+    - include_tasks: "{{ role_path }}/../go-no-go/tasks/bring_up_web.yml"
+      when: inventory_hostname in dr_web_ips
+      tags: [B3]
+
+    - include_tasks: "{{ role_path }}/../go-no-go/tasks/bring_down_app.yml"
+      when: inventory_hostname in dr_app_ips
+      tags: [B6]
+
+    - include_tasks: "{{ role_path }}/../go-no-go/tasks/stop_ATM_Jompay.yml"
+      when: inventory_hostname in dr_app_ips
+      tags: [B8]
+
+    - include_tasks: "{{ role_path }}/../go-no-go/tasks/stop_CBS_Jompay.yml"
+      when: inventory_hostname in dr_app_ips
+      tags: [B9]
+
+    - include_tasks: "{{ role_path }}/../go-no-go/tasks/disable_cron_job.yml"
+      when: inventory_hostname in dr_app_ips
+      tags: [B10]
+  become: yes

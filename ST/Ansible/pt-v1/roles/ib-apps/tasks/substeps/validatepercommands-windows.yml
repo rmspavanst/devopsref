@@ -1,0 +1,40 @@
+    - block:
+      - name: "Windows check command for steps {{ steps[activitynumber].activity }} command: {{ commanditem.command }}"
+        ansible.windows.win_powershell:
+          script: "{{ commanditem.command }}"
+        register: outputcommand
+        ignore_errors: true
+
+      - name: "Windows set fact command for steps {{ steps[activitynumber].activity }} command: {{ commanditem.command }}"
+        set_fact:
+          commandstatus: "{{ outputcommand.output[0].String | default (outputcommand.output[0] | default(outputcommand.error[0].output)) }}"
+      when: commanditem.validatetype == 'command'
+
+    - name: Windows Set stats for port connection check
+      set_stats:
+        data:
+            "step{{activitynumber}}": "{{ inventory_hostname }} -> {{ commandstatus }}|||||"     
+               
+    - name: "Windows set validation pattern for steps {{ steps[activitynumber].activity }} command: {{ commanditem.command }}"
+      set_fact:
+        commandvalidationpattern: "{{ commanditem.expectedoutput }}"
+
+    - name: "Windows Compare validation using contain for steps {{ steps[activitynumber].activity }} command: {{ commanditem.command }}"
+      set_fact:
+        commandvalidationstatus: "{{ 'Command NOT OK for '+commanditem.command if (commandstatus | regex_search (commandvalidationpattern)) == None else 'Command OK for '+commanditem.command+' '+commandstatus  }}"
+      when: commanditem.isexact == false
+
+    - name: "Windows Compare validation with exact for steps {{ steps[activitynumber].activity }} command: {{ commanditem.command }}"
+      set_fact:
+        commandvalidationstatus: "{{ 'Command NOT OK for '+commanditem.command if (commandstatus != commandvalidationpattern) else 'Command OK for '+commanditem.command+' '+commandstatus  }}"
+      when: commanditem.isexact == true 
+
+    - name: "Windows add validation into list for steps {{ steps[activitynumber].activity }} command: {{ commanditem.command }}"
+      set_fact:
+        commandvalidationstatuslist: "{{ commandvalidationstatuslist + [commandvalidationstatus] }}"
+
+    - name: "Windows toggle validation failed for {{ steps[activitynumber].activity }}"
+      set_fact:
+        validationfailed: true
+      when: (commandvalidationstatus | regex_search('Command OK')) == None
+

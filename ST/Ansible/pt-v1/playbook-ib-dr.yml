@@ -1,0 +1,21 @@
+---
+- name: "To execute a playbook role"
+  hosts: all
+  gather_facts: false
+  vars:
+    activitylist: 'p04'
+  tasks:
+  - name: "split preparation tasks and main tasks"
+    include_role: 
+      name: preparation
+    tags: [P4,P9]
+
+  - name: "running pre activity number {{ preactivitylist }}"
+    include_role: 
+      name: ib-apps
+    loop: "{{ preactivitylist }}"
+    when: inventory_hostname in steps[activitynumber].targethosts
+    loop_control:
+      index_var: activityidx
+      loop_var: activitynumber
+    tags: [P4,P9]

@@ -1,0 +1,15 @@
+---
+
+bring_up_web1_web6: "A32"
+update_db_act_no: "A35"
+bring_up_App01_07: "A36"
+start_ATM_Jompay_Listener: "A37"
+start_CBS_Jompay: "A38"
+
+
+dr_enable_cron_job: "A39"
+dr_update_DB_config: "A40"
+bring_down_tomcat_services: "A41"
+dr_update_GO_mobile_host: "A42"
+Update_host_CDB_Server: "A34"
+
