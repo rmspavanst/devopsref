@@ -1,8 +1,0 @@
----
-#
-# Copyright 2021
-# tasks file for GO Mobile applications
-- name: "Execute {{ activitynumber }} tasks"
-  include: "steps_{{ activitynumber }}.yml"
-  tags: 
-   - always

@@ -1,8 +1,0 @@
----
-
-start_SC_act_no: "A11"
-start_JBoss_act_no: "A12"
-start_JBoss_module_act_no: "A13"
-start_JBoss_module_2_act_no: "A14"
-start_apache_act_no: "A15"
-check_uri_act_no: "A17"
