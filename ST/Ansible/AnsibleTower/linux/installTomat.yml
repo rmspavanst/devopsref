@@ -86,6 +86,11 @@
     - name: print debug
       debug:
         var: tomcat_service  
+    
+    - name: Install firewalld
+      yum:
+        name: firewalld
+        state: present
 
     - name: "open firewall ports and reload"
       firewalld:
@@ -103,4 +108,15 @@
         state: restarted      
     
     - name: "chnage the tomcat default port 8080 to 8091"
-      
+      replace:
+        path: /usr/local/tomcat10/conf/server.xml
+        regexp: 'Connector port="8080"'
+        replace: 'Connector port="8091"'
+        backup: yes
+
+    - name: "Restart the tomcat service"
+      service:
+        name: tomcat
+        state: restarted
+
+
