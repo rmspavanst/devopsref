@@ -38,7 +38,9 @@ https://powerwire.eu/ansible-aix-introduction
 https://books.google.com.my/books?id=ec5KEAAAQBAJ&pg=PA132&lpg=PA132&dq=how+to+rename+the+file+in+powershell+using+ansible&source=bl&ots=Sn1fM7OGHf&sig=ACfU3U0ur8y2EHi8GpdKB1dXWbdEW4WC7w&hl=en&sa=X&ved=2ahUKEwiJ6OjT6vT0AhW-yzgGHbq3BBIQ6AF6BAg0EAM#v=onepage&q=how%20to%20rename%20the%20file%20in%20powershell%20using%20ansible&f=false
 
 
-
+Zabbix:
+----------
+https://techviewleo.com/install-zabbix-with-nginx-on-oracle-linux/
 
 
 
