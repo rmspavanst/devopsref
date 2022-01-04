@@ -178,3 +178,31 @@ http {
         }
     }
 }
+
+
+
+docker run -it --rm -d -p 8080:80 --name web nginx
+
+Index.html
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Docker Nginx</title>
+</head>
+<body>
+  <h2>Hello from Nginx container</h2>
+</body>
+</html>
+
+
+$ docker run -it --rm -d -p 8080:80 --name web -v ~/site-content:/usr/share/nginx/html nginx
+
+Dockerfile:
+
+FROM nginx:latest
+COPY ./index.html /usr/share/nginx/html/index.html
+
+
+docker build -t webserver .

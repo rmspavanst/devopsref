@@ -1,0 +1,58 @@
+---
+- hosts: appservers
+  gather_facts: false
+  become: true
+  tasks:
+
+    - name: Ensure jenkins directory on docker host
+      file:
+        state: directory
+        owner: 1000
+        group: 1000
+        path: /share/jenkins
+
+    - name: Pull the latest official jenkins docker image
+      docker_image:
+        name: "jenkins:latest"
+
+    - name: Create a container from the jenkins docker image
+      docker_container:
+        name: "jenkins-server"
+        image: "jenkins"
+        ports:
+            - "8081:8080"
+            - "50000:50000"
+        volumes:
+            - "/share/jenkins:/var/jenkins_home"
+        state: present
+        recreate: no
+
+# docker run --name jenkins-blueocean --rm --detach   --network jenkins --env DOCKER_HOST=tcp://docker:2376   --env DOCKER_CERT_PATH=/certs/client --env DOCKER_TLS_VERIFY=1   --publish 8080:8080 --publish 50000:50000   --volume jenkins-data:/var/jenkins_home   --volume jenkins-docker-certs:/certs/client:ro   myjenkins-blueocean:1.1
+
+# PULL AND RUN THE CLOUDBEES JENKINS CONTAINER
+# docker run -p 8080:8080 --name=jenkins-master jenkins/jenkins
+
+# MEMORY SETTINGS
+
+# docker stop jenkins-master
+# docker rm jenkins-master
+
+# docker run -p 8080:8080 --name=jenkins-master -d --env JAVA_OPTS="-Xmx8192m" jenkins/jenkins
+
+#  INCREASING THE CONNECTION POOL:
+
+#  docker run -p 8080:8080 --name=jenkins-master -d --env JAVA_OPTS="-Xmx8192m" --env JENKINS_OPTS=" --handlerCountMax=300" jenkins/jenkins
+
+#  makefile
+
+#  build:
+# 	@docker pull jenkins/jenkins:2.112
+# run:
+# 	@docker run -p 8080:8080 --name=jenkins-master -d --env JAVA_OPTS="-Xmx8192m" --env JENKINS_OPTS="--handlerCountMax=300" jenkins/jenkins:2.112
+# start:
+# 	@docker start jenkins-master
+# stop:
+# 	@docker stop jenkins-master
+# clean:	stop
+# 	@docker rm -v jenkins-master
+

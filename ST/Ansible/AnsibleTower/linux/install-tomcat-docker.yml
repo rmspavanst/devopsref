@@ -1,0 +1,35 @@
+# Install Docker.
+# Clone this repository - $git clone https://github.com/rmspavan/dokcer-tomcat.git
+# cd 'docker-tomcat-tutorial'
+# $docker build -t mywebapp .
+# $docker run -p 80:8080 mywebapp
+# http://localhost:80
+
+---
+- hosts: tomcatservers
+  become: true
+  tasks:
+    - name: Example clone of a single branch
+      ansible.builtin.git:
+        repo: https://github.com/rmspavan/dokcer-tomcat.git
+        dest: /root/
+        single_branch: yes
+        version: master
+
+    - name: run the tomcat container and deploy sample war
+      path: /root/docker-tomcat/
+      command: docker build -t mywebapp .
+      register: build_ouput
+    
+    - name: print build output
+      debug: 
+        var: build_ouput
+
+    - pause:
+        seconds: 5    
+
+    - name: run tomcat container
+      command: docker run -itd docker run -itd --name tomcat -p 8084:8080 mywebapp
+      
+
+
