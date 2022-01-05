@@ -1,0 +1,22 @@
+All my customers follow their own guidelines related to securely enabling winrm. They also consult with Microsoft TAM if they have access to this.
+
+Some guideline for winrm connection can be seen on:
+https://docs.microsoft.com/en-us/powershell/scripting/learn/remoting/winrmsecurity 
+https://docs.ansible.com/ansible/latest/user_guide/windows_setup.html
+https://docs.ansible.com/ansible/latest/user_guide/windows_winrm.html
+
+Some notes from the link above:
+- What is WinRM: WinRM is a management protocol used by Windows to remotely communicate with another server. It is a SOAP-based protocol that communicates over HTTP/HTTPS, and is included in all recent Windows operating systems. Since Windows Server 2012, WinRM has been enabled by default, but in most cases extra configuration is required to use WinRM with Ansible.
+==> so WinRM is part of Microsoft Windows, the guideline of hardening winrm comes from each customer security team related to windows OS. 
+Some industry benchmark like CIS or PCI-DSS also have hardening guidelines related to winrm. Take special precaution on these benchmarks.
+
+- Using Group Policy Objects. This is the best way to create a listener when the host is a member of a domain because the configuration is done automatically without any user input. For more information on group policy objects, see the Group Policy Objects documentation.
+
+-  related to TLS certificates, one of the more common ways of setting up a HTTPS listener in a domain environment is to use Active Directory Certificate Service (AD CS). AD CS is used to generate signed certificates from a Certificate Signing Request (CSR). If the WinRM HTTPS listener is using a certificate that has been signed by another authority, like AD CS, then Ansible can be set up to trust that issuer as part of the TLS handshake.
+
+-  which winrm option to use will relate to which user account will be used. 
+Kerberos is the recommended authentication option to use when running in a domain environment. Kerberos supports features like credential delegation and message encryption over HTTP and is one of the more secure options that is available through WinRM.
+CredSSP authentication is a newer authentication protocol that allows credential delegation. This is achieved by encrypting the username and password after authentication has succeeded and sending that to the server using the CredSSP protocol.
+Because the username and password are sent to the server to be used for double hop authentication, ensure that the hosts that the Windows host communicates with are not compromised and are trusted.
+ 
+
