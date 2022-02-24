@@ -1,4 +1,0 @@
-  - setup:
-  - name: set OS Type windows or unix
-    set_fact:
-      ostype: "{{ 'windows' if (ansible_facts.os_family == 'Windows') else 'unix' }}"

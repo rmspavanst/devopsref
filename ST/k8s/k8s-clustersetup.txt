@@ -140,7 +140,7 @@ systemctl enable --now kubelet
 cat /etc/sysconfig/network-scripts/ifcfg-enp0s3
 
 
-kubeadm init --pod-network-cidr 10.244.0.0/16 --apiserver-advertise-address=192.168.0.120
+kubeadm init --pod-network-cidr 10.244.0.0/16 --apiserver-advertise-address=192.168.0.120 (change to master ip)-( if got error kubeadm reset)
 
 watch docker images
 

@@ -1,0 +1,26 @@
+- hosts: all
+  tasks:
+  - name: Exampel of commenting a line in Ansible.
+    lineinfile:
+      path: /etc/hosts
+      regexp: 'This line should be'
+      line: '#This line should be'
+      state: present
+      backrefs: yes
+    register: result
+
+  - debug:
+      var: result.changed
+
+  - name: Exampel of uncommenting a line in Ansible.
+    lineinfile:
+      path: /etc/hosts
+      regexp: 'This line should be'
+      line: '#This line should be'
+      state: present
+      backrefs: yes
+    register: un_result
+
+  - debug:
+      var: un_result.changed
+    

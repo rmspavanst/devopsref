@@ -1,0 +1,7 @@
+- hosts: all
+  tasks:
+  - name: Exampel of commenting a line in Ansible.
+    replace:
+      path: /Users/mdtutorials/Documents/Ansible/Input.txt
+      regexp: 'This line should be'
+      replace: '#This line should be'
