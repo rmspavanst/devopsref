@@ -273,9 +273,30 @@ kubeadm token generate
 kubeadm token create <generated-token> --print-join-command --ttl=0
 
 
+sudo lsof -i -P -n | grep LISTEN
+
+
 
 The basic steps to stop/remove all containers and images
 List all the containers. docker ps -aq.
 Stop all running containers. docker stop $(docker ps -aq)
 Remove all containers. docker rm $(docker ps -aq)
 Remove all images. docker rmi $(docker images -q)
+
+
+kubectl get nodes -o wide -A
+kubectl get pods -n namespace-name
+kubectl get svc
+kubectl get service --all-namespaces
+
+
+sudo kubectl create deployment nginx --image=nginx
+
+sudo kubectl create service nodeport nginx --tcp=80:80
+
+
+kubeadm config print init-defaults (to check cidr)
+iptables -t nat -L KUBE-SERVICES (To list just the Kubernetes Service NAT rules, use the iptables command and the -L flag to specify the correct chain)
+
+kubectl get service -n kube-system kube-dns (find the cluster IP of the kube-dns service)
+

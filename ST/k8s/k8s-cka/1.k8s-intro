@@ -1,0 +1,34 @@
+k8s:
+----
+    It is an opensource container orchestration tool. Which is developed by google and written in Golang. 
+    It helps in managing out application which are running inside containers.
+
+use of K8s:
+-------------
+    We are moving from Monolithic to microservices and we need to manage our containers. So when we are running our applications inside containers.
+So when we are running our applications inside containers we can see traffic is increasing of iur application and it is going to effect the cintainers,
+so here are chances we might see Downtime. So in this situation k8s play a major role.
+It provides: HA, Scalibility/ High Performance, DR.
+
+Architecture of K8s Cluster:
+----------------------------
+Master Node: All control plane components are going to run inside master nodes.
+
+Control plane components:
+  
+  kube API Server: It is responsible ro expose the API of my cluster to the users. If we need to create any resouce like pod we need to call the API server of my       cluster and also API server stores the state of my cluster in ETCD key-value. It is also responsible for the user auth.(ex: User BOB --- deployment (RBAC)).
+
+  Kube-scheduler: It is responsible to assign the pod to the nodes
+
+  Node-controller: It will do the health check of my worker node in every 5 sec. if it finds any worker node is down then it will wait for 40 sec. make that node unreachable and then it will wait for another 5 min and if node is not avail, then it will distribute all the running pods of this node to another worker nodes.
+
+  kubectl: We talk to the API server eith this command, So if we call to the API server to create a namespace prod. it will convert the command into json format.
+  kubectl create ns production
+
+Worker Node: All the containers of my application are going to run inside my worker nodes.
+
+Worker components:
+  kubectl --> prod --API server-- kubelet ---create / delete the pods as well as kubelet monitors the pods and give the current state to the API server.
+
+Container run time: Docker
+kube proxy: it run on each node in the cluster and maintains network rules on every node.
