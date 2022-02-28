@@ -1,0 +1,11 @@
+config file location:
+    cat ~/.kube/config
+
+    cat /etc/kubernetes/admin.conf
+note: if deleted the the conf file both the location use kubeadm and generate
+
+kubeadm init phase kubeconfig admin --apiserver-advertise-address=<masternode-ip> --cert-dir /etc/kubernetes/pki
+
+cat /etc/kubernetes/admin.conf
+
+cp kubectl apply -f calico.yaml ~/.kube/config

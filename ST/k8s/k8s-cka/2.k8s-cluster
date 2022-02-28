@@ -1,0 +1,106 @@
+Cluster-setup: Master-1 and worker-nodes-2: kubeadm: using HETZNER cloud:
+-------------------------------------------------------------------------
+
+ref: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+
+
+
+1. min 2gb ram and 2CPUs
+2. ports to open and rename the nachine names:
+    Control-plane: 6443*, 2379-2380, 10250, 10251, 10252
+    worker node: 10250, 30000-32767
+
+        hostname master/ hostname worker-1/ hostname worker-2
+        bash
+
+2. Install docker in all nodes (https://rancher.com/docs/rancher/v2.5/en/installation/requirements/installing-docker/)
+
+    sudo apt-get update
+
+    curl https://releases.rancher.com/install-docker/20.10.sh | sh
+
+3. Install pre-requisites 
+
+    sudo apt-get install -y apt-transport-https ca-certificates curl
+
+4. Download the Google Cloud public signing key:
+
+    sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+
+5. Add the Kubernetes apt repository:
+
+    echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+6.Update apt package index, install kubelet, kubeadm and kubectl, and pin their version:
+
+    sudo apt-get update
+    sudo apt-get install -y kubelet kubeadm kubectl
+    sudo apt-mark hold kubelet kubeadm kubectl
+
+
+from point 2 to 6 copy the command in install.sh and run the install.sh file
+ex: 
+
+vi install.sh
+
+sudo apt-get update
+curl https://releases.rancher.com/install-docker/20.10.sh | sh
+
+sudo apt-get install -y apt-transport-https ca-certificates curl
+
+sudo curl -fsSLo /usr/share/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+
+echo "deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+sudo apt-get update
+sudo apt-get install -y kubelet kubeadm kubectl
+sudo apt-mark hold kubelet kubeadm kubectl  
+
+sh install.sh 
+
+Note: do it in every node...
+-----------------------------
+
+7. Go to master node and initialize control-plane
+
+kubeadm init --apiserver-advertise-address=<masternode_ip> --pod-network-cidr=192.168.1.0/16
+
+it show below details, if successfully runs or run the #kubeadm reset --clear
+
+mkdir -p $HOME/ .kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+## to create network
+kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')" 
+
+or 
+# https://projectcalico.docs.tigera.io/getting-started/kubernetes/quickstart
+
+curl https://projectcalico.docs.tigera.io/manifests/calico.yaml -O
+kubectl apply -f calico.yaml
+
+
+kubeadm join 192.168.0.120:6443 --token 77h1ak.dkb8iu8lvwb3btrg --discovery-token-ca-cert-hash sha256:fe300860ee55a41082aa068d874d876dcb3e596318d604baf898b16ce9ef7c92
+
+8. go to worker node and run the kubeadm join cmd
+
+ex:
+kubeadm join 192.168.0.120:6443 --token 77h1ak.dkb8iu8lvwb3btrg --discovery-token-ca-cert-hash sha256:fe300860ee55a41082aa068d874d876dcb3e596318d604baf898b16ce9ef7c92
+
+9. go to master node and check the nodes.
+
+kubectl get nodes
+
+watch -n 1 kubectl get nodes
+
+kubectl get pods
+kubectl get pods --all-namespaces
+
+10. If token expires, to generate new token:
+
+kubeadm token list
+kubeadm token create --print-join-command
+
+
+
