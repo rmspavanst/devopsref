@@ -1,4 +1,4 @@
-Cluster-setup: Master-1 and worker-nodes-2: kubeadm: using HETZNER cloud:
+Cluster-setup: Master-1 and worker-nodes-2: kubeadm: using HETZNER/ CONTABO cloud:
 -------------------------------------------------------------------------
 
 ref: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
@@ -101,6 +101,15 @@ kubectl get pods --all-namespaces
 
 kubeadm token list
 kubeadm token create --print-join-command
+
+kubectl label node <node name> node-role.kubernetes.io/<role name>=<key - (any name)>
+
+kubectl label node kubernetes-worker1 node-role.kubernetes.io/worker1=worker1
+
+
+sudo kubectl create deployment nginx --image=nginx
+
+sudo kubectl create service nodeport nginx --tcp=80:80
 
 
 
