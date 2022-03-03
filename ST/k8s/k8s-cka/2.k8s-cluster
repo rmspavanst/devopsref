@@ -107,9 +107,13 @@ kubectl label node <node name> node-role.kubernetes.io/<role name>=<key - (any n
 kubectl label node kubernetes-worker1 node-role.kubernetes.io/worker1=worker1
 
 
-sudo kubectl create deployment nginx --image=nginx
+sudo kubectl create deployment nginx --image=nginx --replicas=3
 
 sudo kubectl create service nodeport nginx --tcp=80:80
+
+
+kubectl scale --replicas=<expected_replica_num> deployment <deployment_name>
+# kubectl scale --replicas=4 deployment my-nginxdeployment
 
 
 

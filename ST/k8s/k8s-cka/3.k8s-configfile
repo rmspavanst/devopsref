@@ -9,3 +9,51 @@ kubeadm init phase kubeconfig admin --apiserver-advertise-address=<masternode-ip
 cat /etc/kubernetes/admin.conf
 
 cp kubectl apply -f calico.yaml ~/.kube/config
+
+
+
+Coredns in pending state in Kubernetes cluster:
+------------------------------------------------
+
+For flannel to work correctly, you must pass --pod-network-cidr=10.244.0.0/16 to kubeadm init.
+
+Set /proc/sys/net/bridge/bridge-nf-call-iptables to 1 by running sysctl net.bridge.bridge-nf-call-iptables=1 to pass 
+bridged IPv4 traffic to iptables’ chains. This is a requirement for some CNI plugins to work, for more information please see here.
+
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/v0.10.0/Documentation/kube-flannel.yml
+Note that flannel works on amd64, arm, arm64 and ppc64le, but until flannel v0.11.0 is released you need to 
+use the following manifest that supports all the architectures:
+
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/c5d10c8/Documentation/kube-flannel.yml
+
+or 
+
+It looks like problem with taints. You can try to solve the problem in several ways:
+
+remove taint:
+kubectl taint nodes $(hostname) node-role.kubernetes.io/master:NoSchedule-
+
+edit node configuration and comment the taint part:
+kubectl edit node <node_name>
+
+
+You need to update the node after commenting.
+
+schedule on master node without removing the taint:
+apiVersion: extensions/v1beta1
+kind: Deployment
+...
+  spec:
+...
+    spec:
+...
+      tolerations:
+        - key: "node-role.kubernetes.io/master"
+          effect: "NoSchedule"
+          operator: "Exists"
+
+
+this documentation(https://kubernetes.io/docs/reference/generated/kubectl/kubectl-commands#taint) says that this solution should also work:
+kubectl taint nodes $(kubectl get nodes --selector=node-role.kubernetes.io/master | awk 'FNR==2{print $1}') node-role.kubernetes.io/master-
+
+

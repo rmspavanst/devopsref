@@ -46,6 +46,32 @@ Zabbix:
 https://techviewleo.com/install-zabbix-with-nginx-on-oracle-linux/
 
 
+K8s-Cluster:
+----------------
+
+https://www.digitalocean.com/community/tutorials/how-to-create-a-kubernetes-cluster-using-kubeadm-on-ubuntu-18-04
+
+https://matthewpalmer.net/kubernetes-app-developer/articles/kubernetes-ingress-guide-nginx-example.html
+
+https://thenewstack.io/kubernetes-ingress-for-beginners/
+
+https://www.middlewareinventory.com/blog/kubernetes-ingress-example/
+
+3-tire app on k8s:
+------------------
+
+https://www.fairwinds.com/blog/how-to-deploy-multi-tiered-web-application-with-kubernetes
+
+https://devopspilot.com/content/kubernetes/tutorials/sample-application/01-sample-3tier-application
+
+https://ibm.github.io/kube101/Lab3/
+
+https://www.howtoforge.com/how-to-deploy-a-multi-tier-application-with-kubernetes/
+
+
+
+
+
 
 
 
