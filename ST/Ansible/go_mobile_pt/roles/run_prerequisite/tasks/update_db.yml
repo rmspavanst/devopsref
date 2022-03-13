@@ -1,0 +1,37 @@
+---
+- fail:
+    msg: "Either the oracle home field is not defined or is empty"
+  when: oracle_home is not defined or oracle_home|trim==""
+- fail:
+    msg: "Either the query field is missing or empty."
+  when: query is not defined or query|trim==""
+
+- fail:
+    msg: "Either the expected output variable is missing or empty"
+  when: expected_op is not defined or expected_op|trim==""
+
+- debug:
+    msg: "Updating the database to put up the maintenance notification."
+
+- name: "DBUpdate: Updating database"
+  shell:
+    cmd: "{{ oracle_home }}/bin/sqlplus -S '/as sysdba' << EOF {{ query }} EOF "
+  register: db_op
+
+- name: "DBUpdate: Dumping the database output"
+  debug:
+    var: db_op
+
+- set_fact:
+    db_update_result: "{{ db_op.stdout | regex_search(expected_op) }}"
+
+- name: "DBUpdate: Dumping the status of DB update"
+  debug:
+    var: db_update_result
+
+- fail:
+    msg: "DB updation has failed. Expected  {{ expected_op }} but received {{ db_op.stdout }}"
+  when: db_update_result==""
+
+- debug:
+   msg: "DB updation is successfull."

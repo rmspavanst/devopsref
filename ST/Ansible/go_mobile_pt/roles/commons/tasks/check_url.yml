@@ -1,0 +1,11 @@
+---
+- fail:
+    msg: "{{ url }} is either not defined or is empty"
+  when: url is not defined or url|trim==""
+
+- debug:
+    msg: "Verifying the url {{ url }}"
+
+- uri:
+    url: "{{ url }}"
+    status_code: 200

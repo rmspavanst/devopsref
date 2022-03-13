@@ -1,0 +1,29 @@
+---
+- stat:
+   path: "{{ spring_cloud_start_script_path }}"
+   #sc is acronym for status and sc for spring cloud
+  register: st_sc_script_path
+
+- fail:
+   msg: "Spring cloud script path {{ spring_cloud_start_script_path }} doesn't exist."
+  when: not st_sc_script_path.stat.exists
+
+- name: "Starting the spring cloud"
+  shell:
+    cmd: "{{ spring_cloud_start_script_path }}"
+
+
+#Verify if the springcloud is already stopped
+- name: "Checking the status of spring cloud"
+  pids:
+    name: Appzillon
+    #sc is acronym for springcloud
+  register: sc_status
+
+- fail:
+    msg: "Failed to start the spring cloud"
+  when: sc_status.pids|length == 0
+
+
+
+

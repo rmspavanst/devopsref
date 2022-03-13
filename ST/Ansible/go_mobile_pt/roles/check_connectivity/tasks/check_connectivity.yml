@@ -1,0 +1,22 @@
+---
+- name: "CheckConnectivity: Running connectivity script"
+  shell:
+    cmd: "{{ connectivity_script_file }}"
+  register: connectivity_status
+
+- debug:
+    var: connectivity_status
+
+- set_fact:
+    conn_status: "{{ connectivity_status.stdout | regex_search(connected) }}"
+
+- name: "CheckConnectivity: Dumping the connectivity status"
+  debug:
+    var: conn_status
+
+- fail:
+    msg: "Connectivity test failed. Expecting {{ connected }} but found {{ connectivity_status.stdout  }}"
+  when: conn_status==""
+
+- debug:
+    msg: "Connectivity test is successfull"

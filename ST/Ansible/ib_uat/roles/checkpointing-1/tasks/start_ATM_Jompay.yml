@@ -1,0 +1,46 @@
+---
+- block:
+  - debug:
+      msg: "{{ start_ATM_Jompay_Listener }}- Bringing up ATM JomPay Listner"
+      
+  - stat:
+      path: "{{ Start_ATM_JomPAY_Listener_script }}"
+    register: ATM_JomPAY_path 
+    
+  - fail:
+      msg: "{{ start_ATM_Jompay_Listener }}- ATM JomPAY Listener path {{ Start_ATM_JomPAY_Listener_script }}  doesn't exist."
+    when: not ATM_JomPAY_path.stat.exists
+    
+  - name: "{{ start_ATM_Jompay_Listener }}- Start the ATM JomPAY Listener"
+    command: " {{ Start_ATM_JomPAY_Listener_script }} "
+    register: start_ATM_JomPAY_Listener
+    ignore_errors: yes
+ 
+  - debug:
+      var: start_ATM_JomPAY_Listener.stdout
+
+  - pause:
+      seconds: "{{pause_duration}}"
+
+  - name: "{{ start_ATM_Jompay_Listener }}- IBConnectorListener: Checking the status of IBConnectorListener"
+    shell: 'netstat -an | grep "8899" | grep "LISTEN" | wc -l'
+    ignore_errors: yes
+    changed_when: false
+    register: ATM_JomPAY_Listener_status
+
+  - debug:
+      var: ATM_JomPAY_Listener_status
+
+  - name: "{{ start_ATM_Jompay_Listener }}- IBConnectorListener: Reporting the status of ATM_JomPAY Listener. "
+    fail:
+      msg: "{{ start_ATM_Jompay_Listener }}- Service ATM JomPay is not running."
+    when: ATM_JomPAY_Listener_status.stdout | trim == '0'
+
+  - debug:
+      msg: "{{ start_ATM_Jompay_Listener }}- ATM JomPAY Listener successfully started."
+
+  become: yes
+  tags:
+    - A37
+    - B24
+

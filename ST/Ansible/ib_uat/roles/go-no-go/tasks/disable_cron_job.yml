@@ -1,0 +1,62 @@
+---
+
+- debug:
+    msg: "{{ disable_cron_job_IB_App }}- Disable the Cron Job in IB App Servers."
+  tags:
+    - A20
+    - B10	
+
+- block:
+  - name: "{{disable_cron_job_IB_App}}- Backup the cron job "
+    shell:
+      cmd: |
+        rm /var/spool/cron/crontabs/root.bak.*;
+        /usr/bin/crontab -l > /var/spool/cron/crontabs/root.bak.`date +%y_%m_%d`
+    register: result
+    tags:
+      - A20.1
+
+  - debug:
+      msg: "{{ disable_cron_job_IB_App }}- cronjob backup successfully"
+
+  - name: "{{disable_cron_job_IB_App}}- Replace cron'ed file with App-job-disabled file"
+    shell: "cp {{disabled_cron_file}} /var/spool/cron/crontabs/root"
+    tags:
+      - A20.1
+
+  - name: "{{disable_cron_job_IB_App}}- Restart cron job"
+    shell:
+      cmd: ps -ef | grep cron
+    register: cmd
+    tags:
+      - A20.2
+
+  - set_fact:
+      pid_2b_delete: "{{ item }}"
+    with_items: "{{ cmd.stdout_lines }}"
+    when: not item | regex_search('.*' + 'pts' + '.*')
+    tags:
+      - A20.2
+
+  - set_fact:
+      pid_2b_delete: "{{ pid_2b_delete.split()[1] }}"
+    tags:
+      - A20.2
+
+  - name: "{{ disable_cron_job_IB_App }}- Killing the process id {{ pid_2b_delete }}"
+    shell:
+      cmd: "kill -9 {{ pid_2b_delete }}"
+    tags:
+      - A20.2
+
+  - debug:
+      msg: "{{ disable_cron_job_IB_App }}- cronjob disabled successfully"
+    tags:
+      - A20.2
+
+  become: yes
+  tags:
+    - A20
+    - B10
+
+

@@ -1,0 +1,31 @@
+---
+- debug:
+    msg: "Bringing down apache servers"
+
+- stat:
+    path: "{{ apache_server_bin_path }}"
+  register: apache_server_path
+
+- fail:
+    msg: "Apache server bin path {{ apache_server_bin_path }}  doesn't exist."
+  when: not apache_server_path.stat.exists
+
+- name: "Starting the server"
+  shell:
+    chdir: '{{ apache_server_bin_path }}'
+    cmd: apachectl start
+
+- name: "ApacheServer: Checking the status of apache server"
+  command: systemctl status httpd
+  ignore_errors: yes
+  changed_when: false
+  register: service_apache_status
+
+- name: "ApacheServer: Reporting the  status of Apache. "
+  fail:
+    msg: |
+      Service apache2 is still  running.
+      Output of `systemctl status apache2`:
+      {{ service_apache_status.stdout }}
+      {{ service_apache_status.stderr }}
+  when: service_apache_status | failed

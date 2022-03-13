@@ -1,0 +1,5 @@
+---
+
+- include_tasks: prelim.yml
+
+- include_tasks: check_connectivity.yml

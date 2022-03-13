@@ -1,0 +1,13 @@
+---
+- include_tasks: start_db.yml
+  when: inventory_hostname==db_ip
+
+- include_tasks: start_springcloud.yml
+  when: inventory_hostname in dr_jboss_instances_ip
+
+- include_tasks: start_jboss.yml
+  when: inventory_hostname in dr_jboss_instances_ip
+
+- include_tasks: "{{ role_path }}/../commons/tasks/check_url.yml"
+  vars:
+    - url: "{{ mobile_admin_login_url }}"

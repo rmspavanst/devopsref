@@ -1,0 +1,8 @@
+---
+
+jboss_stop_banking_script: /app/maintenance/scripts/stopBankingModule.sh
+jboss_stop_reporting_script: /app/maintenance/scripts/stopReportingModule.sh
+jboss_stop_admin_script: /app/maintenance/scripts/stopAdminModule.sh
+
+
+ep_dr_file_path: /app/GO/EP_DR

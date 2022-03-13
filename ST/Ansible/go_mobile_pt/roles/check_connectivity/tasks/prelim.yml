@@ -1,0 +1,12 @@
+---
+- name: "ConnectivityCheck: Check if script {{ connectivity_script_file }} exists"
+  stat:
+    path: "{{ connectivity_script_file }}"
+  register: conn_script_file
+
+- fail:
+    msg: " {{ connectivity_script_file }} file doesn't exist."
+  when: not conn_script_file.stat.exists
+
+- debug:
+    msg: "{{ connectivity_script_file }} file exist."

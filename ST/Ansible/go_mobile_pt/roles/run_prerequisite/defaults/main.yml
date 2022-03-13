@@ -1,0 +1,16 @@
+---
+apache_server_bin_path: "/data/apache/apache-2.4.41/bin"
+
+jboss_stop_banking_script: /app/maintenance/scripts/stopBankingModule.sh
+jboss_stop_reporting_script: /app/maintenance/scripts/stopReportingModule.sh
+jboss_stop_admin_script: /app/maintenance/scripts/stopAdminModule.sh
+
+ep_dr_file_path: /app/GO/EP_DR
+ep_dr_file_contents: [
+"# FDS",
+"fds.bankislam.com.my 172.31.123.38",
+"# IBAPI",
+"ibapi.bankislam.com.my 172.31.123.62",
+"# SMS",
+"smsweb.bankislam.com.my 172.31.110.50",
+]

@@ -1,0 +1,44 @@
+---
+- stat:
+    path: "{{ jboss_eap_path }}"
+  register: st_jboss_eap
+
+- fail:
+    msg: "Path {{ jboss_eap_path }} doesn't exist"
+  when: not st_jboss_eap.stat.exists
+
+- name: "Stopping JBoss instance"
+  shell:
+    chdir: "{{ jboss_eap_path }}"
+    cmd: stopjb.sh
+
+- name: "Verifying if Jboss instance is stopped"
+  pids:
+    name: jboss
+  register: jboss_status
+
+- fail:
+    msg: "Jboss instance has not stopped. Please check."
+  when: not jboss_status.pids|length == 0
+
+- name: "Starting JBoss instance"
+  shell:
+    chdir: "{{ jboss_eap_path }}"
+    cmd: startjb.sh
+
+#Sleep for 5 seconds
+- pause:
+    seconds: 5
+
+#Verify if the jboss has started or not
+- name: "Verifying if Jboss instance has started"
+  pids:
+    name: jboss
+  register: jboss_status
+
+- fail:
+    msg: "Jboss instance has not started. Please check."
+  when:  jboss_status.pids|length == 0
+
+- debug:
+    msg: "Jboss instance has successfully started."

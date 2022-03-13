@@ -1,0 +1,8 @@
+---
+#Main playbook to run the check connectivity.
+- hosts:
+    - all
+  gather_facts: no
+  tasks:
+   - include_role:
+       name: check_connectivity

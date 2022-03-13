@@ -1,0 +1,33 @@
+---
+- stat:
+    path: "{{ ep_dr_file_path }}"
+    #st stands for status st_ep_dr_file represents the status of ep_dr_file
+  register: st_ep_dr_file
+
+- name: "Creating hosts entries and updating /etc/hosts file"
+  block:
+    - debug:
+        msg: "{{ ep_dr_file_path }} file doesn't exist. Creating it."
+
+    - name: "Creating {{ ep_dr_file_path }}"
+      file:
+        path: "{{ ep_dr_file_path }}"
+        state: touch
+
+    - name: "Copying the contents to file {{ ep_dr_file_path }} "
+      copy:
+        content: "{{ item }}"
+        dest: "{{ ep_dr_file_path }}"
+      loop: "{{ ep_dr_file_contents }}"
+
+    - name: "Copying the contents to /etc/hosts file"
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ item }}"
+        create: yes
+      loop: "{{ ep_dr_file_contents }}"
+  when: not st_ep_dr_file.stat.exists
+
+- debug:
+    msg: "{{ ep_dr_file_path }} file already exist."
+  when: st_ep_dr_file.stat.exists
