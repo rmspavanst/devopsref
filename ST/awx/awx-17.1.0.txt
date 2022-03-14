@@ -43,9 +43,6 @@ Step 3./ Install Docker-compose tool
 01- First, set python3 as the default one by running the below command:
 
 
-
-or 
-
 $ alternatives --set python /usr/bin/python3
 
 02- Next, use pip3 command to install the docker-compose tool:
@@ -114,16 +111,6 @@ $ sudo firewall-cmd --permanent --zone=public --add-service=https
 $ firewall-cmd --permanent --zone=public --add-port=80/tcp
 $ sudo firewall-cmd --reload
 
-
-
-07- If the Selinux enabled, use the below commands to Allow the Awx web server to access the network:
-
-$ semanage port -a -t http_port_t -p tcp 8052
-$ setsebool -P httpd_can_network_connect 1
-
-
-
-
 Step 5:Accessing Ansible AWX Web GUI
 
 01- To access AWX web console, open your browser and type in your AAnsible’s AWX server IP: http://awx-server-ip-address
@@ -131,57 +118,3 @@ Step 5:Accessing Ansible AWX Web GUI
 how-to-install-ansible-awx-centos-8-web-gui
 
 02- Finally, provide the username and password that been setup and you login to Ansible AWX dashboard:
-
-
-Step 6: to configure external postgresDB
-
-01- edit the credentials.py on awx_web container
-
-docker exec -it awx_web vi /etc/tower/conf.d/credentials.py
-
-
-
-
-
-
-yum list docker-ce --showduplicates | sort -r
-
-
-sudo docker run hello-world
-
-yum install py-pip python3-dev libffi-dev openssl-dev gcc libc-dev rust cargo make
-
-
-mkdir /var/lib/pgdocker
-
-[all:vars]
-dockerhub_base=ansible
-awx_task_hostname=awx
-postgres_data_dir="/var/lib/pgdocker"
-host_port=80
-host_port_ssl=443
-docker_compose_dir="~/.awx/awxcompose"
-pg_username=awx
-pg_password=awxpass
-pg_database=awx
-pg_port=5432
-pg_admin_password=password
-rabbitmq_password=awxpass
-rabbitmq_erlang_cookie=cookiemonster
-admin_user=admin
-admin_password=password
-create_preload_data=True
-secret_key=wnwsaB7Z1KbNWTFuedc8LF9+XFpOIHCA38QwqSto
-awx_official=true
-awx_alternate_dns_servers="8.8.8.8,8.8.4.4"
-project_data_dir=/var/lib/awx/projects
-
- sudo dnf makecache
-
- sudo dnf install epel-release
-
- sudo dnf makecache
-
- sudo dnf install ansible
-
- ansible --version
