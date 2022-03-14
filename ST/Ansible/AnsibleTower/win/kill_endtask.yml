@@ -1,0 +1,65 @@
+---
+- block:
+
+    - name: Get running processes
+      win_shell: "tasklist /v | findstr \"{{ srv_name }}\""
+      register: running_processes
+      ignore_errors: yes
+
+    - name: Output register
+      debug:
+        var: running_processes
+
+    - name: Kill running processes
+      win_shell: Stop-Process -Name "{{ srv_name }}" -Force
+      ignore_errors: yes
+
+    - fail:
+        msg: "{{ srv_name }} task not running"
+      when : running_processes.failed == true
+
+    - debug:
+        msg: "{{ srv_name }} task killed successfully"
+
+
+
+  tags:
+    - t1
+
+...
+
+---
+- hosts:
+    - win
+  gather_facts: yes
+  become_methos: runas
+
+  tasks:
+    - name: Ping the server
+      win_ping:
+
+    - debug:
+        msg: "Ping connection Successful"
+
+    - name: Get running processes
+      win_shell: "tasklist /v | findstr \"{{ srv_name }}\""
+      register: running_processes
+      ignore_errors: yes
+
+    - name: Output register
+      debug:
+        var: running_processes
+
+    - name: Kill running processes
+      win_shell: Stop-Process -Name "{{ srv_name }}" -Force
+      ignore_errors: yes
+
+    - fail:
+        msg: "{{ srv_name }} task not running"
+      when : running_processes.failed == true
+
+    - debug:
+        msg: "{{ srv_name }} task killed successfully"
+    
+  any_errors_fatal: true
+
