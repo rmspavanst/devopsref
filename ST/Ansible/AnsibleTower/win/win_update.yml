@@ -1,0 +1,49 @@
+---
+- name: update hosts
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Search and download Windows updates without installing
+      win_updates:
+        state: downloaded
+    - name: Install all updates without a schedule tasks
+      win_updates:
+        server_selection: windows_update
+        category_names:
+          - SecurityUpdates
+          - CriticalUpdates
+          - UpdateRollups
+        reboot: yes
+        log_path: E:\Win_Template_Patch.log
+...
+
+#If your servers are attached to a WSUS server, and you wish to approve the alerts you can use the following playbook
+
+---
+- name: approve wsus alerts
+  hosts: wsus.kgas.local
+  gather_facts: false
+  tasks:
+    - name: approve wsus alerts
+      win_shell: |
+       Get-WsusUpdate -Classification All -Approval Unapproved -Status Any | Approve-WsusUpdate -Action Install -TargetGroupName "All Computers"
+       Get-WsusUpdate -Classification Security -Approval Unapproved -Status Any | Approve-WsusUpdate -Action Install -TargetGroupName "All Computers"
+       Get-WsusUpdate -Classification Critical -Approval Unapproved -Status Any | Approve-WsusUpdate -Action Install -TargetGroupName "All Computers"
+       Get-WsusUpdate -Classification WSUS -Approval Unapproved -Status Any | Approve-WsusUpdate -Action Install -TargetGroupName "All Computers"
+- name: update hosts
+  hosts: pleasework.kgas.local
+  gather_facts: false
+  tasks:
+    - name: Search and download Windows updates without installing
+      win_updates:
+        state: downloaded
+    - name: Install all updates without a schedule tasks
+      win_updates:
+        server_selection: windows_update
+        category_names:
+          - SecurityUpdates
+          - CriticalUpdates
+          - UpdateRollups
+        reboot: yes
+        log_path: E:\Win_Template_Patch.log
+...        
