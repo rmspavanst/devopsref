@@ -71,7 +71,15 @@ You can now enable and start the docker service.
 Next, you will need to add Kubernetes repositories manually as they do not come installed by default on CentOS 8.
 
 # cat <<EOF > /etc/yum.repos.d/kubernetes.repo
-name=Kubernetes baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64 enabled=1 gpgcheck=1 repo_gpgcheck=1 gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg EOF
+[kubernetes]
+name=Kubernetes
+baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+EOF
+
 
 Kubeadm helps you bootstrap a minimum viable Kubernetes cluster that conforms to best practices. With kubeadm, your cluster should pass the Kubernetes Conformance tests.
 Kubeadm also supports other cluster lifecycle functions, such as upgrades, downgrade, and managing bootstrap tokens. Kubeadm is also integration-friendly with other orchestration tools like Ansible and Terraform.
