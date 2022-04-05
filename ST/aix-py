@@ -47,3 +47,7 @@ check python is installed or not
 $ python
 
 
+oslevel -s
+
+rpm -Uvh sudo-1.9* --nodeps
+
