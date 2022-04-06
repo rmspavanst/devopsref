@@ -11,6 +11,9 @@
       become_user: root
     - debug:
         var: ip.stdout
+
+
+#when: ansible_facts['ansible_all_ipv4_addresses'] == '10.x.x.x        
 ...
 
 ---
@@ -60,5 +63,100 @@
       register: HADR
 
     - debug: var=HADR.stdout_lines
+...
+
+---
+- hosts: all
+  vars:
+    ip_newname:
+      10.0.0.1: newname1
+      10.0.0.2: newname2
+      10.0.0.3: newname3
+  tasks:
+    - name: Change the hostname
+      win_hostname:
+        name: "{{ ip_newname[ansible_default_ipv4.address] }}"
+      register: res
+      when: ansible_default_ipv4.address in ip_newname.keys()
+      
+    - name: reboot
+        win_reboot: required
+      when: res is defined and res.reboot_required
+
+    - name: Gather a virtual machine info
+      vmware_guest_info:
+      hostname: '{{ vsphere_host }}'
+      username: '{{ vsphere_user }}'
+      password: '{{ vsphere_password }}'
+      validate_certs: false
+      datacenter: "{{ vsphere_datacenter }}"
+    - name: "{{ hostname }}"
+      schema: vsphere
+      properties:
+        - guest.ipAddress
+      retries: 60
+      delay: 10
+      until: gather_vm_info.instance.guest.ipAddress is not none
+      register: gather_vm_info
+      delegate_to: localhost
+      when: ansible_hostname == "1-Europe-ECV-Site2"
+  ...
+
+---
+- name: Gather a virtual machine info
+  vmware_guest_info:
+    hostname: '{{ vsphere_host }}'
+    username: '{{ vsphere_user }}'
+    password: '{{ vsphere_password }}'
+    validate_certs: false
+    datacenter: "{{ vsphere_datacenter }}"
+    name: "{{ hostname }}"
+    schema: vsphere
+    properties:
+      - guest.ipAddress
+  retries: 60
+  delay: 10
+  until: gather_vm_info.instance.guest.ipAddress is not none
+  register: gather_vm_info
+  delegate_to: localhost
+  when: "'192.168' not in ansible_host"
+
+
+- name: Gather a virtual machine info
+  vmware_guest_info:
+    hostname: '{{ vsphere_host }}'
+    username: '{{ vsphere_user }}'
+    password: '{{ vsphere_password }}'
+    validate_certs: false
+    datacenter: "{{ vsphere_datacenter }}"
+    name: "{{ hostname }}"
+    schema: vsphere
+    properties:
+      - guest.ipAddress
+  retries: 60
+  delay: 10
+  until: gather_vm_info.instance.guest.ipAddress != "0.0.0.0"
+  register: gather_vm_info
+  delegate_to: localhost
+  when: "'192.168' not in ansible_host" 
+
+
+- debug: var=gather_vm_info.instance.guest.ipAddress
+
+
+- name: Update IP
+  block:
+    - name: Add ansible_host IP to the YAML inventory file
+      delegate_to: localhost
+      lineinfile:
+        path: host_vars/{{ hostname }}.yml
+        line: "  ansible_host: {{ gather_vm_info.instance.guest.ipAddress }}"
+
+    - name: Update dynamic ansible_host with new IP Address
+      set_fact: 
+        ansible_host: "{{ gather_vm_info.instance.guest.ipAddress }}"
+        ansible_hostname: "{{ hostname }}"
+
+  when: "'192.168' not in ansible_host"
 ...
 

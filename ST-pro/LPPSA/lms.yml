@@ -1,0 +1,47 @@
+---
+- hosts: local
+  gather_facts: no
+  become: yes
+  become_user: root
+  vars:
+    IP: "ifconfig | grep 'inet 10.170' | awk '{print $2}'"
+    HADR_Parameters: db2pd -db LPPSA –hadr
+    db2: db2 takeover hadr on db LPPSA
+
+  tasks:
+    - name: get and check the ip adress
+      shell: "{{ IP }}"
+      register: ip
+      become: yes
+      become_user: root
+    - debug:
+        var: ip
+    
+    - name: Check the HADR Parameters
+      shell: "{{ HADR_Parameters }} | grep HADR"
+      register: HADR
+
+    - debug: var=HADR.stdout_lines
+
+    - fail:
+        msg: " {{ ip }} doesn't exist."
+      when: not ip.stdout_lines
+
+    - debug:
+        msg: "Warning:You are going to swingover LMS Core DB to DR Site. IP shall be 172.29.48.204 and this server IP is {{ ip.stdout }}."
+      when: ip.stdout_lines
+
+    - debug:
+        msg: "LMS CoreDB Failover from Prod to DR is starting…"
+
+    - name: Start LMS CoreDB Failover from Prod to DR
+      shell: "{{ db2 }}"
+       
+    - debug:
+        msg: "LMS CoreDB Failover from Prod to DR is completed"
+    
+    - name: Check the HADR Parameters
+      shell: "{{ HADR_Parameters }} | grep HADR"
+      register: HADR
+
+    - debug: var=HADR.stdout_lines
