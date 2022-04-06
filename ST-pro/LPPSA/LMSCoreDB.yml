@@ -44,7 +44,6 @@
         msg: "Warning:You are going to swingover LMS Core DB to DR Site. IP shall be 172.29.48.204 and this server IP is {{ ip.stdout }}."
       when: ip.stdout_lines
 
-    
     - debug:
         msg: "LMS CoreDB Failover from Prod to DR is starting…"
 
