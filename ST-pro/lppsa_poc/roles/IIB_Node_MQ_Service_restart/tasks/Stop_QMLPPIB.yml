@@ -8,20 +8,20 @@
     with_items:
     - endmqm QMLPPIIB
     - ./iib mqsistop IBNODE
-    register: QMLPPIB_result
+    register: QMLPPIB_stop_result
     wait_for:
       timeout: "{{ pause_duration }}"
 
   - debug:
-      var: QMLPPIB_result
+      var: QMLPPIB_stop_result
 
 #  - name: "QMLPPIB Stop process faild "
 #    fail:
 #      msg: "not able to stop QMLPPIB"
-#    when: QMLPPIB_result.stdout | trim == '0'
+#    when: QMLPPIB_stop_result.stdout | trim == '0'
 
   - debug:
-      msg: "Stop the QMLPPIB successfully"
+      msg: "Successfully Stop the QMLPPIB "
   
   tags:
     - A1.2
