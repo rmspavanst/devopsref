@@ -1,10 +1,2 @@
 ---
-
-bring_up_web1_web6: "A1-A6"
-bring_down_App1_App9: "A9-A17"
-stop_ATM_Jompay: "A18"
-stop_CBS_Jompay: "A19"
-disable_cron_job_IB_App: "A20"
-stop_IB_report_quartz: "A21"
-update_db_act_no: "A22"
-bring_down_tomcat_services: "A23"
+IIB_MQ_DRC: "172.29.48.202"

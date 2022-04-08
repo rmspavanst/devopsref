@@ -1,0 +1,26 @@
+---
+- block:
+  - debug:
+      msg: "Check the Server IP, IP shall be {{ IIB_MQ_DRC }}"
+  
+  - name: get and check the ip adress
+    shell: "{{ IP }}"
+    register: ip
+    become: yes
+    become_user: root
+  - debug:
+      var: ip
+  
+  - name: Check the HADR Parameters
+    shell: "{{ HADR_Parameters }} | grep HADR"
+    register: HADR
+
+  - debug: var=HADR.stdout_lines
+
+  - fail:
+      msg: " {{ ip }} doesn't exist."
+    when: not ip.stdout_lines
+
+  - debug:
+      msg: "Warning:You are going to swingover LMS Core DB to DR Site. IP shall be 172.29.48.204 and this server IP is {{ ip.stdout }}."
+    when: ip.stdout_lines  
