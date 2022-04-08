@@ -4,10 +4,17 @@
       when: inventory_hostname in IIB_DR_ips
       tags: [A1.1]
 
-    - include_tasks: bring_down_app.yml
-      when: inventory_hostname in app_ips
-      tags: [A9,A10,A11,A12,A13,A14,A15,A16,A17]
+    - include_tasks: Stop_QMLPPIB.yml
+      when: inventory_hostname in IIB_DR_ips
+      tags: [A1.2]
 
-  become: yes
+    - include_tasks: Start_QMLPPIB.yml
+      when: inventory_hostname in IIB_DR_ips
+      tags: [A1.3] 
+
+    - include_tasks: verify_QMLPPIB.yml
+      when: inventory_hostname in IIB_DR_ips
+      tags: [A1.4]   
+
  
 
