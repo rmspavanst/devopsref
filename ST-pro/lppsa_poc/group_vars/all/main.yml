@@ -1,5 +1,5 @@
 ---
-IP: "ifconfig | grep 'inet 10.170' | awk '{print $2}'"
+IP: "ifconfig | grep 'inet 172.29' | awk '{print $2}'"
 HADR_Parameters: db2pd -db LPPSA –hadr
 db2: db2 takeover hadr on db LPPSA
 
