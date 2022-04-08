@@ -1,0 +1,66 @@
+---
+- block:
+  - fail:
+      msg: "{{ update_db_act_no }}- Either the oracle home field is not defined or is empty"
+    when: oracle_home is not defined or oracle_home|trim==""
+  - fail:
+      msg: "{{ update_db_act_no }}- Either the query field is missing or empty."
+    when: query is not defined or query|trim==""
+
+  - fail:
+      msg: "{{ update_db_act_no }}- Either the expected output variable is missing or empty"
+    when: expected_op is not defined or expected_op|trim==""
+
+  - debug:
+      msg: "{{ update_db_act_no }}- Updating the database to put up the maintenance notification."
+
+  - name: "{{ update_db_act_no }}- DBUpdate: Updating database"
+    shell: |
+      source $HOME/.profile
+      sqlplus -s "/as sysdba" <<EOF
+        {{ tbl_update }}
+        commit;
+        exit;
+      EOF 
+    become: yes
+    become_user: oracle
+    register: db_op
+
+  - name: "{{ update_db_act_no }}- DBUpdate: Dumping the database output"
+    debug:
+      var: db_op
+
+  - name: "{{ update_db_act_no }}- DBUpdate: Check updated column's data"
+    shell: |
+      source $HOME/.profile
+      sqlplus -s "/as sysdba" <<EOF
+        set heading off
+        {{ update_check }}
+        exit;
+      EOF 
+    become: yes
+    become_user: oracle
+    register: col_chk
+
+  - debug:
+      var: expected_op
+
+  - set_fact:
+      db_update_result: "{{ col_chk.stdout | regex_search(expected_op) }}"
+
+  - name: "{{ update_db_act_no }}- DBUpdate: Dumping the status of DB update"
+    debug:
+      var: db_update_result
+
+  - fail:
+      msg: "{{ update_db_act_no }}- DB updation has failed. Expected  {{ expected_op }} but received {{ db_op.stdout }}"
+    when: db_update_result==""
+
+  - debug:
+     msg: "{{ update_db_act_no }}- DB update is successfull."
+
+  tags:
+    - A22
+    - A51
+    - A35
+    - B30

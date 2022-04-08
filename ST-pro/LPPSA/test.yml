@@ -1,0 +1,27 @@
+  debug:
+    msg: "{{ test.stdout.split('\n') }}"
+
+
+
+---
+- hosts: all
+  gather_facts: no
+  tasks:
+    - name: run the shell script
+      autoexpect:
+        command: /root/playbook/script1.sh
+        responses:
+        Question:
+          - Y  
+      
+---
+- hosts: local
+  gather_facts: no
+  tasks:
+    - name: run the shell script
+      expect:
+        command: /root/playbook/script1.sh
+        responses:
+          Proceed? (Y/N) : 'Y'
+      no_log: false   
+

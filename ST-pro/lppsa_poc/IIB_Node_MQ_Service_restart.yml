@@ -1,0 +1,12 @@
+---
+
+- hosts:
+    - IIB_DR
+  gather_facts: false
+
+  tasks:
+   - include_role:
+       name: IIB_Node_MQ_Service_restart 
+     tags: [A1,A2,A3,A4,A5,A6]
+
+  any_errors_fatal: true

@@ -1,0 +1,14 @@
+---
+
+- hosts:
+    - WAS_DR
+  gather_facts: false
+
+  tasks:
+   - include_role:
+       name: Websphere_Restart_WAS 
+     tags: [A32,A34,A35,A36,A37,A38,A39,A40,A41,A42]
+  
+  any_errors_fatal: true
+
+

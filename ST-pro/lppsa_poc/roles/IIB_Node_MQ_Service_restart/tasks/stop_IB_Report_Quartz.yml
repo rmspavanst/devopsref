@@ -1,0 +1,45 @@
+---
+- block:
+    - debug:
+        msg: "{{ stop_IB_report_quartz }}- Stop IB Report Quartz in IB App servers"
+
+    - stat:
+        path: "{{ Stop_IB_Report_Quartz_script}}"
+      register: Stop_Report_Quartz_script
+
+    - fail:
+        msg: "{{ stop_IB_report_quartz }}- Stop IB Report Quartz path {{ Stop_IB_Report_Quartz_script }}  doesn't exist."
+      when: not Stop_Report_Quartz_script.stat.exists
+
+
+    - name: "Stop the IB Report Quartz"
+      command: ksh " {{ Stop_IB_Report_Quartz_script }} "
+      register: stop_result
+      ignore_errors: yes
+
+    - debug:
+        var: stop_result.stdout
+
+    - pause:
+        seconds: "{{pause_duration}}"
+
+    - set_fact:
+        stop_stat: true
+
+    - set_fact:
+        stop_stat: false
+      when: '"IBG Return Notification Quartz is not running" not in stop_result.stdout'
+      
+    - block:   
+        - fail:
+            msg: "IB Report Quartz cannot be stopped!"
+          when: not '"IBG Return Notification Quartz stopped" in stop_result.stdout'
+      when: stop_stat == false
+
+    - debug:
+        msg: "{{ stop_IB_report_quartz  }}- IB Report Quartz successfully stopped."
+
+  become: yes
+  tags:
+    - A21
+

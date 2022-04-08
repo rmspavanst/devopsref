@@ -1,0 +1,64 @@
+---
+- block:
+  - debug:
+      msg: "{{ bring_down_App1_App9 }}- Bring down the Apps's WebSphere services"
+
+  - stat:
+      path: "{{ app_server_stop_script }}"
+    register: app_server_path
+
+  - fail:
+      msg: "{{ bring_down_App1_App9 }}- WebSphere services script path {{ app_server_stop_script }}  doesn't exist."
+    when: not app_server_path.stat.exists
+
+  - name: "{{ bring_down_App1_App9 }}- Bring down the App01-App9"
+    command: ksh "{{ app_server_stop_script }}"
+    register: stop_result
+    ignore_errors: yes
+
+  - debug:
+      var: stop_result.stdout
+
+  - set_fact:
+      fail2stop: false
+
+  - set_fact:
+      need2check: false
+
+  - set_fact:
+      fail2stop: true
+    when: "not stop_result.stdout | regex_search('.*ADMU4000I: Server.*stop completed.*$', multiline=True)"
+
+  - set_fact:
+      need2check: true
+    when: "stop_result.stdout | regex_search('.*ADMU0509I: The server.*cannot be reached. It appears to be stopped.*$', multiline=True)"
+
+
+  - block:
+    - name: "Display message to request Apps personnel to check if App services are indeed stopped"
+      fail:
+        msg: "Either WebSphere services already stopped, or there is connectivity problem. Please check!"
+      when: need2check == true
+    when: fail2stop == true
+
+  - name: "Display failure message if services not stopped"
+    fail:
+      msg: "Not able to stop WebSphere services."
+    when: fail2stop == true
+
+  - debug:
+      msg: "{{ bring_down_App1_App9 }}- WebSphere services stopped."
+
+  become: yes
+  tags:
+    - A9
+    - A10
+    - A11
+    - A12
+    - A13
+    - A14
+    - A15
+    - A16
+    - A17
+    - B6
+

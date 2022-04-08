@@ -1,0 +1,21 @@
+---
+
+- hosts:
+    - IIB_DR,WAS_DR
+  gather_facts: no
+
+  tasks:
+    - name: "Initial connectivity test against all managed_hosts before actual DRP"
+      shell: |
+        echo "`whoami`"
+      ignore_errors: yes
+      register: conn_test_result
+
+    - shell:
+        echo "The connecting user is {{conn_test_result.stdout}}. Connection into {{inventory_hostname}} is successful"
+      ignore_errors: yes
+      register: conn_test_result2
+
+    - debug:
+        var: conn_test_result2.stdout
+

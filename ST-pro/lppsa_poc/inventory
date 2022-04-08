@@ -1,0 +1,7 @@
+[IIB_DR]
+172.29.48.202 ansible_user=ansible
+
+[WAS_DR]
+172.29.48.203 ansible_user=ansible
+
+
