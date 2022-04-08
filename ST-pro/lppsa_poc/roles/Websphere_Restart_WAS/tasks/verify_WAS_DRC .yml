@@ -3,9 +3,9 @@
   - debug:
       msg: "Verify the QMLPPIB admin console URL"
     
-  - name: " Verifying the url {{ IIB_Admin_console }}"
+  - name: " Verifying the url {{ WAS_Admin_console }}"
     uri:
-      url: "{{ IIB_Admin_console }}"
+      url: "{{ WAS_Admin_console }}"
       status_code: 200
       validate_certs: no
     register: validate_result
@@ -19,5 +19,8 @@
       msg: "IB admin console page is not up."
     when: validate_result.status != 200
 
+  - debug:
+      msg: "Successfully Started the QMLPPIB "
+  
   tags:
-    - A1.4
+    - B1.4

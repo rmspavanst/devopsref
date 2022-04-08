@@ -1,0 +1,38 @@
+---
+- block:
+  - debug:
+      msg: "Start the WAS DRC"
+
+  - name: WAS DRC is start Manager...
+    command: chdir=/opt/IBM/WebSphere/AppServer/profiles/Dmgr01/bin/ {{ item }}
+    with_items:
+    - ./startManager.sh
+    register: Manager_start_result  
+
+  - debug:
+      var: Manager_start_result
+
+
+  - name: WAS DRC is start Serve and node...
+    command: chdir=/opt/IBM/WebSphere/AppServer/profiles/AppSrv01/bin/ {{ item }}
+    with_items:
+    - ./startNode.sh
+    - ./startServer.sh server1
+
+    register: Server_start_result
+  
+  - debug:
+      var: Server_start_result
+
+
+
+#  - name: "QMLPPIB Stop process faild "
+#    fail:
+#      msg: "not able to stop QMLPPIB"
+#    when: QMLPPIB_stop_result.stdout | trim == '0'
+
+  - debug:
+      msg: "WAS DRC has started successfully "
+  
+  tags:
+    - B1.3

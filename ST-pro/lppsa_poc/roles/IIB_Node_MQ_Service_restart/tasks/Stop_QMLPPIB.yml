@@ -9,7 +9,8 @@
     - endmqm QMLPPIIB
     - ./iib mqsistop IBNODE
     register: QMLPPIB_stop_result
-    wait_for:
+  
+  - wait_for:
       timeout: "{{ pause_duration }}"
 
   - debug:

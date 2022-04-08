@@ -1,0 +1,23 @@
+---
+- block:
+  - debug:
+      msg: "Check the WAS Server IP, IP shall be {{ WAS_DRC }}"
+  
+  - name: get and check the WAS IP address
+    shell: "{{ IP }}"
+    register: ip
+
+  - debug:
+      var: ip
+
+  - fail:
+      msg: " {{ WAS_DRC }} and {{ ip }} not matched."
+    when: "'{{ WAS_DRC }}' != '{{ ip }}'"
+
+  - debug:
+      msg: " IP shall be {{ WAS_DRC }} and this server IP is {{ ip.stdout }}, IP Address is Matched."
+    when: "'{{ WAS_DRC }}' == '{{ ip }}'"
+ 
+  tags:
+    - B1.1
+    

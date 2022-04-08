@@ -9,7 +9,8 @@
     - strmqm QMLPPIIB
     - ./iib mqsistart IBNODE
     register: QMLPPIB_start_result
-    wait_for:
+  
+  - wait_for:
       timeout: "{{ pause_duration }}"
 
   - debug:
