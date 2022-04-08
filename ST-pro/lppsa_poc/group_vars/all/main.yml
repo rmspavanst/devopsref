@@ -1,7 +1,8 @@
 ---
 IP: "ifconfig | grep 'inet 172.29' | awk '{print $2}'"
-HADR_Parameters: db2pd -db LPPSA –hadr
-db2: db2 takeover hadr on db LPPSA
+HADR_Parameters: "db2pd -db LPPSA –hadr"
+db2: "db2 takeover hadr on db LPPSA"
+IIB_MQ_DRC: "172.29.48.202"
 
 
 pause_duration: "30"

@@ -1,0 +1,22 @@
+---
+- block:
+  - debug:
+      msg: "Stop the QMLPPIB"
+  
+  - name: QMLPPIB is stopping...
+    command: chdir=/opt/IBM/iib-10.0.0.7/ {{ item }}
+    with_items:
+    - endmqm QMLPPIIB
+    - ./iib mqsistop IBNODE
+    register: QMLPPIB_result
+    wait_for:
+      timeout: "{{ pause_duration }}"
+
+  - debug:
+      var: QMLPPIB_result
+
+  - debug:
+      msg: "Stop the QMLPPIB successfully"
+  
+  tags:
+    - A1.2
