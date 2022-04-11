@@ -3,12 +3,27 @@
   - debug:
       msg: "Stop the WAS DRC"
   
+
   - name: WAS DRC is stop Serve and node...
-    command: chdir=/opt/IBM/WebSphere/AppServer/profiles/AppSrv01/bin/ {{ item }}
+    shell: |
+       cd /opt/IBM/WebSphere/AppServer/profiles/AppSrv01/bin/
+       spawn ./stopServer.sh server1 ansible_user='{{   }}
+       expect "username:"
+       send -- "{{ username }}\n"
+       expect "password:"
+       send -- "{{ password }}\n"
+       expect eof
+#    args:
+#      executable: /opt/IBM/WebSphere/AppServer/profiles/AppSrv01/bin/
+    register: server_stop_result
+
+  - name: WAS DRC is stop Node...
+    command: chdir=/opt/IBM/WebSphere/AppServer/profiles/Dmgr01/bin/ {{ item }}
     with_items:
-    - ./stopServer.sh server1
     - ./stopNode.sh
-    register: Server_stop_result
+    register: Node_stop_result          
+
+
   
   - debug:
       var: Server_stop_result

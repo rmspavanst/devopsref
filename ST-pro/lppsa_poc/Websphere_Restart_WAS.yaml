@@ -4,7 +4,7 @@
     - WAS_DR
   gather_facts: false
   become: yes
-  become_user: root
+  become_user: ansible
   
   tasks:
    - include_role:

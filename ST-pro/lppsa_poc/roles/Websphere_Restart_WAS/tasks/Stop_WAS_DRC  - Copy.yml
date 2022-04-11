@@ -1,0 +1,41 @@
+---
+- block:
+  - debug:
+      msg: "Stop the WAS DRC"
+  
+  - name: WAS DRC is stop Serve and node...
+    expect:
+      command: chdir=/opt/IBM/WebSphere/AppServer/profiles/AppSrv01/bin/ {{ item }}
+      responses:
+        'username': 'wasadmin'
+        'password': 'Prdwas'
+      echo: yes
+      with_items:
+      - ./stopServer.sh server1 
+      - ./stopNode.sh
+    register: Server_stop_result
+
+  
+  - debug:
+      var: Server_stop_result
+
+  - name: WAS DRC is stop Manager...
+    command: chdir=/opt/IBM/WebSphere/AppServer/profiles/Dmgr01/bin/ {{ item }}
+    with_items:
+    - ./stopManager.sh
+    register: Manager_stop_result  
+
+
+  - debug:
+      var: Manager_stop_result
+
+#  - name: "WAS_DRC Stop process faild "
+#    fail:
+#      msg: "not able to stop QMLPPIB"
+#    when: Manager_stop_result.stdout | trim == '0'
+
+  - debug:
+      msg: "WAS DRC has stop successfully "
+  
+  tags:
+    - B1.2

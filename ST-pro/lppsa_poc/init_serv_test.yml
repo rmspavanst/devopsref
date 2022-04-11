@@ -1,8 +1,10 @@
 ---
 
 - hosts:
-    - IIB_DR,WAS_DR
+    - all
   gather_facts: no
+  become: yes
+  become_user: ansible
 
   tasks:
     - name: "Initial connectivity test against all managed_hosts before actual DRP"
