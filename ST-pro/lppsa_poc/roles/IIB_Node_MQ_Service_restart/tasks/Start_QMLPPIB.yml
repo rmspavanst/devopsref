@@ -16,10 +16,10 @@
   - debug:
       var: QMLPPIB_start_result
 
-#  - name: "QMLPPIB Start process faild "
-#    fail:
-#      msg: "not able to start QMLPPIB"
-#    when: QMLPPIB_start_result.stdout | trim == '0'
+  - name: "QMLPPIB Start process faild "
+    fail:
+      msg: "not able to start QMLPPIB"
+    when: QMLPPIB_start_result.stdout | trim == '0'
 
   - debug:
       msg: "Successfully Started the QMLPPIB "

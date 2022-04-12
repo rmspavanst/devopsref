@@ -16,10 +16,10 @@
   - debug:
       var: QMLPPIB_stop_result
 
-#  - name: "QMLPPIB Stop process faild "
-#    fail:
-#      msg: "not able to stop QMLPPIB"
-#    when: QMLPPIB_stop_result.stdout | trim == '0'
+  - name: "QMLPPIB Stop process faild "
+    fail:
+      msg: "not able to stop QMLPPIB"
+    when: QMLPPIB_stop_result.stdout | trim == '0'
 
   - debug:
       msg: "Successfully Stop the QMLPPIB "
