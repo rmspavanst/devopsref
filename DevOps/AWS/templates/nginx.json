@@ -1,0 +1,387 @@
+{
+    "AWSTemplateFormatVersion" : "2010-09-09",
+  
+    "Description" : "AWS CloudFormation Template YUM_Single_Instance: Create a YUM server stack using a single EC2 instance.",
+  
+    "Parameters" : {
+      "InstanceType" : {
+        "Description" : "Type of EC2 instance to launch",
+        "Type" : "String",
+        "Default" : "t2.micro",
+        "AllowedValues" : [ "t1.micro", "t2.micro", "t2.small", "t2.medium", "m1.small", "m1.medium", "m1.large", "m1.xlarge", "m2.xlarge", "m2.2xlarge", "m2.4xlarge", "m3.medium", "m3.large", "m3.xlarge", "m3.2xlarge", "c1.medium", "c1.xlarge", "c3.large", "c3.xlarge", "c3.2xlarge", "c3.4xlarge", "c3.8xlarge", "g2.2xlarge", "r3.large", "r3.xlarge", "r3.2xlarge", "r3.4xlarge", "r3.8xlarge", "i2.xlarge", "i2.2xlarge", "i2.4xlarge", "i2.8xlarge", "hi1.4xlarge", "hs1.8xlarge", "cr1.8xlarge", "cc2.8xlarge", "cg1.4xlarge"],
+        "ConstraintDescription" : "Must be a valid EC2 instance type"
+      },
+      "VpcId" : {
+        "Description" : "VPC ID that this stack will be launched in.",
+        "Type" : "AWS::EC2::VPC::Id",
+        "AllowedPattern" : "[a-z0-9-]*"
+      },
+      "SubnetId" : {
+        "Description" : "VPC SubnetId",
+        "Type" : "AWS::EC2::Subnet::Id",
+        "AllowedPattern" : "[a-z0-9-]*"
+      },
+      "KeyName" : {
+        "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instances",
+        "Type" : "AWS::EC2::KeyPair::KeyName",
+        "ConstraintDescription" : "Must be the name of an existing EC2 KeyPair."
+      },
+      "SecurityGroupID" : {
+        "Description" : "List of available existing security groups that can be assigned to the instance.",
+        "Type" : "AWS::EC2::SecurityGroup::Id",
+        "ConstraintDescription" : "Must be the name of an existing EC2 SecurityGroup."
+      },
+      "SSHLocation" : {
+        "Description" : "The IP address range that can be used to SSH to the EC2 instances",
+        "Type": "String",
+        "MinLength": "9",
+        "MaxLength": "18",
+        "Default": "71.65.207.41/32",
+        "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+        "ConstraintDescription": "Must be a valid IP CIDR range of the form x.x.x.x/x"
+      },
+      "YumDomainName" : {
+        "Description" : "The name of the domain that yum will respond on such as mydomain.com or updates.mydomain.com",
+        "Type" : "String",
+        "Default" : "yum.clusterfrak.com"
+      },
+      "NginxPort" : {
+        "Description" : "Port on which Nginx will listen on for incomming connections",
+        "Type" : "Number",
+        "MinValue": "1",
+        "MaxValue": "65535",
+        "Default": "80"
+      },
+      "NginxSSLPort" : {
+        "Description" : "Port on which Nginx will listen on for incomming SSL connections",
+        "Type" : "Number",
+        "MinValue": "1",
+        "MaxValue": "65535",
+        "Default": "443"
+      },
+      "InstanceTagName" : {
+        "Description" : "Instance Name tag - Example: Yum Server",
+        "Type" : "String",
+        "Default" : "yum.clusterfrak.com"
+      },
+      "InstanceTagVPC" : {
+        "Description" : "Instance VPC Environment tag - Example: Clusterfrak",
+        "Type" : "String",
+        "Default" : "Clusterfrak"
+      },
+      "InstanceTagEnv" : {
+        "Description" : "Instance Environment tag - Example: Production",
+        "Type" : "String",
+        "Default" : "Production"
+      }
+    },
+  
+    "Mappings" : {
+      "AWSInstanceType2Arch" : {
+        "t1.micro"    : { "Arch" : "HVM64"  },
+        "t2.nano"     : { "Arch" : "HVM64"  },
+        "t2.micro"    : { "Arch" : "HVM64"  },
+        "t2.small"    : { "Arch" : "HVM64"  },
+        "t2.medium"   : { "Arch" : "HVM64"  },
+        "t2.large"    : { "Arch" : "HVM64"  }
+      },
+  
+      "AWSRegionArch2AMI" : {
+        "us-east-1"      : { "HVM64" : "ami-b73b63a0" },
+        "us-east-2"      : { "HVM64" : "ami-58277d3d" },
+        "us-west-1"      : { "HVM64" : "ami-5ec1673e" },
+        "us-west-2"      : { "HVM64" : "ami-23e8a343" }
+      }
+    },
+  
+    "Resources" : {     
+      "YumServerInstance": {  
+        "Type": "AWS::EC2::Instance",
+        "Metadata" : {
+          "AWS::CloudFormation::Init" : {
+            "configSets" : {
+              "InstallAndRun" : [ "YumInstall" ]
+            },
+  
+            "YumInstall" : {
+              "packages" : {
+                "yum" : {
+                  "createrepo"   : [],
+                  "rpm-sign"     : [],
+                  "rng-tools"    : [],
+                  "nginx"        : []
+                }
+              },
+              "commands" : {
+                "01_update" : {
+                  "command" : { "Fn::Join" : ["", ["sudo yum clean all; sudo yum update -y"]]}
+                },
+                "02_make_dir_structure" : {
+                  "command" : { "Fn::Join" : ["", ["sudo mkdir -p /opt/yum/", { "Ref" : "YumDomainName" }, "/{dev,stage,prod}/{6,7}/{base,custom}/{x86_64,noarch}/RPMS"]]}
+                },
+                "03_make_web_dir" : {
+                  "command" : { "Fn::Join" : ["", ["sudo mkdir -p /var/www/html || exit 0"]]}
+                },
+                 "04_create_symlink" : {
+                  "command" : { "Fn::Join" : ["", ["sudo ln -s /opt/yum/", { "Ref" : "YumDomainName" }, "/ /var/www/html/", { "Ref" : "YumDomainName" }]]}
+                },
+                "05_set_permissions" : {
+                  "command" : { "Fn::Join" : ["", ["sudo chown -R nginx:nginx /opt/yum/", { "Ref" : "YumDomainName" }]]}
+                }
+              },
+              "files" : {
+                "/etc/nginx/nginx.conf" : {
+                  "content" : { "Fn::Join" : [ "", [
+                    "user  nginx;\n",
+                    "worker_processes  4;\n",
+                    "\n",
+                    "error_log  /var/log/nginx/error.log warn;\n",
+                    "pid        /var/run/nginx.pid;\n",
+                    "\n\n",
+                    "events {\n",
+                    "    worker_connections  1024;\n",
+                    "}\n",
+                    "\n\n",
+                    "http {\n",
+                    "    include       /etc/nginx/mime.types;\n",
+                    "    default_type  application/octet-stream;\n",
+                    "    \n",
+                    "    # log_format pipelogger '$server_name $uri $server_port $request_method $body_bytes_sent $request_time $status';\n",
+                    "    log_format pipelogger '$remote_addr [$time_local] - $http_referer $server_port $uri $request_method $status $http_user_agent $body_bytes_sent';\n",
+                    "    access_log  /var/log/nginx/access.log;\n",
+                    "    sendfile        on;\n",
+                    "    # tcp_nopush     on;\n",
+                    "    keepalive_timeout  65;\n",
+                    "    gzip  on;\n",
+                    "    \n",
+                    "    # Pass real IP from proxy such as haproxy\n",
+                    "    # set_real_ip_from x.x.x.x;\n",
+                    "    # real_ip_header X-Forwarded-For;\n",
+                    "    \n",
+                    "    include /etc/nginx/conf.d/*.conf;\n",
+                    "}\n"
+                  ]]},
+                  "mode"  : "000770",
+                  "owner" : "nginx",
+                  "group" : "nginx"
+                },
+  
+                "/etc/nginx/conf.d/yum.conf" : {
+                  "content" : { "Fn::Join" : [ "", [
+                    "server {\n",
+                    "  server_name       ",     { "Ref" : "YumDomainName" }, ";\n",
+                    "  listen            ",     { "Ref" : "NginxPort" }, ";\n",
+                    "  #listen           ",     { "Ref" : "NginxSSLPort" }, " ssl;\n",
+                    "  \n",
+                    "  #ssl             on;\n",
+                    "  #ssl_certificate      ",  { "Ref" : "YumDomainName" }, ".crt;\n",
+                    "  #ssl_certificate_key  ",  { "Ref" : "YumDomainName" }, ".key;\n",
+                    "  \n",
+                    "  add_header               Access-Control-Allow-Origin ", { "Ref" : "YumDomainName" }, ";\n",
+                    "  index                    index.html index.htm index.php;\n",
+                    "  \n",
+                    "  access_log               /var/log/nginx/", { "Ref" : "YumDomainName" }, ".pipelogger.log pipelogger;\n",
+                    "  error_log                /var/log/nginx/", { "Ref" : "YumDomainName" }, ".com.error.log;\n",
+                    "  \n",
+                    "  location / {\n",
+                    "      root                     /var/www/html/", { "Ref" : "YumDomainName" }, ";\n",
+                    "      #root                    /opt/yum/", { "Ref" : "YumDomainName" }, ";\n",
+                    "      autoindex                on;\n",
+                    "      proxy_read_timeout       90;\n",
+                    "      proxy_connect_timeout    90;\n",
+                    "      proxy_redirect           off;\n",
+                    "      proxy_set_header         Host $host;\n",
+                    "      proxy_set_header         X-Real-IP $remote_addr;\n",
+                    "      proxy_set_header         X-Forwarded-For $proxy_add_x_forwarded_for;\n",
+                    "  }\n",
+                    "}\n"
+                  ]]},
+                  "mode"  : "000770",
+                  "owner" : "nginx",
+                  "group" : "nginx"
+                },
+  
+                "/opt/yum/scripts/regen_metadata.sh" : {
+                  "content" : { "Fn::Join" : [ "", [
+                    "#!/bin/bash\n",
+                    "echo -e \"----------------------------------------------\"\n",
+                    "echo -e \"Scanning Dev /6/ repository for changes...\"\n",
+                    "echo -e \"----------------------------------------------\"\n",
+                    "cd /opt/yum/", { "Ref" : "YumDomainName" }, "/dev/6/base/noarch\n",
+                    "createrepo `pwd`\n",
+                    "cd /opt/yum/", { "Ref" : "YumDomainName" }, "/dev/6/base/x86_64\n",
+                    "createrepo `pwd`\n",
+                    "cd /opt/yum/", { "Ref" : "YumDomainName" }, "/dev/6/custom/noarch\n",
+                    "createrepo `pwd`\n",
+                    "cd /opt/yum/", { "Ref" : "YumDomainName" }, "/dev/6/custom/x86_64\n",
+                    "createrepo `pwd`\n",
+                    "echo -e \"\n\"\n",
+                    "\n",
+                    "echo -e \"----------------------------------------------\"\n",
+                    "echo -e \"Scanning Dev /7/ repository for changes...\"\n",
+                    "echo -e \"----------------------------------------------\"\n",
+                    "cd /opt/yum/", { "Ref" : "YumDomainName" }, "/dev/7/base/noarch\n",
+                    "createrepo `pwd`\n",
+                    "cd /opt/yum/", { "Ref" : "YumDomainName" }, "/dev/7/base/x86_64\n",
+                    "createrepo `pwd`\n",
+                    "cd /opt/yum/", { "Ref" : "YumDomainName" }, "/dev/7/custom/noarch\n",
+                    "createrepo `pwd`\n",
+                    "cd /opt/yum/", { "Ref" : "YumDomainName" }, "/dev/7/custom/x86_64\n",
+                    "createrepo `pwd`\n",
+                    "echo -e \"\n\"\n",
+                    "\n",
+                    "echo -e \"----------------------------------------------\"\n",
+                    "echo -e \"Scanning Stage /6/ repository for changes...\"\n",
+                    "echo -e \"----------------------------------------------\"\n",
+                    "cd /opt/yum/", { "Ref" : "YumDomainName" }, "/stage/6/base/noarch\n",
+                    "createrepo `pwd`\n",
+                    "cd /opt/yum/", { "Ref" : "YumDomainName" }, "/stage/6/base/x86_64\n",
+                    "createrepo `pwd`\n",
+                    "cd /opt/yum/", { "Ref" : "YumDomainName" }, "/stage/6/custom/noarch\n",
+                    "createrepo `pwd`\n",
+                    "cd /opt/yum/", { "Ref" : "YumDomainName" }, "/stage/6/custom/x86_64\n",
+                    "createrepo `pwd`\n",
+                    "echo -e \"\n\"\n",
+                    "\n",
+                    "echo -e \"----------------------------------------------\"\n",
+                    "echo -e \"Scanning Stage /7/ repository for changes...\"\n",
+                    "echo -e \"----------------------------------------------\"\n",
+                    "cd /opt/yum/", { "Ref" : "YumDomainName" }, "/stage/7/base/noarch\n",
+                    "createrepo `pwd`\n",
+                    "cd /opt/yum/", { "Ref" : "YumDomainName" }, "/stage/7/base/x86_64\n",
+                    "createrepo `pwd`\n",
+                    "cd /opt/yum/", { "Ref" : "YumDomainName" }, "/stage/7/custom/noarch\n",
+                    "createrepo `pwd`\n",
+                    "cd /opt/yum/", { "Ref" : "YumDomainName" }, "/stage/7/custom/x86_64\n",
+                    "createrepo `pwd`\n",
+                    "echo -e \"\n\"\n",
+                    "\n",
+                    "echo -e \"----------------------------------------------\"\n",
+                    "echo -e \"Scanning Prod /6/ repository for changes...\"\n",
+                    "echo -e \"----------------------------------------------\"\n",
+                    "cd /opt/yum/", { "Ref" : "YumDomainName" }, "/prod/6/base/noarch\n",
+                    "createrepo `pwd`\n",
+                    "cd /opt/yum/", { "Ref" : "YumDomainName" }, "/prod/6/base/x86_64\n",
+                    "createrepo `pwd`\n",
+                    "cd /opt/yum/", { "Ref" : "YumDomainName" }, "/prod/6/custom/noarch\n",
+                    "createrepo `pwd`\n",
+                    "cd /opt/yum/", { "Ref" : "YumDomainName" }, "/prod/6/custom/x86_64\n",
+                    "createrepo `pwd`\n",
+                    "echo -e \"\n\"\n",
+                    "\n",
+                    "echo -e \"----------------------------------------------\"\n",
+                    "echo -e \"Scanning Prod /7/ repository for changes...\"\n",
+                    "echo -e \"----------------------------------------------\"\n",
+                    "cd /opt/yum/", { "Ref" : "YumDomainName" }, "/prod/7/base/noarch\n",
+                    "createrepo `pwd`\n",
+                    "cd /opt/yum/", { "Ref" : "YumDomainName" }, "/prod/7/base/x86_64\n",
+                    "createrepo `pwd`\n",
+                    "cd /opt/yum/", { "Ref" : "YumDomainName" }, "/prod/7/custom/noarch\n",
+                    "createrepo `pwd`\n",
+                    "cd /opt/yum/", { "Ref" : "YumDomainName" }, "/prod/7/custom/x86_64\n",
+                    "createrepo `pwd`\n",
+                    "echo -e \"\n\"\n",
+                    "\n"
+                  ]] },
+                  "mode"  : "000770",
+                  "owner" : "nginx",
+                  "group" : "nginx"
+                },
+  
+                "/etc/cfn/cfn-hup.conf" : {
+                  "content" : { "Fn::Join" : ["", [
+                    "[main]\n",
+                    "stack=", { "Ref" : "AWS::StackId" }, "\n",
+                    "region=", { "Ref" : "AWS::Region" }, "\n"
+                  ]]},
+                  "mode"    : "000400",
+                  "owner"   : "root",
+                  "group"   : "root"
+                },
+  
+                "/etc/cfn/hooks.d/cfn-auto-reloader.conf" : {
+                  "content": { "Fn::Join" : ["", [
+                    "[cfn-auto-reloader-hook]\n",
+                    "triggers=post.update\n",
+                    "path=Resources.WebServerInstance.Metadata.AWS::CloudFormation::Init\n",
+                    "action=/opt/aws/bin/cfn-init -v ",
+                    "         --stack ", { "Ref" : "AWS::StackName" },
+                    "         --resource YumServerInstance ",
+                    "         --configsets InstallAndRun ",
+                    "         --region ", { "Ref" : "AWS::Region" }, "\n",
+                    "runas=root\n"
+                  ]]}
+                }
+              },
+              "services" : {
+                "sysvinit" : {  
+                  "nginx"  : { "enabled" : "true", "ensureRunning" : "true" },
+                  "cfn-hup" : { "enabled" : "true", "ensureRunning" : "true",
+                                "files" : ["/etc/cfn/cfn-hup.conf", "/etc/cfn/hooks.d/cfn-auto-reloader.conf"]}
+                }
+              }
+            }
+          }
+        },
+        "Properties": {
+          "ImageId" : { "Fn::FindInMap" : [ "AWSRegionArch2AMI", { "Ref" : "AWS::Region" },
+                            { "Fn::FindInMap" : [ "AWSInstanceType2Arch", { "Ref" : "InstanceType" }, "Arch" ] } ] },
+          "InstanceType"   : { "Ref" : "InstanceType" },
+          "KeyName"        : { "Ref" : "KeyName" },
+          "NetworkInterfaces" : [{
+            "AssociatePublicIpAddress" : "true",
+            "DeviceIndex"              : "0",
+            "DeleteOnTermination"      : "true",
+            "SubnetId"                 : { "Ref" : "SubnetId" },
+            "GroupSet"                 : [ {"Ref" : "YumServerSecurityGroup"} ]
+          }],
+          "Tags"           : [ { "Key" : "Name", "Value" : { "Ref" : "InstanceTagName" } },
+                               { "Key" : "VPC",  "Value" : { "Ref" : "InstanceTagVPC" } },
+                               { "Key" : "Env",  "Value" : { "Ref" : "InstanceTagEnv" } }
+                             ],
+          "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [
+               "#!/bin/bash -xe\n",
+               "yum install -y aws-cfn-bootstrap\n",
+  
+               "# Install the files and packages from the metadata\n",
+               "/opt/aws/bin/cfn-init -v ",
+               "         --stack ", { "Ref" : "AWS::StackName" },
+               "         --resource YumServerInstance ",
+               "         --configsets InstallAndRun ",
+               "         --region ", { "Ref" : "AWS::Region" }, "\n",
+  
+               "# Signal the status from cfn-init\n",
+               "/opt/aws/bin/cfn-signal -e $? ",
+               "         --stack ", { "Ref" : "AWS::StackName" },
+               "         --resource YumServerInstance ",
+               "         --region ", { "Ref" : "AWS::Region" }, "\n"
+          ]]}}        
+        },
+        "CreationPolicy" : {
+          "ResourceSignal" : {
+            "Timeout" : "PT1H"
+          }
+        }
+      },
+  
+      "YumServerSecurityGroup" : {
+        "Type" : "AWS::EC2::SecurityGroup",
+        "Properties" : {
+          "GroupDescription" : "Enable HTTP access via defined http port",
+          "SecurityGroupIngress" : [
+            {"IpProtocol" : "tcp", "FromPort" : { "Ref" : "NginxPort" }, "ToPort" : { "Ref" : "NginxPort" }, "CidrIp" : "0.0.0.0/0"},
+            {"IpProtocol" : "tcp", "FromPort" : { "Ref" : "NginxSSLPort" }, "ToPort" : { "Ref" : "NginxSSLPort" }, "CidrIp" : "0.0.0.0/0"},
+            {"IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : { "Ref" : "SSHLocation"}}
+          ],
+          "VpcId" : { "Ref" : "VpcId" }
+        }      
+      }
+    },
+  
+    "Outputs" : {
+      "YumSiteURL" : {
+        "Description" : "URL for newly created yum server stack",
+        "Value" : { "Fn::Join" : ["", ["http://", { "Fn::GetAtt" : [ "YumServerInstance", "PublicDnsName" ]}]] }
+      }
+    }
+  }
