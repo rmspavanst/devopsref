@@ -11,6 +11,7 @@
         server_selection: windows_update
         category_names:
           - SecurityUpdates
+          
           - CriticalUpdates
           - UpdateRollups
         reboot: yes

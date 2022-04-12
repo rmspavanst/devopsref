@@ -1,50 +1,48 @@
 ---
 - block:
   - debug:
-      msg: "Stop the WAS DRC"
-  
+      msg: "stop the WAS DRC Manager/Node/Server"
 
-  - name: WAS DRC is stop Serve and node...
-    shell: |
-       cd /opt/IBM/WebSphere/AppServer/profiles/AppSrv01/bin/
-       spawn ./stopServer.sh server1 ansible_user='{{   }}
-       expect "username:"
-       send -- "{{ username }}\n"
-       expect "password:"
-       send -- "{{ password }}\n"
-       expect eof
-#    args:
-#      executable: /opt/IBM/WebSphere/AppServer/profiles/AppSrv01/bin/
-    register: server_stop_result
-
-  - name: WAS DRC is stop Node...
-    command: chdir=/opt/IBM/WebSphere/AppServer/profiles/Dmgr01/bin/ {{ item }}
-    with_items:
-    - ./stopNode.sh
-    register: Node_stop_result          
-
-
+  - name: WAS DRC is stop Server
+    expect:
+        command: bash -c "{{ server }}stopServer.sh server1"
+        responses:
+                "Username": "{{ username }}"
+                "Password": "{{ password }}"
+        
+    register: Server_stop_result
   
   - debug:
-      var: Server_stop_result
+      var: Server_stop_result.stdout
+
+  - name: WAS DRC is stop node...
+    expect:
+        command: bash -c "{{ node }}stopNode.sh "
+        responses:
+                "Username": "{{ username }}"
+                "Password": "{{ password }}"
+        
+    register: node_stop_result
+  
+  - debug:
+      var: node_stop_result.stdout
+
 
   - name: WAS DRC is stop Manager...
-    command: chdir=/opt/IBM/WebSphere/AppServer/profiles/Dmgr01/bin/ {{ item }}
-    with_items:
-    - ./stopManager.sh
+    expect:
+        command: bash -c "{{ manager }}stopManager.sh"
+        responses:
+                "Username": "{{ username }}"
+                "Password": "{{ password }}"
+        
     register: Manager_stop_result  
 
+  - debug:
+      var: Manager_stop_result.stdout
+
 
   - debug:
-      var: Manager_stop_result
-
-#  - name: "WAS_DRC Stop process faild "
-#    fail:
-#      msg: "not able to stop QMLPPIB"
-#    when: Manager_stop_result.stdout | trim == '0'
-
-  - debug:
-      msg: "WAS DRC has stop successfully "
+      msg: "WAS DRC has stopped successfully "
   
   tags:
     - B1.2

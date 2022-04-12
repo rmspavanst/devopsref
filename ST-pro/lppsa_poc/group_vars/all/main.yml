@@ -21,6 +21,9 @@ WAS_DR_ips: [
 
 username: "wasadmin"
 password: "Prdwas"
+server: "/opt/IBM/WebSphere/AppServer/profiles/AppSrv01/bin/"
+node: "/opt/IBM/WebSphere/AppServer/profiles/AppSrv01/bin/"
+manager: "/opt/IBM/WebSphere/AppServer/profiles/Dmgr01/bin/"
 
 
 
