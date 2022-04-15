@@ -1,0 +1,12 @@
+---
+- hosts: local
+  gather_facts: false
+  become: true
+  tasks:
+
+    - name: download 
+      file:
+        state: directory
+        owner: 1000
+        group: 1000
+        path: /share/jenkins
