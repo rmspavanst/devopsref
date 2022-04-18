@@ -1,0 +1,19 @@
+---
+ - name: Playbook to Patch Linux Server  
+   hosts: all
+   gather_facts: no
+   tasks:
+     - name: Upgrade all packages exluding JAVA & HTTPD
+       yum: 
+         name: '*'
+         exclude: java*,httpd*
+         state: latest
+
+     – name: install nginx rpm from a local file
+       yum:
+         name: /usr/local/src/nginx-release-centos-6-0.el6.ngx.noarch.rpm
+         state: present
+
+    
+...
+

@@ -1,0 +1,237 @@
+#Playbook
+The content of my playbook file is very limited. Its purpose is only to call a role :
+---
+- name: OS update
+  hosts: dev
+  gather_facts: yes
+  tasks:
+    - name: OS update - all packages or security fixes only
+      include_role:
+        name: os_update 
+...
+
+#Role
+The main task of my role is also very short :
+---
+- include_tasks: redhat.yml
+  when: ansible_os_family == "RedHat"
+...
+
+#Task
+The first step is to list all packages that will be modified. Thus, the user can double-check what will be installed before moving on, or cancel the process if desired :
+
+---
+- name: Get packages that can be upgraded
+  become: yes
+  ansible.builtin.dnf:
+    list: upgrades
+    state: latest
+    update_cache: yes
+  register: reg_dnf_output_all
+  when: ev_security_only == "no"
+ 
+- name: List packages that can be upgraded
+  ansible.builtin.debug: 
+    msg: "{{ reg_dnf_output_all.results | map(attribute='name') | list }}"
+  when: ev_security_only == "no"
+ 
+ 
+- name: Get packages that can be patched with security fixes
+  become: yes
+  ansible.builtin.dnf:
+    security: yes
+    list: updates
+    state: latest
+    update_cache: yes
+  register: reg_dnf_output_secu
+  when: ev_security_only == "yes"
+ 
+- name: List packages that can be patched with security fixes
+  ansible.builtin.debug: 
+    msg: "{{ reg_dnf_output_secu.results | map(attribute='name') | list }}"
+  when: ev_security_only == "yes"
+ 
+ 
+- name: Request user confirmation
+  ansible.builtin.pause:
+    prompt: | 
+ 
+      The packages listed above will be upgraded. Do you want to continue ? 
+      -> Press RETURN to continue.
+      -> Press Ctrl+c and then "a" to abort.
+  when: reg_dnf_output_all is defined or reg_dnf_output_secu is defined
+ 
+
+#Next step is to start the full upgrade or to install the security fixes only :
+
+- name: Upgrade packages
+  become: yes
+  ansible.builtin.dnf:
+    name: '*'
+    state: latest
+    update_cache: yes
+    update_only: no
+  register: reg_upgrade_ok
+  when: ev_security_only == "no" and reg_dnf_output_all is defined
+ 
+- name: Patch packages
+  become: yes
+  ansible.builtin.dnf:
+    name: '*'
+    security: yes
+    state: latest
+    update_cache: yes
+    update_only: no
+  register: reg_upgrade_ok
+  when: ev_security_only == "yes" and reg_dnf_output_secu is defined
+ 
+ 
+- name: Print errors if upgrade failed
+  ansible.builtin.debug:
+    msg: "Packages upgrade failed"
+  when: reg_upgrade_ok is not defined
+ 
+
+# If the Kernel has been updated, it’s strongly recommended to reboot the server. To check if a reboot is required, we can use the command “needs-restarting” provided here by the package dnf-utils :
+
+- name: Install dnf-utils
+  become: yes
+  ansible.builtin.dnf:
+    name: 'dnf-utils'
+    state: latest
+    update_cache: yes
+ 
+- name: Check if a reboot is required
+  become: yes
+  command: needs-restarting -r
+  register: reg_reboot_required
+  ignore_errors: yes
+  failed_when: false
+  changed_when: reg_reboot_required.rc != 0
+  notify:
+    - Reboot server 
+...
+
+Handler
+As you can see above, an Handler is called by the “notify” directive.  Using an Handler is very suitable here, as we want to reboot the server once the patching is done, but only when the Kernel has been updated.
+
+---
+- name : Reboot server
+  ansible.builtin.reboot:
+    msg: "Reboot initiated by Ansible after OS update"
+    reboot_timeout: 3600
+    test_command: uptime
+...
+
+
+# vi patching.yml
+---
+- name: Patch Linux system
+  hosts: Linux_Servers
+  become: true
+  ignore_errors: yes
+  tasks:
+- name: Copy the Kernel Patch Repo File
+  copy:
+    src: /etc/yum.repos.d/yum.repo
+    dest: /etc/yum.repos.d/
+- name: Apply patches
+  yum:
+     name: kernel
+     state: latest 
+
+
+---
+- hosts: yum
+  tasks:
+  - name: Update all installed packages using YUM module
+    yum:
+      name: '*'
+      state: latest
+      update_cache: yes
+      update_only: yes
+    register: yum_update_status
+
+  - name: Remove packages not needed anymore
+    yum:
+      autoremove: yes
+
+  - name: Reboot when packages were updated
+    reboot:
+    when: yum_update_status.changed
+
+- hosts: apt
+  tasks:
+  - name: Update all installed packages using APT module
+    apt:
+      name: '*'
+      state: latest
+      update_cache: yes
+      only_upgrade: yes
+    register: apt_update_status
+
+  - name: Remove packages not needed anymore
+    apt:
+      autoremove: yes
+
+  - name: Reboot when packages were updated
+    reboot:
+      post_reboot_delay: 60
+    when: apt_update_status.changed
+
+- hosts: ipkg
+  tasks:
+  - name: Update the Packages installed on Diskstation
+    command: /opt/bin/ipkg update && /opt/bin/ipkg upgrade
+
+
+---
+hosts: all  
+gather_facts: yes 
+remote_user: craun  
+serial: "50%"  
+sudo: yes  
+tasks:     
+  - name: Update Shellshock (Debian     
+    apt: name=bash         
+      state=latest         
+      update_cache=yes    
+    when: ansible_os_family == "Debian"  
+  - name: Update Shellshock (RedHat)    
+    yum: name=bash          
+      state=latest       
+      update_cache=yes   
+    when: ansible_os_family == "RedHat"  
+
+---
+hosts: all 
+gather_facts: yes
+remote_user: craun 
+serial: "25%" 
+sudo: yes 
+tasks:   
+  - name: Update OpenSSL and OpenSSH (Debian)  
+    apt: name={{ item }}    
+      state=latest      
+      update_cache=yes     
+    with_items:     
+    - openssl      
+    - openssh-client     
+    - openssh-server  
+    when: ansible_os_family == "Debian"   
+
+  - name: Update OpenSSL and OpenSSH (RedHat) 
+    yum: name={{ item }}      
+      state=latest         
+      update_cache=yes   
+    with_items:     
+    - openssl      
+    - openssh-client     
+    - openssh-server    
+    when: ansible_os_family == "RedHat"
+    post_tasks:   
+  
+  - name: Reboot servers   
+    command: reboot  
+
+    
