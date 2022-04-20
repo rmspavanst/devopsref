@@ -1,7 +1,0 @@
----
-spring_cloud_start_script_path: '/app/maintenance/scripts/startSC.sh'
-
-jboss_start_banking_script: /app/maintenance/scripts/startBankingModule.sh
-jboss_start_reporting_script: /app/maintenance/scripts/startReportingModule.sh
-jboss_start_admin_script: /app/maintenance/scripts/startAdminModule.sh
-jboss_start_reporting_instance: /app/maintenance/scripts/invokeQuartz.sh

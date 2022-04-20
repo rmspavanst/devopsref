@@ -1,0 +1,8 @@
+---
+
+- include_tasks: connectCheck.yml
+  vars:
+    connect_test_act_no: "P2"
+  when: inventory_hostname in conn_test_from_ip
+  tags: [P2]
+

@@ -1,0 +1,13 @@
+---
+
+- hosts: all
+  gather_facts: false
+
+  tasks:
+    - include_role:
+        name: pre_activities
+      tags: [P23]
+  
+#  any_errors_fatal: true
+
+

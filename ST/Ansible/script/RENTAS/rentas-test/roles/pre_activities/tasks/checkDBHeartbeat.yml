@@ -1,0 +1,34 @@
+---
+- block:
+    - name: "{{ winBatFileRun }} - Retrieve the log section from logfile {{srv_health_chk_log}}"
+      win_shell: get-content "{{ srv_health_chk_log }}"|select -last 150
+      register: logExcerptResult
+      failed_when: logExcerptResult.stdout==""
+
+    - debug:
+        var: logExcerptResult.stdout
+
+    - set_fact:
+        batchRun_status: "{{ logExcerptResult.stdout }}"
+
+    - name: "{{ winBatFileRun }} - Capture DB String in HealthCheck log & verify DB {{DBName}} Heartbeat"
+      include_tasks: checkBatchFileOutput.yml
+      vars:
+        search_string: "{{ outer_item }}"
+      with_items: "{{ search_strings }}"
+      loop_control:
+        loop_var: outer_item
+
+    - name: "{{ winBatFileRun }} - Declare successful match of strings & DB Heartbeats"
+      debug:
+        msg: "{{ winBatFileRun }} - Verification for \'{{purpose}}\' completes successfully."
+
+  tags:
+    - A5.1b
+    - A5.1c
+    - A5.2b
+    - A5.2c
+    - B13.1b
+    - B13.1c
+    - B13.2b
+    - B13.2c

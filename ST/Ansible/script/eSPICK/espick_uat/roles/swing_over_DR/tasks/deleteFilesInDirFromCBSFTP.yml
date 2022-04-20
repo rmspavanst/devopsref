@@ -1,0 +1,26 @@
+---
+
+- block:
+    - name: "{{ verifyFTP }} - Delete all files in directory {{ ftpdir2bVerified }} of server {{inventory_hostname}}"
+      win_file:
+        state: absent
+        path: "{{ ftpdir2bVerified }}"
+      register: del_stat
+
+    - name: "{{ verifyFTP }} - Recreate the directory {{ ftpdir2bVerified }}"
+      win_file:
+        state: directory
+        path: "{{ ftpdir2bVerified }}"
+      register: dir_recreate_stat
+
+    - debug:
+        msg: "{{ verifyFTP }}- Dir {{ ftpdir2bVerified }} is recreated"
+      when: dir_recreate_stat.changed
+
+    - debug:
+        msg: "{{ verifyFTP }}- Dir {{ ftpdir2bVerified }} in {{inventory_hostname}} is now emptied"
+      when: del_stat.changed
+
+  tags:
+    - A15.1
+    - B17.1

@@ -1,0 +1,12 @@
+[win]
+#172.31.126.243 ansible_user=ansible ansible_password=P@ssw0rd
+UATTAKFLMSVR01.bankislam.com.my
+
+[win:vars]
+ansible_connection=winrm
+ansible_port=5986
+ansible_winrm_transport=kerberos
+ansible_user=ansible_uat@BANKISLAM.COM.MY
+ansible_password=Abcd@1324
+ansible_winrm_server_cert_validation=ignore
+

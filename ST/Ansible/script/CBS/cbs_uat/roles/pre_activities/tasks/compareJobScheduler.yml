@@ -1,0 +1,31 @@
+---
+- block:
+
+    - name: "{{actNo}} - Spool out Job Scheduler info"
+      ibm.power_ibmi.ibmi_cl_command:
+        cmd: WRKJOBSCDE
+      register: crt_lib_result
+      
+    - debug:
+        var: crt_lib_result
+
+    - name: "{{actNo}} - copy the output to a local file"
+      copy:
+        content: "{{ crt_lib_result.stdout }}"
+        dest: "{{ansPath}}/{{tempFile}}"
+      delegate_to: localhost
+
+    - name: "{{actNo}} - Clean up data in temp file"
+      shell: |
+        cat {{ansPath}}/{{tempFile}} | grep "^ .*$" | grep -v "^  .*$" | grep -v "^ Job *Number.*$" | awk -F'[[:space:]][[:space:]]* ' '{print $1","$2","$5","$9}' > {{ansPath}}/tempF
+        mv {{ansPath}}/tempF "{{ansPath}}/{{tempFile}}"
+      register: cleanUpStat
+      delegate_to: localhost
+  
+    - debug:
+        var: cleanUpStat
+
+  tags:
+    - PA16a
+    - PA16b
+

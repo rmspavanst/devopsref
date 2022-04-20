@@ -1,0 +1,18 @@
+[win]
+#172.31.128.17 ansible_user=ansible ansible_password=P@ssw0rd
+172.31.126.242 ansible_user=ansible ansible_password=P@ssw0rd
+10.22.163.11 ansible_user=ansible ansible_password=P@ssw0rd
+
+[win:vars]
+ansible_connection=winrm
+ansible_winrm_server_cert_validation=ignore
+
+[ibmi]
+10.22.2.245 ansible_user=BIDADMMSI ansible_password=mjepun21
+
+# [ibmi:vars]
+# ansible_python_interpreter="/QOpensys/pkgs/bin/python3"
+# ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+
+[pg]
+10.22.64.88

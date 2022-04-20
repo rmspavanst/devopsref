@@ -1,0 +1,20 @@
+---
+
+- block:
+    - debug:
+        msg: "{{ EnableScheduler }}- To enable the Scheduler tasks"
+
+    - fail:
+        msg: "{{ EnableScheduler }}- Scheduler task list {{ task_names }} doesn't exist."
+      when: task_names | length == 0
+
+    - name: "{{ EnableScheduler }} - Enable the Scheduler tasks"
+      include_tasks: enableScheduledTask.yml
+      vars:
+        task_name: "{{ item }}"
+      with_items: "{{ task_names }}"
+      loop_control:
+        loop_var: task_name
+  tags:
+    - A14
+    - B12

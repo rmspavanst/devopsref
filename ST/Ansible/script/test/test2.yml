@@ -1,0 +1,25 @@
+---
+- hosts: all
+  gather_facts: no
+
+  tasks:
+    - name: Test port
+      win_wait_for:
+        host: 127.0.0.1
+        port: 5988
+        state: started
+        delay: 0
+        timeout: 3
+      ignore_errors: yes
+      register: pout
+
+    - debug:
+        var: pout
+
+    - debug:
+        msg: Test port success
+      when: pout.failed == false
+
+    - fail:
+        msg: Test port failed with - {{ pout.msg }}
+      when: pout.failed == true

@@ -1,0 +1,15 @@
+---
+
+- hosts: ibmi
+  gather_facts: false
+  collections:
+    - ibm.power_ibmi
+
+  tasks:
+    - include_role:
+        name: pre_activities
+      tags: [PA12,PA12a,PA12b,PA13a,PA13b,PA14a,PA14b,PA15a,PA15b,PA16a,PA16b,PA17,A11,A14a,A14b,A15,A16,A17,A20a,A20b,A21a,A21b,A22z,A22a,A22b,A23a,A23b,A24a,A24b,PA17x,TEST]
+  
+#  any_errors_fatal: true
+
+

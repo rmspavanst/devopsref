@@ -1,0 +1,91 @@
+---
+- block:
+
+    - debug:
+        msg: "{{ winBatFileRun }}- To run batch file to {{purpose}}"
+
+    - win_stat:
+        path: "{{ batchFile }}"
+        get_checksum: no
+      register: batchFile_path
+
+    - fail:
+        msg: "{{ winBatFileRun }}- Batch file path {{ batchFile }}  doesn't exist."
+      when: not batchFile_path.stat.exists
+
+    - block:
+        - name: "{{ winBatFileRun }} - Running batch file to {{purpose}}"
+          win_command: '"{{batchFile}}"'
+          register: batchRun_state
+
+        - debug:
+            var: batchRun_state.stdout_lines
+     
+        - set_fact:
+            batchRun_status: "{{ batchRun_state.stdout }}"
+
+        - name: "{{ winBatFileRun }} - Check batch file run status"
+          include_tasks: checkBatchFileOutput.yml
+          vars:
+            search_string: "{{ outer_item }}"
+          with_items: "{{ search_strings }}"
+          loop_control:
+            loop_var: outer_item
+
+        - name: "{{ winBatFileRun }} - Declare successful match of strings"
+          debug:
+            msg: "{{ winBatFileRun }} - All strings for \'{{purpose}}\' are matched."
+
+      when: not checkLogFile 
+
+    - block:
+        - name: "{{ winBatFileRun }} - Running batch file to {{purpose}}"
+          win_command: '"{{batchFile}}"'
+          register: batchRun_state
+
+        - name: "{{ winBatFileRun }} - Retrieve the log section from logfile {{srv_health_chk_log}}"
+          win_shell: get-content "{{ srv_health_chk_log }}"|select -last 150
+          register: logExcerptResult
+          failed_when: logExcerptResult.stdout==""
+
+        - debug:
+            var: logExcerptResult.stdout
+
+        - set_fact:
+            batchRun_status: "{{ logExcerptResult.stdout }}"
+
+        - name: "{{ winBatFileRun }} - Check batch file run status"
+          include_tasks: checkBatchFileOutput.yml
+          vars:
+            search_string: "{{ outer_item }}"
+          with_items: "{{ search_strings }}"
+          loop_control:
+            loop_var: outer_item
+
+        - name: "{{ winBatFileRun }} - Declare successful match of strings"
+          debug:
+            msg: "{{ winBatFileRun }} - All strings for \'{{purpose}}\' are matched."
+      when: checkLogFile
+  
+  tags:
+    - P8
+    - P10
+    - P12
+    - P14
+    - P15
+    - P16
+    - A2
+    - A5.1a
+    - A5.2a
+    - A5c
+    - B2
+    - B4
+    - B6
+    - B8
+    - B9
+    - B10
+    - B11
+    - B13.1a
+    - B13.2a
+    - B13c
+

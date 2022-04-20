@@ -1,0 +1,53 @@
+---
+
+- block:
+    - name: "{{verifyFTPfromTM}} - Verify if the directory exists in server {{inventory_hostname}}" 
+      win_stat:
+        path: "{{ ftpdir2bVerifiedfromTM }}"
+      register: conn_test_path
+
+    - fail:
+        msg: "{{ verifyFTPfromTM}}- directory {{ ftpdir2bVerifiedfromTM }} doesn't exist in server {{inventory_hostname}}!"
+      when: not conn_test_path.stat.exists
+
+    - name: "{{verifyFTPfromTM}} - Count number of files in dir {{ ftpdir2bVerifiedfromTM }}"
+      win_command: powershell.exe -
+      args:
+        stdin: cd -Path {{ftpdir2bVerifiedfromTM}} -PassThru ; $fileCount = (Get-ChildItem -File | Measure-Object).Count ; Write-Host "fileCount $fileCount"
+      register: result
+   
+    - set_fact:
+        fileCount: "{{ item.split()[1] }}"
+      when: item | regex_search('fileCount')
+      with_items: "{{result.stdout_lines}}"
+
+    - debug:
+        msg: "{{ verifyFTPfromTM}}- The number of files in dir {{ ftpdir2bVerifiedfromTM }} is {{fileCount}}"
+
+    - name: "{{verifyFTPfromTM}} - Compare the current file count with before TM sent file"
+      win_command: powershell.exe -
+      args:
+        stdin: Get-Content {{ ansibleTempDir + '\\fileCount.txt' }}
+      register: file_output
+
+    - set_fact:
+        filecountBefore: "{{ file_output.stdout }}"
+        filecountAfter: "{{ fileCount }}"
+
+    - debug:
+        var: filecountBefore
+
+    - debug:
+        var: filecountAfter
+  
+    - debug:
+        msg: "{{ verifyFTPfromTM}}- Extra file(s) received from TM. ftp protocol verification OK"
+      when: filecountBefore|int != filecountAfter|int
+
+    - fail:
+        msg: "{{ verifyFTPfromTM}}- No file received from TM. Please check!"
+      when: filecountBefore|int == filecountAfter|int
+  
+  tags:
+    - A16c
+    - B18c

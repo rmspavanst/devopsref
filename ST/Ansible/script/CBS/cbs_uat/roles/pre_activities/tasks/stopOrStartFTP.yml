@@ -1,0 +1,44 @@
+---
+- block:
+    - name: "{{actNo}} - FTP service is to be {{action}}"
+      ibm.power_ibmi.ibmi_tcp_server_service:
+        name_list: ['*FTP']
+        state: 'stopped'
+
+    - ibm.power_ibmi.ibmi_tcp_server_service:
+        name_list: ['*FTP']
+        state: '{{action}}'
+        joblog: true
+      register: crt_lib_result
+
+    - debug:
+        var: crt_lib_result.job_log
+
+    - name: "{{actNo}} - copy the output to a local file"
+      copy:
+        content: "{{ crt_lib_result.job_log | to_nice_yaml }}"
+        dest: "{{ansPath}}/{{tempFile}}"
+      delegate_to: localhost
+
+    - name: "{{actNo}} - Clean up data in temp file"
+      shell: |
+        cat {{ansPath}}/{{tempFile}} | grep "MESSAGE_TEXT" | grep "{{grepMsg}}"
+      register: actionStat
+      delegate_to: localhost
+  
+    - debug:
+        var: actionStat.stdout_lines
+
+    - name: "{{actNo}} - Check FTP service status"
+      assert:
+        that:
+          - actionStat.stdout | length != 0
+        fail_msg: "FTP service cannot be {{action}}. Please check!"
+        success_msg: "FTP service is {{action}}"
+      
+  tags:
+    - A17
+    - A58a
+    - B73a
+    - B37
+

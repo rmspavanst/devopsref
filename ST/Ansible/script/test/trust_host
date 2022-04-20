@@ -1,0 +1,7 @@
+[win]
+10.22.163.13 ansible_user=bimbsupport ansible_password=@mukmin2020
+
+[win:vars]
+ansible_port=5986
+ansible_connection=winrm
+ansible_winrm_server_cert_validation=ignore

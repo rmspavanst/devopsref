@@ -1,0 +1,55 @@
+---
+
+- block:
+    - name: "{{ connect_test_act_no }}- Create a directory in destination server if not exist"
+      win_file:
+        path: "{{conn_test_destDir}}"
+        state: directory
+
+    - name: "{{ connect_test_act_no }}- Copy connectivity script to remote server"
+      win_copy:
+        src: "{{conn_test_sourceList}}"
+        dest: "{{conn_test_destList}}"
+
+    - debug:
+        msg: "{{ connect_test_act_no }}- Connectivity test before DR exercise"
+
+    - win_stat:
+        path: "{{ conn_test_destList }}"
+      register: conn_test_path
+
+    - fail:
+        msg: "{{ connect_test_act_no }}- Connectivity test list {{ conn_test_destList }}  doesn't exist."
+      when: not conn_test_path.stat.exists
+
+    - name: "{{connect_test_act_no}} - Perform Connectivity test"
+      script:
+        cmd: connectCheck.ps1 -testList {{conn_test_destList}}
+      register: connectivity_status
+   
+    - set_fact:
+        all_conn_status: "{{ all_conn_status | default([]) + [ item ] }}"
+      with_items: "{{ connectivity_status.stdout_lines }}"
+      when: item | regex_search("(.*)connection(.*)$")
+
+    - set_fact:
+        conn_status: "{{ conn_status | default([]) + [ item ] }}"
+      with_items: "{{ connectivity_status.stdout_lines }}"
+      when: item | regex_search("(.*)failed(.*)$")
+
+    - name: "{{connect_test_act_no}} - Dumping the connectivity status"
+      debug:
+        var: conn_status
+      when: 
+        - conn_status is defined
+        - conn_status | length > 0
+
+    - fail:
+        msg: "{{connect_test_act_no}}- Connectivity test failed. Please check the failed connectivity test as above."
+      when: conn_status is defined and (conn_status|length>0)
+
+    - debug:
+        msg: "{{connect_test_act_no}}- Connectivity test is successfull"
+
+  tags:
+    - P1

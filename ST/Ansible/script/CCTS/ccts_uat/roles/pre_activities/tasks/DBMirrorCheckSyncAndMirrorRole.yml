@@ -1,0 +1,48 @@
+---
+
+- block:
+    - set_fact:
+        verifyPrincipal: >
+          SELECT db.name, m.mirroring_role_desc, m.mirroring_safety_level,mirroring_state_desc
+          FROM sys.database_mirroring m
+          join sys.databases db
+          ON db.database_id = m.database_id
+          WHERE db.name='{{DB2BSwitchOver}}';
+
+    - name: "{{ DBMirroring }} Verify DB as Principal"
+      win_shell: "invoke-sqlcmd -Query \"{{verifyPrincipal}}\" -ServerInstance \"{{SQLServerInstance}}\" -Database \"{{DBName}}\""
+      register: response
+ 
+    - debug:
+        var: response
+
+    - set_fact:
+        output: "{{ output | default([]) + [item] }}"
+      with_items: "{{ response.stdout_lines | regex_findall('(\\w+)\\s{2,}',multiline=True) | replace(\"'\",'') | replace('[','')| replace(']','') | trim }}"
+
+    - debug:
+        var: output
+    
+    - block:
+      - debug:
+          msg: "{{ DBMirroring }} - DB {{DB2BSwitchOver}}'s synchronization is OK"
+        when: output[3] == checkSync
+
+      - fail:
+          msg: "{{ DBMirroring }} - Synchronization between Principal and Mirror DB {{DB2BSwitchOver}} is not OK!"
+        when: output[3] != checkSync
+      when: checkSync is defined
+
+    - block:
+      - debug:
+          msg: "{{ DBMirroring }} - DB {{DB2BSwitchOver}} Mirroring role is {{mirrorRole}}"
+        when: output[1] == mirrorRole
+
+      - fail:
+          msg: "{{ DBMirroring }} - DB {{DB2BSwitchOver}} Mirroring role is not {{mirrorRole}}!"
+        when: output[1] != mirrorRole
+      when: mirrorRole is defined
+      
+  tags:
+    - P5
+

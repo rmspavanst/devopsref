@@ -1,0 +1,108 @@
+---
+
+- include_tasks: "{{ role_path }}/../pre_activities/tasks/killWindowsProcess.yml"
+  vars:
+    actNo: B1
+    serviceName: "notepad"
+  when: inventory_hostname in dr_GWC_Client
+  tags: [B1]
+
+- include_tasks: "{{ role_path }}/../pre_activities/tasks/killWindowsProcess.yml"
+  vars:
+    actNo: B2
+    serviceName: "notepad"
+  when: inventory_hostname in dr_app_ips
+  tags: [B2]
+
+- include_tasks: "{{ role_path }}/../pre_activities/tasks/killWindowsProcess.yml"
+  vars:
+    actNo: B3
+    serviceName: "notepad"
+  when: inventory_hostname in prod_GWC_Client
+  tags: [B3a]
+
+- include_tasks: "{{ role_path }}/../pre_activities/tasks/killWindowsProcess.yml"
+  vars:
+    actNo: B3
+    serviceName: "notepad"
+  when: inventory_hostname in prod_app_ips
+  tags: [B3b]
+
+- include_tasks: "{{ role_path }}/../pre_activities/tasks/DBMirrorCheckSyncAndMirrorRole.yml"
+  vars:
+    DBMirroring: "B6"
+    SQLServerInstance: "??"
+    DBName: "master"
+    checkSync: "SYNCHRONIZED"
+    mirrorRole: "PRINCIPAL"
+    DB2BSwitchOver: "??"
+  when: inventory_hostname in db_ip
+  tags: [B6a]
+
+- include_tasks: "{{ role_path }}/../pre_activities/tasks/DBMirrorSwitchOver.yml"
+  vars:
+    DBMirroring: "B6"
+    SQLServerInstance: "??"
+    DBName: "master"
+    DB2BSwitchOver: "?"
+  when: inventory_hostname in db_ip
+  tags: [B6b]
+
+- include_tasks: "{{ role_path }}/../swing_over_DR/tasks/verifyIP-2IP.yml"
+  vars:
+    actNo: "B7-B10"
+    file: "D:\\output\\startGWClient-Auto.bat"
+    correctIP: "10.20.65.106"
+    regexFile1a: "(\\d+[.]\\d+[.]\\d+[.]\\d+)\\\\ImageFolder"
+    regexFile1b: "user:(\\d+[.]\\d+[.]\\d+[.]\\d+)\\\\gwcprduser"
+  when: inventory_hostname in prod_GWC_Client
+  tags: [B7-B10-a]
+
+- include_tasks: "{{ role_path }}/../swing_over_DR/tasks/verifyIP-1IP.yml"
+  vars:
+    actNo: "B7-B10"
+    file: "D:\\output\\config.xml"
+    correctIP: "10.20.65.106"
+    regexFile: "ipaddr[>](\\d+[.]\\d+[.]\\d+[.]\\d+)[<]"
+  when: inventory_hostname in prod_GWC_Client
+  tags: [B7-B10-b]
+
+- include_tasks: "{{ role_path }}/../swing_over_DR/tasks/verifyIP-1IP.yml"
+  vars:
+    actNo: "B7-B10"
+    file: "D:\\output\\FeCTSTxnClient.properties"
+    correctIP: "10.20.65.106"
+    regexFile: "PROD[.]TxnServerIP=(\\d+[.]\\d+[.]\\d+[.]\\d+)"
+  when: inventory_hostname in prod_GWC_Client
+  tags: [B7-B10-c]
+
+- include_tasks: "{{ role_path }}/../swing_over_DR/tasks/renameFile.yml"
+  vars:
+    actNo: "B11"
+    fileRenameFrom: "D:\\output\\sFTPsetting.ini"
+    fileRenameTo: "D:\\output\\sFTPsetting_DR.ini"
+  when: inventory_hostname in gwc_ip
+  tags: [B11a]
+
+- include_tasks: "{{ role_path }}/../swing_over_DR/tasks/renameFile.yml"
+  vars:
+    actNo: "B11"
+    fileRenameFrom: "D:\\output\\sFTPsetting_PROD"
+    fileRenameTo: "D:\\output\\sFTPsetting.ini"
+  when: inventory_hostname in gwc_ip
+  tags: [B11b]
+
+- include_tasks: "{{ role_path }}/../swing_over_DR/tasks/verifyIPMultipleIP.yml"
+  vars:
+    actNo: "B11"
+    fileName: "D:\\output\\sFTPsetting.ini"
+    correctIP: "192.168.190.128"
+  when: inventory_hostname in gwc_ip
+  tags: [B11c]
+
+- include_tasks: "{{ role_path }}/../swing_over_DR/tasks/startServices.yml"
+  vars:
+    actNo: "B13"
+    fileName: "D:\\GWC\\apache-tomcat-7.0.108\\bin\\startup.bat"
+  when: inventory_hostname in prod_app_ips
+  tags: [B13]

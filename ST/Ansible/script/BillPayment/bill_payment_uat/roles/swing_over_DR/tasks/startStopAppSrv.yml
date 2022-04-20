@@ -1,0 +1,45 @@
+---
+- block:
+
+    - debug:
+        msg: "{{ WinService_act_no }}- To {{srv_state}} Windows Service"
+
+    - set_fact:
+        service_state: 'Stopped'
+      when: srv_state == 'stop'
+
+    - set_fact:
+        service_state: 'Running'
+      when: srv_state == 'start'
+
+    - name: "{{ WinService_act_no }} - {{srv_state}} Windows Service"
+      win_shell: iisreset /{{srv_state}}
+
+    - pause:
+        seconds: 10
+        
+    - set_fact:
+        count: "1"
+      when: count is not defined
+
+    - name: "{{ WinService_act_no }} - Check service status"
+      include_tasks: checkSrvStatus.yml
+      when: 
+        - count|int <= 2
+
+    - debug:
+        var: verifyTrue
+        
+    - debug:
+        var: serviceStatusLineCnt
+
+    - fail:
+        msg: "{{ WinService_act_no }} - Some or all of the App services are {{service_state}} in {{inventory_hostname}}. Please check!"
+      when: not verifyTrue or serviceStatusLineCnt|int == 0
+
+  tags:
+    - A12
+    - A4
+    - B2
+    - B10
+

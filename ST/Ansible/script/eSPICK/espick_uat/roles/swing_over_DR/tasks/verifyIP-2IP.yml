@@ -1,0 +1,40 @@
+---
+- block:
+    - name: "{{actNo}} - Check the existence of file locations"
+      win_stat:
+        path: "{{file}}"
+      register: filePathCheck
+
+    - fail:
+        msg: "{{ actNo }} - File existence check for {{ file }}: File doesn't exist."
+      when: not filePathCheck.stat.exists
+
+    - name: "{{ actNo }} - Read file content and then filter the result"
+      win_shell: |
+        Get-Content -Path {{file}}
+      register: fileContent
+
+    - debug:
+        var: fileContent.stdout
+
+    - set_fact:
+        IPAddress1: "{{ fileContent.stdout | regex_findall(regexFile1a, '\\1') }}"
+        IPAddress2: "{{ fileContent.stdout | regex_findall(regexFile1b, '\\1') }}"
+
+    - debug:
+        var: IPAddress1[0]
+
+    - debug:
+        var: correctIP
+
+    - assert:
+        that:
+          - IPAddress1 == IPAddress2
+          - correctIP == IPAddress1[0]
+        success_msg: "{{ actNo }} - IP addresses in {{file}} match {{correctIP}}"
+        fail_msg: "{{ actNo }} - IP addresses in {{file}} do not match {{correctIP}}. Please check!"
+      ignore_errors: yes
+
+  tags:
+    - A3-A6-a
+

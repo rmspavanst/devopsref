@@ -1,0 +1,24 @@
+- block:
+  - name: "{{ actNo }} - checking for port {{ portNo }}"
+    win_wait_for:
+      host: "{{ hostIp }}"
+      port: "{{ portNo }}"
+      state: started
+      delay: 0
+      timeout: 3
+    ignore_errors: yes
+    register: portOut
+
+  - debug:
+      msg: "{{ actNo }} - Port {{ portNo }} is listening on {{ hostIp }}"
+    when: portOut.failed == false
+
+  - fail:
+      msg: |
+        "{{ actNo }} - Problem encountered with port {{ portNo }} on {{ hostIp }}"
+        "{{ portOut.msg }}"
+    when: portOut.failed == false
+
+  tags:
+    - A21.2
+    - B20

@@ -1,0 +1,226 @@
+---
+- include_tasks: "{{ role_path }}/../pre_activities/tasks/runBatchJob.yml"
+  vars:
+    batchFile: "{{DB_chk_replication_state_script}}"
+    compareDBHeartbeat: false
+    checkLogFile: false
+    winBatFileRun: "P8"
+    search_strings:
+      - 'Sym failures( *): 0'
+      - 'Sym not route( *): 0'
+      - 'Sym not deliver( *): 0'
+      - 'Replication Status : Success'
+    purpose: "check replication status between PROD DB Server and DR DB Server"
+  when: inventory_hostname in db_ips
+  tags: [P8]
+
+- include_tasks: "{{ role_path }}/../pre_activities/tasks/disableScheduledTasks.yml"
+  vars:
+    DisableScheduler: "P9"
+  when: inventory_hostname in app_ips
+  tags: [P9]
+
+- include_tasks: "{{ role_path }}/../pre_activities/tasks/runBatchJob.yml"
+  vars:
+    batchFile: "{{stop_RBG_Glassfish}}"
+    compareDBHeartbeat: false
+    checkLogFile: false
+    winBatFileRun: "P10"
+    purpose: "stop RBG Glassfish Application via Failover Cluster Manager at Failover cluster manager"
+    search_strings:
+      - 'GlassfishAppServer DOMAIN1 Offline'
+  when: inventory_hostname in app_ips
+  tags: [P10]
+
+- include_tasks: "{{ role_path }}/../pre_activities/tasks/runBatchJob.yml"
+  vars:
+    batchFile: "{{shut_RBG_Replicate_script}}"
+    compareDBHeartbeat: false
+    checkLogFile: false
+    winBatFileRun: "P12"
+    search_strings:
+      - 'Stop Replication : Success'
+    purpose: "shutdown RBG Replication"
+  when: inventory_hostname in db_ips
+  tags: [P12]
+
+- include_tasks: "{{ role_path }}/../pre_activities/tasks/runBatchJob.yml"
+  vars:
+    batchFile: "{{DB_start_sync_check_script}}"
+    compareDBHeartbeat: false
+    checkLogFile: false
+    winBatFileRun: "P14"
+    purpose: "DB synchronization checking between DR and PROD"
+    search_strings:
+      - 'The database, {{DB_name_1}} was synchronised'
+      - 'The database, {{DB_name_2}} was synchronised'
+  when: inventory_hostname in dr_db_ips
+  tags: [P14]
+
+- include_tasks: "{{ role_path }}/../pre_activities/tasks/runBatchJob.yml"
+  vars:
+    batchFile: "{{DB_start_replication_script}}"
+    compareDBHeartbeat: false
+    checkLogFile: false
+    winBatFileRun: "P15"
+    purpose: "Start DB replication (DR -> PROD)"
+    search_strings:
+      - '"Replication DOMAIN1" had been started'
+      - 'Start Replication : Success'
+  when: inventory_hostname in dr_db_ips
+  tags: [P15]
+
+- include_tasks: "{{ role_path }}/../pre_activities/tasks/runBatchJob.yml"
+  vars:
+    batchFile: "{{DB_chk_replication_state_script}}"
+    compareDBHeartbeat: false
+    checkLogFile: false
+    winBatFileRun: "P16"
+    purpose: "Check DB replication status (DR -> PROD)"
+    search_strings:
+      - 'Sym failures( *): 0'
+      - 'Sym not route( *): 0'
+      - 'Sym not deliver( *): 0'
+  when: inventory_hostname in dr_db_ips
+  tags: [P16]
+
+- include_tasks: "{{ role_path }}/../pre_activities/tasks/enableScheduledTasks.yml"
+  vars:
+    EnableScheduler: "P17"
+  when: inventory_hostname in dr_app_ips
+  tags: [P17]
+
+
+
+- include_tasks: "{{ role_path }}/../pre_activities/tasks/runBatchJob.yml"
+  vars:
+    batchFile: "{{start_RBG_Glassfish}}"
+    checkLogFile: false
+    compareDBHeartbeat: false
+    winBatFileRun: "A2"
+    purpose: "start up RBG Glassfish Application via Services"
+    search_strings:
+      - 'GlassfishAppServer DOMAIN1 Online'
+  when: inventory_hostname in dr_app_ips
+  tags: [A2]
+
+- include_tasks: "{{ role_path }}/../pre_activities/tasks/checkAppServDate.yml"
+  vars:
+    dayMinus: 0
+  when: inventory_hostname in dr_app_ips
+  tags: [A5a]
+
+- include_tasks: "{{ role_path }}/../pre_activities/tasks/runBatchJob.yml"
+  vars:
+    batchFile: "{{RBG_health_chk_script}}"
+    winBatFileRun: "A5"
+    purpose: "Perform server health check from FINEXUS task scheduler, for RBG - Confirm the presence of key-value"
+    checkLogFile: yes
+    srv_health_chk_log: "{{srv_health_chk_RBG_log}}"
+    search_strings:
+      - 'Applications Value Date : {{servDate}}'
+      - 'Services Name : domain1( *)Status : RUNNING'
+      - 'Services Name : DerbyDatabase( *)Status : RUNNING'
+      - 'Connection Pools Name : Derby1( *)Status : CONNECTED'
+      - 'Connection Pools Name : Derby2( *)Status : CONNECTED'
+      - 'Connection Pools Name : Derbybhi( *)Status : CONNECTED'
+      - 'Connection Pools Name : DerbyArchive( *)Status : CONNECTED'
+      - 'Database Name : {{DB_name_1}} \(PRIMARY - SECONDARY\)( *)Status : RUNNING'
+      - 'Database Name : {{DB_name_2}}( *)\(PRIMARY - SECONDARY\)( *)Status : RUNNING'
+  when: inventory_hostname in dr_app_ips
+  tags: [A5.1a]
+
+- name: "Check DB {{DB_name_1}} Heartbeat in RBG Process"
+  include_tasks: "{{ role_path }}/../pre_activities/tasks/checkDBHeartbeat.yml"
+  vars:
+    winBatFileRun: "A5 - {{DB_name_1}}"
+    purpose: "DB {{DBName}} in RBG process - Capture DB String in HealthCheck log & Verify DB Heartbeat"
+    DBName: "{{DB_name_1}}"
+    srv_health_chk_log: "{{srv_health_chk_RBG_log}}"
+    compareDBHeartbeat: true
+    search_strings:
+      - 'Database Name : {{DB_name_1}}([ \t]*)Primary( *): (\d+)-(\d+)-(\d+) [0-9][0-9]:[0-9][0-9]:[0-9][0-9][.][0-9][0-9][0-9]([ \t\r\n]*)Secondary : (\d+)-(\d+)-(\d+) [0-9][0-9]:[0-9][0-9]:[0-9][0-9][.][0-9][0-9][0-9]'
+  when: inventory_hostname in dr_app_ips
+  tags: [A5.1b]
+
+- name: "Check DB {{DB_name_2}} Heartbeat in RBG Process"
+  include_tasks: "{{ role_path }}/../pre_activities/tasks/checkDBHeartbeat.yml"
+  vars:
+    winBatFileRun: "A5 - {{DB_name_2}}"
+    purpose: "DB {{DBName}} in RBG process - Capture DB String in HealthCheck log & Verify DB Heartbeat"
+    DBName: "{{DB_name_2}}"
+    srv_health_chk_log: "{{srv_health_chk_RBG_log}}"
+    compareDBHeartbeat: true
+    search_strings:
+      - 'Database Name : {{DB_name_2}}([ \t]*)Primary( *): (\d+)-(\d+)-(\d+) [0-9][0-9]:[0-9][0-9]:[0-9][0-9][.][0-9][0-9][0-9]([ \t\r\n]*)Secondary : (\d+)-(\d+)-(\d+) [0-9][0-9]:[0-9][0-9]:[0-9][0-9][.][0-9][0-9][0-9]'
+  when: inventory_hostname in dr_app_ips
+  tags: [A5.1c]
+
+- include_tasks: "{{ role_path }}/../pre_activities/tasks/runBatchJob.yml"
+  vars:
+    batchFile: "{{DB_start_sync_check_script}}"
+    compareDBHeartbeat: false
+    checkLogFile: false
+    winBatFileRun: "A5c"
+    purpose: "start synchronization checking between DR and PROD"
+    search_strings:
+      - 'The database, {{DB_name_1}} was synchronised'
+      - 'The database, {{DB_name_2}} was synchronised'
+  when: inventory_hostname in dr_app_ips
+  tags: [A5c]
+
+- include_tasks: "{{ role_path }}/../pre_activities/tasks/runBatchJob.yml"
+  vars:
+    batchFile: "{{PaymenZ_health_chk_script}}"
+    winBatFileRun: "A5"
+    purpose: "Perform server health check from FINEXUS task scheduler, for PaymenZ - Confirm the presence of key-value"
+    checkLogFile: yes
+    srv_health_chk_log: "{{srv_health_chk_PaymenZ_log}}"
+    search_strings:
+      - 'Applications Value Date : {{servDatePYZ}}'
+      - 'Service Name : Glassfish BHI([ \t]*)Status : RUNNING'
+      - 'Service Name : OpenESB Server([ \t]*)Status : RUNNING'
+      - 'Service Name : Message Queue Broker([ \t]*)Status : RUNNING'
+      - 'Connection Pool Name : MSSQL1([ \t]*)Status : Connected'
+      - 'Database Name : {{DB_name_3}}([ \t]*)Status : IN-PROGRESS'
+      - 'Database Name : {{DB_name_4}}([ \t]*)Status : RUNNING'
+      - 'BPEL Service Name : ATEComposite([ \t]*)v 1.0.14([ \t]*)Status : Started'
+      - 'BPEL Service Name : AuditComposite([ \t]*)v 1.0.2([ \t]*)Status : Started'
+      - 'BPEL Service Name : BI_CBSComposite([ \t]*)v 1.0.25([ \t]*)Status : Started'
+      - 'BPEL Service Name : BI_ExchangeComposite([ \t]*)v 1.0.0([ \t]*)Status : Started'
+      - 'BPEL Service Name : BI_SocketComposite([ \t]*)v 1.0.9([ \t]*)Status : Started'
+      - 'BPEL Service Name : IFTSComposite([ \t]*)v 1.0.34([ \t]*)Status : Started'
+      - 'BPEL Service Name : RBGComposite([ \t]*)v 1.0.5([ \t]*)Status : Started'
+      - 'BPEL Service Name : ScreenComposite([ \t]*)v 1.0.15([ \t]*)Status : Started'
+      - 'BPEL Service Name : SSDSComposite([ \t]*)v 1.0.31([ \t]*)Status : Started'
+      - 'BPEL Service Name : STATComposite([ \t]*)v 1.0.30([ \t]*)Status : Started'
+      - 'Application Name : BHI([ \t]*)v 1.0.13245([ \t]*)Status : ENABLED'
+  when: inventory_hostname in dr_app_ips
+  tags: [A5.2a]
+
+- name: "Check DB {{DB_name_3}} Heartbeat in PaymentZ Process"
+  include_tasks: "{{ role_path }}/../pre_activities/tasks/checkDBHeartbeat.yml"
+  vars:
+    winBatFileRun: "A5 - {{DB_name_3}}"
+    purpose: "DB {{DBName}} in PaymentZ process - Capture DB String in HealthCheck log & Verify DB Heartbeat"
+    DBName: "{{DB_name_3}}"
+    srv_health_chk_log: "{{srv_health_chk_PaymenZ_log}}"
+    compareDBHeartbeat: true
+    search_strings:
+      - 'Database Name : {{DB_name_3}}([ \t]*)Primary([ \t]*): (\d+)-(\d+)-(\d+) [0-9][0-9]:[0-9][0-9]:[0-9][0-9]([ \t\r\n]*)Secondary([ \t]*): (\d+)-(\d+)-(\d+) [0-9][0-9]:[0-9][0-9]:[0-9][0-9]'
+  when: inventory_hostname in dr_app_ips
+  tags: [A5.2b]
+
+- name: "Check DB {{DB_name_4}} Heartbeat in PaymentZ Process"
+  include_tasks: "{{ role_path }}/../pre_activities/tasks/checkDBHeartbeat.yml"
+  vars:
+    winBatFileRun: "A5 - {{DB_name_4}}"
+    purpose: "DB {{DBName}} in PaymentZ process - Capture DB String in HealthCheck log & Verify DB Heartbeat"
+    DBName: "{{DB_name_4}}"
+    srv_health_chk_log: "{{srv_health_chk_PaymenZ_log}}"
+    compareDBHeartbeat: true
+    search_strings:
+      - 'Database Name : {{DB_name_4}}([ \t]*)Primary([ \t]*): (\d+)-(\d+)-(\d+) [0-9][0-9]:[0-9][0-9]:[0-9][0-9]([ \t\r\n]*)Secondary([ \t]*): (\d+)-(\d+)-(\d+) [0-9][0-9]:[0-9][0-9]:[0-9][0-9]'
+  when: inventory_hostname in dr_app_ips
+  tags: [A5.2c]
+

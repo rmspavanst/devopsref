@@ -1,0 +1,109 @@
+---
+
+- block:
+    - name: "{{ verifyFTPfromCBS }} - Verify if the directory exists in server {{inventory_hostname}}" 
+      win_stat:
+        path: "{{ ftpdir2bVerifiedfromCBS }}"
+      register: conn_test_path
+
+    - fail:
+        msg: "{{ verifyFTPfromCBS }}- directory {{ ftpdir2bVerifiedfromCBS }} doesn't exist in server {{inventory_hostname}}!"
+      when: not conn_test_path.stat.exists
+
+#    - name: "{{ verifyFTPfromCBS }} - check if files exists in dir {{ ftpdir2bVerifiedfromCBS }}"
+#      win_command: powershell.exe -
+#      args:
+#        stdin: cd -Path D:\Inetpub\ftproot\TM\Out\ -PassThru ; $fileName = (Get-ChildItem -File).Name; Write-Host "fileName = $fileName"
+#        #stdin: cd -Path {{ftpdir2bVerifiedfromCBS}} -PassThru ; $fileCount = (Get-ChildItem -File | Measure-Object).Count ; Write-Host "fileCount $fileCount"
+#      register: result
+   
+#    - set_fact:
+#        fileNames: "{{ result.stdout | regex_search('fileName = (.*)', '\\1') }}"
+
+#    - set_fact:
+#        fileList: "{{ fileNames[0].split() }}"
+
+    - set_fact:
+        filesRequired:
+          - DAYBAL
+          - RECINFO
+          - TMRECV
+          - TMSTMT
+
+    - name: Retrieve list of files in 
+      win_find:
+        paths: "{{ ftpdir2bVerifiedfromCBS }}"
+        file_type: file
+      register: filesInTMOut
+
+    - name: "{{ verifyFTPfromCBS }} - empty the file"
+      win_command: powershell.exe -
+      args:
+        stdin: Clear-Content {{ ansibleTempDir }}\\TMOutFiles.txt
+      register: CC
+
+    - debug:
+        var: CC
+
+    - name: Save list of files
+      win_lineinfile:
+        state: present
+        create: yes
+        path: "{{ ansibleTempDir }}\\TMOutFiles.txt"
+        line: "{{ item.filename }}"
+        #insertbefore: BOF
+      loop: "{{ filesInTMOut.files }}"
+
+    - name: Read file list
+      win_shell: 'type {{ansibleTempDir}}\\TMOutFiles.txt'
+      register: tmfiles
+   
+    - set_fact:
+        fileList: "{{ tmfiles.stdout }}"
+
+    - debug:
+        var: fileList
+
+    - ansible.utils.fact_diff:
+        before: "{{ filesRequired }}"
+        after: "{{ fileList }}"
+      register: fileDiff
+
+    - debug:
+        msg: "{{ filesRequired | difference(fileList) }}"
+
+    - name: "Verify all required files are in "
+      assert:
+        that: filesRequired | intersect(fileList)
+        #that: "{{ [item] | intersect(fileList) }}"
+        fail_msg: "Item is not in list"
+        success_msg: "Item is found"
+      #with_items: filesRequired
+
+#    - name: Delete files from CBS after verification
+#      win_file:
+#        path: "{{ ftpdir2bVerifiedfromCBS }}/{{ item }}"
+#        state: absent
+#      loop: "{{ filesRequired | intersect(fileList) }}"
+
+    - debug:
+        msg: "{{ item }} is in fileList"
+      loop: "{{ filesRequired | intersect(fileList) }}"
+
+#    - set_fact:
+#        fileCount: "{{ item.split()[1] }}"
+#      when: item | regex_search('fileCount')
+#      with_items: "{{result.stdout_lines}}"
+#
+#    - debug:
+#        msg: "{{ verifyFTPfromCBS }}- File(s) exists in dir {{ ftpdir2bVerifiedfromCBS }}. Verification OK"
+#      when: fileCount|int > 0      
+#
+#    - fail:
+#        msg: "{{ verifyFTPfromCBS }}- Dir {{ ftpdir2bVerifiedfromCBS }} is empty! Verification failed!"
+#      when: fileCount|int == 0
+
+  tags:
+    - A15
+    - B17
+

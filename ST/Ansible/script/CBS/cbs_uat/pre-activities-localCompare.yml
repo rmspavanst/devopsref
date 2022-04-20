@@ -1,0 +1,17 @@
+---
+
+- hosts: pg
+  gather_facts: false
+  become_user: root
+  become: yes
+  collections:
+    - ibm.power_ibmi
+
+  tasks:
+    - include_role:
+        name: pre_activities
+      tags: [PA12c,PA13c,PA14c,PA15c,PA16c,A20c,A21c,A22c,A23c,A24c]
+  
+#  any_errors_fatal: true
+
+

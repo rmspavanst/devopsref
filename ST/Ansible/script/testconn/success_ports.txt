@@ -1,0 +1,3 @@
+Access to 10.22.163.13 port 5986 is successful.
+Access to 10.22.163.13 port 5985 is successful.
+Access to 172.31.127.137 port 5985 is successful.

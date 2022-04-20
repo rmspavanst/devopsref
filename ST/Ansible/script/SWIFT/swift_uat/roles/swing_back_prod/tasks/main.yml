@@ -1,0 +1,8 @@
+---
+
+- include_tasks: "{{ role_path }}/../pre-activities/tasks/disableScheduledTasks.yml"
+  vars:
+    DisableScheduler: "B9"
+  when: inventory_hostname in dr_ips
+  tags: [B9]
+

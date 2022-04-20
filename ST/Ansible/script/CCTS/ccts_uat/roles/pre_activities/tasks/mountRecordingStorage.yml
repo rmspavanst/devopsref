@@ -1,0 +1,12 @@
+---
+- block:
+  - name: "{{ actNo }} - Mount recoding storage to {{ inventory_hostname }}"
+    shell: mount -t cifs -o username={{ username }},password={{ password }},guest,iocharset=utf-8,file_mode={{ file_mode }},dir_mode={{ dir_mode }} //{{ file_server }}{{ filesystem}}
+    register: mountStat
+
+  - debug:
+      msg: "{{ actNo }} - disk mount status is {{ mountStat.stdout }}"
+
+  tags:
+    - A6
+    - B7

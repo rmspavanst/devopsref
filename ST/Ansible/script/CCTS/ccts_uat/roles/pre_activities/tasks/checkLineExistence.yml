@@ -1,0 +1,37 @@
+---
+- block:
+  - block:
+    - name: "{{ actNo }} - Get all files in {{ path }}"
+      win_find:
+        paths: "{{ path }}"
+      register: foundFiles
+          
+    - name: "{{ actNo }} - Get latest file attributes {{ path }}"
+      set_fact:
+        fileAttr: "{{ foundFiles.files | sort(attribute='lastwritetime') | last }}"
+
+    - name: "{{ actNo }} - Find latest file in {{ path }}"
+      set_fact:
+        file: "{{ fileAttr.path }}"
+
+    when: path is defined
+
+  - name: "{{ actNo }} - Verify {{ line2check }} exists"
+    win_lineinfile:
+      name: "{{ file }}"
+      line: "{{ line2check }}"
+      state: present
+    check_mode: yes
+    register: grep_stat
+
+  - debug:
+      msg: "{{ actNo }} - Found {{ line2check }} in {{ file }}"
+    when: not grep_stat is changed
+
+  - fail:
+      msg: "{{ actNo }} - {{ line2check }} is not found in {{ file }}"
+    when: grep_stat is changed or grep_stat is failed
+
+  tags:
+    - A19
+    - B19.4

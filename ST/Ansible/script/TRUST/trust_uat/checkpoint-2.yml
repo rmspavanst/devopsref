@@ -1,0 +1,14 @@
+---
+- hosts: win
+  gather_facts: false
+  become_method: runas
+
+  vars:
+    ansible_become_password: "{{ ans_password }}"
+
+  tasks:
+    - include_role:
+        name: checkpoint-2
+      tags: [A3,A5,A7-A8,A8]
+
+  any_errors_fatal: true

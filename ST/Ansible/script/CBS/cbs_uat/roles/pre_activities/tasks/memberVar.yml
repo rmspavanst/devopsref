@@ -1,0 +1,24 @@
+---
+- block:
+
+    - command: |
+        date +'%Y%m%d' -d "1 days ago"
+      no_log: True
+      register: result
+
+    - set_fact:
+        fileMember: "{{ 'MP' + result.stdout }}"
+
+    - debug:
+        var: fileMember
+
+### For Testing in UAT only. Remove these 2 lines in prod run
+    - set_fact:
+        fileMember: "MP20171203"
+
+  delegate_to: localhost
+
+  tags:
+    - A22z
+    - B42z
+

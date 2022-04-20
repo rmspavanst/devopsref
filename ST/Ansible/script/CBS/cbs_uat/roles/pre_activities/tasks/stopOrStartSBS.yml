@@ -1,0 +1,41 @@
+---
+- block:
+    - set_fact:
+        SBSFullName: '{{ result.sheet_index_0[rowNumber] }}'
+
+    - set_fact:
+        SBSLibrary: "{{ SBSFullName.col_1 }}"
+        SBSName: "{{ SBSFullName.col_2 }}"
+
+    - block:
+        - name: "{{actNo}} - {{SBSAct}} Subsystem"
+          ibm.power_ibmi.ibmi_cl_command:
+            cmd: STRSBS SBSD({{SBSLibrary}}/{{SBSName}})
+          ignore_errors: yes
+          register: crt_lib_result
+
+        - debug:
+            var: crt_lib_result
+      when: SBSAct == 'START'
+
+    - block:
+        - name: "{{actNo}} - {{SBSAct}} Subsystem"
+          ibm.power_ibmi.ibmi_cl_command:
+            cmd: ENDSBS {{SBSName}} OPTION(*IMMED)
+          ignore_errors: yes
+          register: crt_lib_result
+
+        - debug:
+            var: crt_lib_result
+      when: SBSAct == 'STOP'
+
+  when:
+    - result.sheet_index_0[rowNumber] is defined
+    - result.sheet_index_0[rowNumber].col_1 != "None"
+  tags:
+    - A16
+    - A49
+    - B36
+    - B66
+    - B67
+

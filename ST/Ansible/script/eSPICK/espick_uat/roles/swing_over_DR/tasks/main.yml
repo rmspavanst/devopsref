@@ -1,0 +1,147 @@
+---
+
+- include_tasks: "{{ role_path }}/../pre_activities/tasks/DBMirrorSwitchOver.yml"
+  vars:
+    DBMirroring: "A2"
+    SQLServerInstance: "??"
+    DBName: "master"
+    DB2BSwitchOver: "?"
+  when: inventory_hostname in db_ip
+  tags: [A2.1]
+
+- include_tasks: "{{ role_path }}/../pre_activities/tasks/DBMirrorCheckSyncAndMirrorRole.yml"
+  vars:
+    DBMirroring: "A2"
+    SQLServerInstance: "??"
+    DBName: "master"
+    checkSync: "SYNCHRONIZED"
+    mirrorRole: "MIRROR"
+    DB2BSwitchOver: "??"
+  when: inventory_hostname in db_ip
+  tags: [A2.2]
+
+- include_tasks: "verifyIP-2IP.yml"
+  vars:
+    actNo: "A3-A6"
+    file: "D:\\output\\startGWClient-Auto.bat"
+    correctIP: "10.20.65.106"
+    regexFile1a: "(\\d+[.]\\d+[.]\\d+[.]\\d+)\\\\ImageFolder"
+    regexFile1b: "user:(\\d+[.]\\d+[.]\\d+[.]\\d+)\\\\gwcprduser"
+  when: inventory_hostname in dr_GWC_Client
+  tags: [A3-A6-a]
+
+- include_tasks: "verifyIP-1IP.yml"
+  vars:
+    actNo: "A3-A6"
+    file: "D:\\output\\config.xml"
+    correctIP: "10.20.65.106"
+    regexFile: "ipaddr[>](\\d+[.]\\d+[.]\\d+[.]\\d+)[<]"
+  when: inventory_hostname in dr_GWC_Client
+  tags: [A3-A6-b]
+
+- include_tasks: "verifyIP-1IP.yml"
+  vars:
+    actNo: "A3-A6"
+    file: "D:\\output\\FeCTSTxnClient.properties"
+    correctIP: "10.20.65.106"
+    regexFile: "PROD[.]TxnServerIP=(\\d+[.]\\d+[.]\\d+[.]\\d+)"
+  when: inventory_hostname in dr_GWC_Client
+  tags: [A3-A6-c]
+
+- include_tasks: "renameFile.yml"
+  vars:
+    actNo: "A7"
+    fileRenameFrom: "D:\\output\\sFTPsetting.ini"
+    fileRenameTo: "D:\\output\\sFTPsetting_PROD.ini"
+  when: inventory_hostname in gwc_ip
+  tags: [A7a]
+
+- include_tasks: "renameFile.yml"
+  vars:
+    actNo: "A7"
+    fileRenameFrom: "D:\\output\\sFTPsetting_DR"
+    fileRenameTo: "D:\\output\\sFTPsetting.ini"
+  when: inventory_hostname in gwc_ip
+  tags: [A7b]
+
+- include_tasks: "verifyIPMultipleIP.yml"
+  vars:
+    actNo: "A7"
+    fileName: "D:\\output\\sFTPsetting.ini"
+    correctIP: "192.168.190.128"
+  when: inventory_hostname in gwc_ip
+  tags: [A7c]
+
+- include_tasks: "constructLogF.yml"
+  vars:
+    actNo: "A8"
+    logFilePathA8a: "D:\\GWC\\apache-tomcat-7.0.108\\logs\\"
+    logFilePathA8b: "D:\\GWC\\TXServer\\Log\\"
+    logFilePathA8c: "D:\\GWC\\PODClient\\Log\\"
+    logFilePathA8d: "D:\\GWC\\GWCClient\\Log\\"
+  when: inventory_hostname in spoolDateServ
+  tags: [A8z]
+
+- include_tasks: "startGWC.yml"
+  # make sure to run this together with A8z
+  vars:
+    actNo: "A8"
+    latestLogFileName: "{{ latestLogFileNameA8a }}"
+    log_keyword: "INFO: Server startup in"
+    log_tail_line: 5
+    startScript: "D:\\GWC\\apache-tomcat-7.0.108\\bin\\startup.bat"
+    killJavaProcess: yes
+    failMsg: "GWC Web not started. Please check!"
+    successMsg: "GWC Web started."
+  when: inventory_hostname in dr_app_ips
+  tags: [A8a]
+
+- include_tasks: "startGWC.yml"
+  # make sure to run this together with A8z
+  vars:
+    actNo: "A8"
+    latestLogFileName: "{{ latestLogFileNameA8b }}"
+    log_keyword: "(TXNSERVER) Started"
+    log_tail_line: 5
+    startScript: "D:\\GWC\\TXServer\\Script\\startServer.bat"
+    killJavaProcess: no
+    failMsg: "GWC Server not started. Please check!"
+    successMsg: "GWC Server started."
+  when: inventory_hostname in dr_app_ips
+  tags: [A8b]
+
+- include_tasks: "startGWC.yml"
+  # make sure to run this together with A8z
+  vars:
+    actNo: "A8"
+    latestLogFileName: "{{ latestLogFileNameA8c }}"
+    log_keyword: "Polling started"
+    log_tail_line: 10
+    startScript: "D:\\GWC\\PODClient\\script\\StartClient.bat"
+    killJavaProcess: no
+    failMsg: "GWC POD Client not started. Please check!"
+    successMsg: "GWC POD Client started."
+  when: inventory_hostname in dr_app_ips
+  tags: [A8c]
+
+- include_tasks: "startGWC_A8d.yml"
+  # make sure to run this together with A8z
+  vars:
+    actNo: "A8"
+    latestLogFileName: "{{ latestLogFileNameA8d }}"
+    log_keyword: "Purging Process Completed"
+    log_tail_line: 10
+    dir2ChangeTo: "D:\\GWC\\GWCClient\\script\\"
+    startScript: "startGWClient.bat"
+    killJavaProcess: no
+    failMsg: "GWC Client not started. Please check!"
+    successMsg: "GWC Client started."
+  when: inventory_hostname in dr_app_ips
+  tags: [A8d]
+
+- include_tasks: "checkSSHD.yml"
+  vars:
+    actNo: "A8"
+    serviceName: "sshd"
+  when: inventory_hostname in dr_app_ips
+  tags: [A8e]

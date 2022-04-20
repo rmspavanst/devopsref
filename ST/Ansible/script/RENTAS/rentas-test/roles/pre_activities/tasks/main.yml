@@ -1,0 +1,6 @@
+---
+
+- include_tasks: connectCheck.yml
+  when: inventory_hostname in conn_test_from_ip  
+  tags: [P5]
+

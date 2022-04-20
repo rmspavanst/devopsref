@@ -1,0 +1,64 @@
+---
+- include_tasks: manageWinServ.yml
+  vars:
+    srv_state: "stop"
+    WinService_act_no: "A4"
+  when: inventory_hostname in app_ips
+  tags: [A4]
+
+- include_tasks: disableScheduledTasks.yml
+  vars:
+    DisableScheduler: "A4a"
+  when: inventory_hostname in app_ips
+  tags: [A4a]
+
+- include_tasks: DBMirrorCheckSyncAndMirrorRole.yml
+  vars:
+    DBMirroring: "A7"
+    SQLServerInstance: "UATBPAYDB01"
+    DBName: "master"
+    checkSync: "SYNCHRONIZED"
+    mirrorRole: "PRINCIPAL"
+    DB2BSwitchOver: "BillPayment"
+  when: inventory_hostname in db_ip
+  tags: [A7.1]
+
+- include_tasks: DBMirrorSwitchOver.yml
+  vars:
+    DBMirroring: "A7"
+    SQLServerInstance: "UATBPAYDB01"
+    DBName: "master"
+    DB2BSwitchOver: "BillPayment"
+  when: inventory_hostname in db_ip
+  tags: [A7.2]
+
+- include_tasks: DBMirrorCheckSyncAndMirrorRole.yml
+  vars:
+    DBMirroring: "A7"
+    SQLServerInstance: "UATBPAYDB01"
+    DBName: "master"
+    checkSync: "SYNCHRONIZED"
+    mirrorRole: "MIRROR"
+    DB2BSwitchOver: "BillPayment"
+  when: inventory_hostname in db_ip
+  tags: [A7.3]
+
+- include_tasks: manageWinServ.yml
+  vars:
+    srv_state: "start"
+    WinService_act_no: "A12"
+  when: inventory_hostname in dr_app_ips
+  tags: [A12]
+
+- include_tasks: enableScheduledTasks.yml
+  vars:
+    EnableScheduler: "A14"
+  when: inventory_hostname in dr_app_ips
+  tags: [A14]
+
+- include_tasks: checkURL.yml
+  vars:
+    TestURL: "A13"
+  when: inventory_hostname in dr_app_ips
+  tags: [A13]
+

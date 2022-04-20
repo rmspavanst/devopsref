@@ -1,0 +1,55 @@
+---
+
+- block:
+    - name: "{{verifyFTPfromTM}} - Verify if the directory exists in server {{inventory_hostname}}" 
+      win_stat:
+        path: "{{ ftpdir2bVerifiedfromTM }}"
+      register: conn_test_path
+
+    - fail:
+        msg: "{{ verifyFTPfromTM}}- directory {{ ftpdir2bVerifiedfromTM }} doesn't exist in server {{inventory_hostname}}!"
+      when: not conn_test_path.stat.exists
+
+    - name: "{{verifyFTPfromTM}} - Count number of files in dir {{ ftpdir2bVerifiedfromTM }}"
+      win_command: powershell.exe -
+      args:
+        stdin: cd -Path {{ftpdir2bVerifiedfromTM}} -PassThru ; $fileCount = (Get-ChildItem -File | Measure-Object).Count ; Write-Host "fileCount $fileCount"
+      register: result
+   
+    - set_fact:
+        fileCount: "{{ item.split()[1] }}"
+      when: item | regex_search('fileCount')
+      with_items: "{{result.stdout_lines}}"
+
+    - debug:
+        msg: "{{ verifyFTPfromTM}}- The number of files in dir {{ ftpdir2bVerifiedfromTM }} is {{fileCount}}"
+      when: fileCount|int > 0      
+
+    - name: "{{verifyFTPfromTM}} - Remove the filecount file in temp dir {{ansibleTempDir}}"
+      win_file:
+        path: "{{ ansibleTempDir + '\\fileCount.txt'}}"
+        state: absent
+ 
+    - name: "{{verifyFTPfromTM}} - Create the filecount file in temp dir {{ansibleTempDir}}"
+      win_file:
+        path: "{{ ansibleTempDir + '\\fileCount.txt'}}"
+        state: touch
+
+    - name: "{{verifyFTPfromTM}} - Record the filecount in temp dir {{ansibleTempDir}} for comparison after TM sent test file"
+      win_copy:
+        content: "{{fileCount}}"
+        dest: "{{ ansibleTempDir + '\\fileCount.txt' }}"
+
+    - name: "{{ verifyFTPfromTM}}- Display recorded file count from tempfile"
+      win_command: powershell.exe -
+      args:
+        stdin: Get-Content {{ ansibleTempDir + '\\fileCount.txt' }}
+      register: file_output
+
+    - debug:
+        var: file_output.stdout
+
+  tags:
+    - A16a
+    - B18a
+

@@ -1,0 +1,47 @@
+---
+
+- block:
+    - set_fact:
+        dayMinus: -10
+      when: dayMinus is not defined
+
+    - win_shell: (Get-date).AddDays({{dayMinus}}).ToString('yyyy-MM-dd HH:mm')
+      register: result
+
+    - debug:
+        var: result.stdout
+
+    - set_fact:
+        servDate: "{{result.stdout | trim}}"
+
+    - name: '{{ verifyDBUpdate }} Verify the Outbound File processed successfully and updated to Database'
+      win_shell: "invoke-sqlcmd -Query \"{{DBQuery}}\" -ServerInstance \"{{SQLServerInstance}}\" -Database \"{{DBName}}\""
+      register: response
+
+    - set_fact:
+        rowCount: "{{ rowCount | default([]) + [item] }}"
+      with_items: "{{ response.stdout_lines | regex_findall('\\s+(\\d+)',multiline=True) | replace(\"'\",'') | trim }}"
+
+    - debug:
+        var: rowCount
+
+    - set_fact:
+        verifyFail: false
+  
+    - set_fact:
+        verifyFail: true
+      when: rowCount[item] | int == 0
+      with_items: {0,1,2,3}
+
+    - debug:
+        msg: "{{ verifyDBUpdate }} - Outbound File processed successfully and updated to Database verified"
+      when: not verifyFail
+
+    - fail:
+        msg: "{{ verifyDBUpdate }} - Database update failed!"
+      when: verifyFail
+      
+  tags:
+    - A23
+    - B25
+

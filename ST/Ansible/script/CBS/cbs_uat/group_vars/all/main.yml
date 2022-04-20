@@ -1,0 +1,15 @@
+---
+
+prod_ip: "10.22.2.245"
+dr_ip: "10.22.2.245"
+
+ans_pg_DB: "10.22.64.88"
+
+pgDB: awx
+host: 10.22.64.88
+DBuser: awx
+DBpassword: awx
+
+excelFileName: "/install/CBS/cbs_uat/lists.xlsx"
+rowInExcel: 100
+

@@ -1,0 +1,22 @@
+---
+- block:
+    - name: "{{actNo}} - Display running {{serviceName}} processes"
+      win_shell: "tasklist /v | findstr \"{{ serviceName }}\""
+      register: runningProcess
+      ignore_errors: yes
+
+    - debug:
+        var: runningProcess
+
+    - block:
+      - assert:
+          that:
+            - runningProcess.stdout | length != 0
+          success_msg: "{{actNo}} - process {{serviceName}} is/are running in server {{inventory_hostname}}"
+          fail_msg: "{{actNo}} - process {{serviceName}} is/are not running in server {{inventory_hostname}}. Please check!"
+        ignore_errors: yes
+
+  tags:
+    - A8e
+
+

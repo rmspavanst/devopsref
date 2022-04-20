@@ -1,0 +1,19 @@
+---
+
+- block:
+    - debug:
+        msg: "{{ StartScheduler }}- To start the Scheduler tasks"
+
+    - fail:
+        msg: "{{ StartScheduler }}- Scheduler task list {{ task_names }} doesn't exist."
+      when: task_names | length == 0
+
+    - name: "{{ StartScheduler }} - Start the Scheduler tasks"
+      include_tasks: startScheduledTask.yml
+      vars:
+        task_name: "{{ item }}"
+      with_items: "{{ task_names }}"
+      loop_control:
+        loop_var: task_name
+  tags:
+    - A2

@@ -1,0 +1,41 @@
+---
+- block:
+
+    - debug:
+        msg: "{{ WinService_act_no }}- To stop Windows Service"
+
+    - fail:
+        msg: "{{ WinService_act_no }}- Windows service {{ windows_srv_name }} doesn't exist."
+      when: windows_srv_name | length == 0
+
+    - name: "{{ WinService_act_no }} - Stop Windows Service"
+      win_service:
+        name: "{{ windows_srv_name }}"
+        state: "{{ srv_state }}"
+      register: service_stat
+
+    - debug:
+        var: service_stat
+
+    - set_fact:
+        service_state: 'stopped'
+      when: srv_state == 'stopped'
+      
+    - set_fact:
+        service_state: 'running'
+      when: srv_state == 'started'
+      
+    - debug:
+        msg: "{{ WinService_act_no }} - The service {{ windows_srv_name }} is {{service_state}} in {{inventory_hostname}}."
+      when: service_stat.state == service_state
+      
+    - fail:
+        msg: "{{ WinService_act_no }} - The service {{ windows_srv_name }} is not {{service_state}} in {{inventory_hostname}}. Please check!"
+      when: service_stat.state != service_state
+      
+  tags:
+    - P10
+    - B4
+    - A2
+    - B11
+    

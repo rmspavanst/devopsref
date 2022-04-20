@@ -1,0 +1,37 @@
+---
+
+ans_password: "P@ssw0rd"
+#ans_password: "@Mukmin2020"
+
+conn_test_from_ip: "172.31.126.242"
+conn_test_sourceList: "connectivityTest.txt"
+conn_test_destList: "c:\\output\\connectCheck.txt"
+conn_test_destDir: "c:\\output"
+
+url2bTested: "https://billpay.bankislam.com.my"
+
+checkDirFileSync_priServ: "172.31.126.242"
+checkDirFileSync_drServ: "172.31.126.242"
+
+checkDirFileSync_dirLoc: "c:\\output"
+
+windows_srv_name: "ndinit"
+
+task_names: [
+  "Dummy Task1",
+  "Dummy Task2"
+]
+
+app_ips: [
+  "172.31.126.242"
+]
+
+dr_app_ips: [
+  "172.31.126.242"
+]
+
+dr_db_ip: "10.22.163.11"
+db_ip: "10.22.163.11"
+
+pause_duration: "5"
+

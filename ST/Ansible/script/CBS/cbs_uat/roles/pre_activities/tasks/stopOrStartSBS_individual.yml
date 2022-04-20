@@ -1,0 +1,69 @@
+---
+- block:
+    - block:
+        - name: "{{actNo}} - {{SBSAct}} Subsystem {{SBSName}}"
+          ibm.power_ibmi.ibmi_cl_command:
+            cmd: STRSBS SBSD({{SBSLib}}/{{SBSName}})
+          ignore_errors: yes
+          register: crt_lib_result
+
+        - debug:
+            var: crt_lib_result
+      when: SBSAct == 'START'
+
+    - block:
+        - name: "{{actNo}} - {{SBSAct}} Subsystem {{SBSName}}"
+          ibm.power_ibmi.ibmi_cl_command:
+            cmd: ENDSBS {{SBSName}} OPTION(*IMMED)
+          ignore_errors: yes
+          register: crt_lib_result
+
+        - debug:
+            var: crt_lib_result
+      when: SBSAct == 'STOP'
+
+    - name: "{{actNo}} - Run Subsystem check command"
+      ibm.power_ibmi.ibmi_cl_command:
+        cmd: DSPSBSD SBSD({{SBSLib}}/{{SBSName}})
+      ignore_errors: yes
+      register: result
+
+    - debug:
+        var: result
+
+    - set_fact:
+        OprStat: "{{ result.stdout_lines | regex_search('Status.*:\\s+(\\w+)', '\\1',multiline=true) | first }}"
+      when: result.stdout | length > 0
+
+    - set_fact:
+        OprStat: "not found in the server!"
+      when: result.stderr | length > 0
+
+    - block:
+        - name: "{{actNo}} - Check Subsystem {{SBSLib}}/{{SBSName}} running status"
+          assert:
+            that:
+              - OprStat == 'Active'
+            fail_msg: "Subsystem {{SBSLib}}/{{SBSName}} is not running. Please check!"
+            success_msg: "Subsystem {{SBSLib}}/{{SBSName}} is running"
+          ignore_errors: yes
+      when:
+        - SBSAct == 'START'
+        - result.stderr | length == 0
+
+    - block:
+        - name: "{{actNo}} - Check Subsystem {{SBSLib}}/{{SBSName}} running status"
+          assert:
+            that:
+              - OprStat == 'Inactive'
+            fail_msg: "Subsystem {{SBSLib}}/{{SBSName}} is still running. Please check!"
+            success_msg: "Subsystem {{SBSLib}}/{{SBSName}} is stopped"
+          ignore_errors: yes
+      when:
+        - SBSAct == 'STOP'
+        - result.stderr | length == 0
+
+  tags:
+    - A94
+    - A11
+

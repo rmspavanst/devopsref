@@ -1,0 +1,20 @@
+---
+
+- hosts:
+    - gwc
+  gather_facts: false
+  become_method: runas
+  vars:
+    ansible_become_user: bimbsupport
+    ansible_become_password: \@mukmin2020
+    ansible_become_flags: logon_type=interactive logon_flags=with_profile
+          #    ansible_become_password: "{{ ans_password }}"
+
+  tasks:
+   - include_role:
+       name: swing_over_DR
+     tags: [A3-A6-a,A3-A6-b,A3-A6-c,A7a,A7b,A7c,A8a,A8b,A8c,A8d,A8e]
+  
+     #  any_errors_fatal: true
+
+

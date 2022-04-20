@@ -1,0 +1,24 @@
+---
+
+- hosts: 172.31.126.242
+  gather_facts: false
+  become_method: runas
+  vars:
+    ansible_become_password: "{{ ans_password }}"
+
+  tasks:
+  - name: "Xxx"
+    win_shell: iisreset /status
+    register: service_stat
+    become: yes
+    become_user: ansible
+
+  - debug:
+      var: service_stat.stdout | trim
+
+  - set_fact:
+      serviceStatus: "{{ service_stat.stdout | regex_findall('Status.*:\\s+(\\w+)') }}"
+    
+  - debug:
+      var: serviceStatus
+

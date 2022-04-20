@@ -1,0 +1,70 @@
+---
+- block:
+    - set_fact:
+        SBSFullName: '{{ result.sheet_index_0[rowNumber] }}'
+
+    - set_fact:
+        SBSLibrary: "{{ SBSFullName.col_1 }}"
+        SBSName: "{{ SBSFullName.col_2 }}"
+
+    - name: "{{actNo}} - Run Subsystem check command"
+      ibm.power_ibmi.ibmi_cl_command:
+        cmd: DSPSBSD SBSD({{SBSLibrary}}/{{SBSName}})
+      ignore_errors: yes
+      register: crt_lib_result
+      
+    - debug:
+        var: crt_lib_result
+
+    - set_fact:
+        OprStat: "{{ crt_lib_result.stdout_lines | regex_search('Status.*:\\s+(\\w+)', '\\1',multiline=true) | first }}"
+      when: crt_lib_result.stdout | length > 0
+
+    - set_fact:
+        OprStat: "not found in the server!"
+      when: crt_lib_result.stderr | length > 0
+
+    - debug:
+        var: OprStat
+
+
+    - block:
+        - name: "{{actNo}} - Check Subsystem {{SBSLibrary}}/{{SBSName}} running status"
+          assert:
+            that:
+              - OprStat == 'Active'
+            fail_msg: "Subsystem {{SBSLibrary}}/{{SBSName}} is not running. Please check!"
+            success_msg: "Subsystem {{SBSLibrary}}/{{SBSName}} is running"
+          ignore_errors: yes
+      when: 
+        - SBSAction == 'START'
+        - crt_lib_result.stderr | length == 0
+
+    - block:
+        - name: "{{actNo}} - Check Subsystem {{SBSLibrary}}/{{SBSName}} running status"
+          assert:
+            that:
+              - OprStat == 'Inactive'
+            fail_msg: "Subsystem {{SBSLibrary}}/{{SBSName}} is still running. Please check!"
+            success_msg: "Subsystem {{SBSLibrary}}/{{SBSName}} is stopped"
+          ignore_errors: yes
+      when: 
+        - SBSAction == 'STOP'
+        - crt_lib_result.stderr | length == 0
+
+    - name: "Write result to a temp file for {{SBSLibrary}}/{{SBSName}}"
+      lineinfile:
+        path: "{{ansPath}}/temp/SBSCheckStatus"
+        line: "{{SBSLibrary}}/{{SBSName}} is {{OprStat}}"
+        create: yes
+      delegate_to: localhost
+
+  when:
+    - result.sheet_index_0[rowNumber] is defined
+    - result.sheet_index_0[rowNumber].col_1 != "None"
+  tags:
+    - A16
+    - A49
+    - B36
+    - B66
+

@@ -1,6 +1,0 @@
----
-- include_tasks: "{{ role_path }}/../run_prerequisite/tasks/update_db.yml"
-  vars:
-    - query: "update tb_abnf_promotion_master set auth_status='U' where content_id='992' and screen_id='Downtime';commit; --put down downtime"
-    - expected_op: "auth_status='U'"
-  when: inventory_hostname==dr_db_ip

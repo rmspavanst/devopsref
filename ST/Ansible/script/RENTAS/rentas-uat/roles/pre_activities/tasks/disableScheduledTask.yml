@@ -1,0 +1,19 @@
+---
+- block:
+    - name: "{{ DisableScheduler }} - Disable Scheduler"
+      win_command: powershell.exe -
+      args: 
+        stdin: Disable-ScheduledTask -TaskName "{{ task_name }}"
+      register: scheduler_chg_stat
+      
+    - debug:
+        msg: "{{ DisableScheduler }} - Scheduled Task {{ task_name }} is disabled"
+      when: scheduler_chg_stat.stderr|length == 0
+      
+    - fail:
+        msg: "{{ DisableScheduler }} - Scheduled Task {{ task_name }} cannot be disabled. Please check!"
+      when: scheduler_chg_stat.stderr|length != 0
+    
+  tags:
+    - P9
+    - B7

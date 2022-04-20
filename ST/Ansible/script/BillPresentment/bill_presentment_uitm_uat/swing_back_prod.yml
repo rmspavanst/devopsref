@@ -1,0 +1,17 @@
+---
+
+- hosts:
+    - all
+  gather_facts: false
+  become_method: runas
+  vars:
+    ansible_become_password: "{{ ans_password }}"
+
+  tasks:
+   - include_role:
+       name: swing_back_prod
+     tags: [B2,B8.1,B8.2,B8.3,B13,B14,B17,B18a,B18c]
+  
+  any_errors_fatal: true
+
+

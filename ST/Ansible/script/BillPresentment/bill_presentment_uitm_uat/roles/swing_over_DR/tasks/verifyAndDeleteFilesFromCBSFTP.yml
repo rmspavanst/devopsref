@@ -1,0 +1,56 @@
+---
+
+- block:
+    - name: "{{ verifyFTPfromCBS }} - Verify if the directory exists in server {{inventory_hostname}}" 
+      win_stat:
+        path: "{{ ftpdir2bVerifiedfromCBS }}"
+      register: conn_test_path
+
+    - fail:
+        msg: "{{ verifyFTPfromCBS }} - directory {{ ftpdir2bVerifiedfromCBS }} doesn't exist in server {{inventory_hostname}}!"
+      when: not conn_test_path.stat.exists
+
+    - name: "{{ verifyFTPfromCBS }} - Retrieve list of files in {{ ftpdir2bVerifiedfromCBS }}"
+      win_find:
+        paths: "{{ ftpdir2bVerifiedfromCBS }}"
+        file_type: file
+      register: filesInUITMOut
+
+    - name: "{{ verifyFTPfromCBS }} - Save list of files in {{ ftpdir2bVerifiedfromCBS }}"
+      set_fact:
+        filesInUITMOutDir: "{{ filesInUITMOutDir | default([]) + [item.filename] }}"
+      no_log: true
+      loop: "{{ filesInUITMOut.files }}"
+        
+    - name: "{{ verifyFTPfromCBS }} - List of files in {{ ftpdir2bVerifiedfromCBS }}"
+      debug:
+        var: filesInUITMOutDir
+
+    - set_fact:
+        actualFilesRecvFromCBS: "{{ filesExpectedFromCBS | intersect(filesInUITMOutDir) }}"
+        missedFilesFromCBS: "{{ filesExpectedFromCBS | difference(filesInUITMOutDir) }}"
+
+    - name: "{{ verifyFTPfromCBS }} - Stop if no files received from CBS FTP"
+      fail:
+        msg: "No files received from CBS"
+      when: actualFilesRecvFromCBS | length == 0
+
+    - name: "{{ verifyFTPfromCBS }} - Received {{ actualFilesRecvFromCBS | length }} files from CBS:"
+      debug: 
+        var: actualFilesRecvFromCBS
+
+    - name: "{{ verifyFTPfromCBS }} - Missed {{ missedFilesFromCBS | length }} expected files from CBS:"
+      debug:
+        var: missedFilesFromCBS
+      when: missedFilesFromCBS | length != 0
+
+    - name: "{{ verifyFTPfromCBS }} - Proceed with files deletion after verification"
+      win_file:
+        path: "{{ ftpdir2bVerifiedfromCBS }}\\{{ item }}"
+        state: absent
+      loop: "{{ actualFilesRecvFromCBS }}"
+
+  tags:
+    - A15
+    - B17
+

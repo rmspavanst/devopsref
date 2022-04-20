@@ -1,0 +1,16 @@
+---
+- hosts: all
+
+  tasks:
+    - name: Create Test Registry
+      win_regedit:
+        path: HKCU:\Software\MyCompany
+        name: ImagePath
+        state: absent
+        delete_key: yes
+      register: regedit_stat
+
+    - debug:
+        var: regedit_stat
+
+

@@ -1,0 +1,24 @@
+---
+- block:
+
+    - name: "{{actNo}} - Run job submission command for job {{jobName}}"
+      ibm.power_ibmi.ibmi_cl_command:
+        cmd: "{{command}}"
+        joblog: true
+      register: crt_lib_result
+
+    - debug:
+        var: crt_lib_result.stdout
+
+    - name: "{{actNo}} - Check job submission status for job {{jobName}}"
+      assert:
+        that:
+          - "'success' in crt_lib_result.stdout"
+        fail_msg: "Job submission for {{jobName}} not OK. Please check!"
+        success_msg: "Job submission for {{jobName}} OK."
+
+  tags:
+    - A65
+    - B69
+    - B83
+

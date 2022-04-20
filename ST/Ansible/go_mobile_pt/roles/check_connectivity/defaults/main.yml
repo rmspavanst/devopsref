@@ -1,3 +1,0 @@
----
-connectivity_script_file: '/app/maintenance/scripts/connectionStatus.sh'
-connected: "Connected"

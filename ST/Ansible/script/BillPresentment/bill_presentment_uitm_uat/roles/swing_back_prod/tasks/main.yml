@@ -1,0 +1,74 @@
+---
+- block:
+    - include_tasks: "{{ role_path }}/../swing_over_DR/tasks/DBMirrorCheckSyncAndMirrorRole.yml"
+      vars:
+        DBMirroring: "B2"
+        SQLServerInstance: "UATTAKFLMSVR01"
+        DBName: "master"
+        checkSync: "SYNCHRONIZED"
+        mirrorRole: "PRINCIPAL"
+        DB2BSwitchOver: "TM"
+      when: inventory_hostname in dr_db_ip
+      tags: [B2]
+
+    - include_tasks: "{{ role_path }}/../swing_over_DR/tasks/DBMirrorCheckSyncAndMirrorRole.yml"
+      vars:
+        DBMirroring: "B8"
+        SQLServerInstance: "UATTAKFLMSVR01"
+        DBName: "master"
+        checkSync: "SYNCHRONIZED"
+        mirrorRole: "PRINCIPAL"
+        DB2BSwitchOver: "TM"
+      when: inventory_hostname in dr_db_ip
+      tags: [B8.1]
+
+    - include_tasks: "{{ role_path }}/../swing_over_DR/tasks/DBMirrorSwitchOver.yml"
+      vars:
+        DBMirroring: "B8"
+        SQLServerInstance: "UATTAKFLMSVR01"
+        DBName: "master"
+        DB2BSwitchOver: "TM"
+      when: inventory_hostname in dr_db_ip
+      tags: [B8.2]
+
+    - include_tasks: "{{ role_path }}/../swing_over_DR/tasks/DBMirrorCheckSyncAndMirrorRole.yml"
+      vars:
+        DBMirroring: "B8"
+        SQLServerInstance: "UATTAKFLMSVR01"
+        DBName: "master"
+        checkSync: "SYNCHRONIZED"
+        mirrorRole: "MIRROR"
+        DB2BSwitchOver: "TM"
+      when: inventory_hostname in dr_db_ip
+      tags: [B8.3]
+
+    - include_tasks: "{{ role_path }}/../swing_over_DR/tasks/disableScheduledTasks.yml"
+      vars:
+        DisableScheduler: "B13"
+      when: inventory_hostname in dr_app_ips
+      tags: [B13]
+
+    - include_tasks: "{{ role_path }}/../swing_over_DR/tasks/enableScheduledTasks.yml"
+      vars:
+        EnableScheduler: "B14"
+      when: inventory_hostname in app_ips
+      tags: [B14]
+
+    - include_tasks: "{{ role_path }}/../swing_over_DR/tasks/verifyAndDeleteFilesFromCBSFTP.yml"
+      vars:
+        verifyFTPfromCBS: "B17"
+      when: inventory_hostname in app_ips
+      tags: [B17]
+
+    - include_tasks: "{{ role_path }}/../swing_over_DR/tasks/pre_ftpVerifyFromClient.yml"
+      vars:
+        verifyFTPfromClient: "B18a"
+      when: inventory_hostname in app_ips
+      tags: [B18a]
+
+    - include_tasks: "{{ role_path }}/../swing_over_DR/tasks/post_ftpVerifyAndDeleteFromClient.yml"
+      vars:
+        verifyFTPfromClient: "B18c"
+      when: inventory_hostname in app_ips
+      tags: [B18c]
+

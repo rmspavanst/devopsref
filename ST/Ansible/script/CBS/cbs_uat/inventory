@@ -1,0 +1,9 @@
+[ibmi]
+10.22.2.245 ansible_user=R2SE3OPR1 ansible_password=islam123
+
+# [ibmi:vars]
+# ansible_python_interpreter="/QOpensys/pkgs/bin/python3"
+# ansible_ssh_common_args='-o StrictHostKeyChecking=no'
+
+[pg]
+10.22.64.88

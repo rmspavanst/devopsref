@@ -1,0 +1,19 @@
+---
+- hosts: localhost
+
+  tasks:
+  - name: Check ports accessibilty
+    wait_for:
+      host: 10.22.2.245 
+      port: "{{ item }}"
+      state: started
+      delay: 0
+      timeout: 3
+    ignore_errors: yes
+    register: portout
+    with_items:
+      - 21
+      - 22
+
+  - debug:
+      var: portout

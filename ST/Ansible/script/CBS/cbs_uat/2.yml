@@ -1,0 +1,20 @@
+---
+
+- hosts: pg
+  gather_facts: false
+  collections:
+    - ibm.power_ibmi
+
+  tasks:
+    - shell: 
+        noOfRows: "{{ row|length }}"
+
+    - shell: truncate -s 0 /tmp/1
+
+    - include_tasks: 3.yml
+      vars:
+        rowNumber: "{{ outer_item }}"
+      loop: "{{ range(0, (row)| length)|list  }}"
+      loop_control:
+        loop_var: outer_item
+   

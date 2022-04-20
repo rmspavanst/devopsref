@@ -1,0 +1,29 @@
+---
+- block:
+    - block:
+        - name: "{{actNo}} - Check drive {{drive}} usage in Prod GWC App server"
+          win_shell: Get-PsDrive {{drive}} | ConvertTo-Json
+          register: output
+
+        - name: extract free space
+          set_fact:
+            free_json: "{{ output.stdout|from_json}}"
+
+        - set_fact:
+            TotalSize: "{{ free_json.Free|int + free_json.Used|int }}"
+
+        - set_fact:
+            PercentFree: "{{ free_json.Free|int / TotalSize|int * 100 }}"
+
+        - debug:
+            var: PercentFree
+
+        - name: "{{actNo}} - Report on drive {{drive}} free space status"
+          assert:
+            that:
+              - "PercentFree|int > 70"
+            fail_msg: "Drive {{drive}} usage more than 70%. Please check!"
+            success_msg: "Drive {{drive}} usage less than 70%."
+
+  tags:
+    - P7

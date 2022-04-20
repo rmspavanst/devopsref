@@ -1,0 +1,57 @@
+---
+- block:
+    - set_fact:
+        svc_state: 'stopped'
+        expected_state: 'stopped'
+      when: action == 'stop'
+
+    - set_fact:
+        svc_state: 'started'
+        expected_state: 'running'
+      when: action == 'start'
+
+    - set_fact:
+        svc_state: 'restarted'
+        expected_state: 'running'
+      when: action == 'restart'
+
+    - name: "{{ actNo }} - To {{ action }} {{ svc_name }} service in {{ inventory_hostname }}"
+      win_service:
+        name: "{{ svc_name }}"
+        state: "{{ svc_state }}"
+      until: svc_stat.state == expected_state
+      retries: 3
+      delay: 5
+      register: svc_stat
+
+    - debug:
+        var: svc_stat
+      
+    - debug:
+        msg: "{{ actNo }} - The service {{ svc_name }} is {{ expected_state }} in {{ inventory_hostname }}"
+      when: svc_stat.state == expected_state
+      
+    - fail:
+        msg: "{{ actNo }} - The service {{ svc_name }} is not {{ expected_state }} in {{ inventory_hostname }}. Please check!"
+      when: svc_stat.state != expected_state
+      
+  tags:
+    - A10
+    - A15
+    - A18
+    - A19.1
+    - A19.2
+    - A19.3
+    - A20
+    - A21.2
+    - A22
+    - B11
+    - B15
+    - B16
+    - B17
+    - B18
+    - B19.1
+    - B19.3
+    - B20
+    - B21
+

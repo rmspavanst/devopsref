@@ -1,0 +1,11 @@
+
+pending
+=======
+-- 
+
+
+for prod deployment
+===================
+1. Remove the hard-coded fileMember variable in /install/CBS/cbs_uat/roles/pre_activities/tasks/memberVar.yml
+
+

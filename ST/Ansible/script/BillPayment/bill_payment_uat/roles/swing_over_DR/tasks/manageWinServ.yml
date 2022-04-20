@@ -1,0 +1,36 @@
+---
+- block:
+
+    - debug:
+        msg: "{{ WinService_act_no }}- To {{srv_state}} Internet services"
+
+    - set_fact:
+        service_state: 'Stopped'
+        stdoutValue: 'stopped'
+      when: srv_state == 'stop'
+
+    - set_fact:
+        service_state: 'Running'
+        stdoutValue: 'started'
+      when: srv_state == 'start'
+
+    - name: "{{ WinService_act_no }} - {{srv_state}} Internet services"
+      win_shell: iisreset /{{srv_state}}
+      register: actOutput
+      retries: 3
+      delay: 10
+      until: (actOutput.stdout | regex_search('Internet services successfully {{stdoutValue}}') | default('global', boolean=True)) in actOutput.stdout
+      ignore_errors: yes
+
+    - assert:
+        that:
+          - "'Internet services successfully {{stdoutValue}}' in actOutput.stdout"
+        fail_msg: "Internet services not able to be {{stdoutValue}}"
+        success_msg: "Internet services successfully {{stdoutValue}}"
+
+  tags:
+    - A12
+    - A4
+    - B2
+    - B10
+

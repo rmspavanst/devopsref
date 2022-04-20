@@ -1,0 +1,21 @@
+---
+
+conn_test_from_ip: "UATUTNSDB01.BANKISLAM.COM.MY"
+conn_test_destDir: "D:\\output"
+conn_test_sourceList: "connectivityTest.txt"
+conn_test_destList: "D:\\output\\connectCheck.txt"
+
+app_ips: [
+  "172.31.127.137"
+#  "UATUTNSDB01.BANKISLAM.COM.MY"
+]
+
+dr_app_ips: [
+  "172.31.127.137"
+#  "UATUTNSDB01.BANKISLAM.COM.MY"
+]
+
+dr_db_ip: "UATUTNSDB01.BANKISLAM.COM.MY"
+db_ip: "UATUTNSDB01.BANKISLAM.COM.MY"
+
+

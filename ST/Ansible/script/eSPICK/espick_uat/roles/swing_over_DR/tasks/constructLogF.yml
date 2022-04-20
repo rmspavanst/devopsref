@@ -1,0 +1,26 @@
+---
+- block:
+    - name: "{{ actNo }} - Construct date format for GWC Web (A8a) logfile"
+      win_shell: get-date -format "yyyy-MM-dd"
+      register: result
+
+    - set_fact:
+        latestLogFileNameA8a: "{{ logFilePathA8a + 'catalina.' + result.stdout|trim + '.log' }}"
+
+    - name: "{{ actNo }} - Construct date format for GWC Server (A8b) logfile"
+      win_shell: get-date -format "yyyyMMdd"
+      register: result1
+
+    - set_fact:
+        latestLogFileNameA8b: "{{ logFilePathA8b + result1.stdout|trim + '-TXServer.log' }}"
+
+    - name: "{{ actNo }} - Construct date format for GWC POD Client (A8c) logfile"
+      set_fact:
+        latestLogFileNameA8c: "{{ logFilePathA8c + result1.stdout|trim + '-PODClient.log' }}"
+
+    - name: "{{ actNo }} - Construct date format for GWC Client (A8d) logfile"
+      set_fact:
+        latestLogFileNameA8d: "{{ logFilePathA8d + result1.stdout|trim + '-GWCClient.log' }}"
+
+  tags:
+    - A8z

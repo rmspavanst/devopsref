@@ -1,0 +1,21 @@
+---
+- include_tasks: "{{role_path}}/../pre_activities/tasks/stopStartWinSvc.yml"
+  vars:
+    actNo: "B4-B6"
+    svc_name: "TBD"
+    action: "stop"
+  when: inventory_hostname in dr_app_ips
+  tags: [B4-B6]
+
+- include_tasks: "{{role_path}}/../pre_activities/tasks/DBMirrorCheckSyncAndMirrorRole.yml"
+  vars:
+    DBMirroring: "B5-B7"
+    SQLServerInstance: "??"
+    DBName: "master"
+    checkSync: "SYNCHRONIZED"
+    mirrorRole: "PRINCIPAL"
+    DB2BSwitchOver: "??"
+  when: inventory_hostname in dr_db_ip
+  tags: [B5-B7]
+
+

@@ -1,0 +1,25 @@
+---
+- block:
+
+    - name: "{{actNo}} - {{MQMAct}} MQ Manager"
+      ibm.power_ibmi.ibmi_cl_command:
+        cmd: "{{command}} MQMNAME({{ MQM }})"
+      ignore_errors: yes
+      register: crt_lib_result
+      
+    - debug:
+        var: crt_lib_result
+
+    - pause:
+        seconds: 10
+
+    - name: "{{ actNo }} - Check MQ Manager status"
+      include_tasks: checkMQStatus.yml
+      vars:
+        MQMAction: "{{MQMAct}}"
+
+  tags:
+    - A15
+    - A51
+    - B35
+

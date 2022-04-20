@@ -1,0 +1,48 @@
+---
+  - block:
+      - name: "{{actNo}} - Query servers' entries in Excel file name {{excelFileName}}"
+        open_excel:
+          src: "{{excelFileName}}"
+          sheet_name: "{{sheetName}}"
+          index_by_name: false
+          op: "r"
+          read_range: "{{ {'start_row': 1, 'start_col': 1, 'end_row': '{{rowInExcel}}', 'end_col': 2} }}"
+        register: result
+
+#      - debug:
+#          var: result
+
+#      - name: "{{actNo}} - Delete temp file"
+#        file:
+#          path: /tmp/fileInfo
+#          state: absent
+#        delegate_to: localhost
+
+      - name: "{{actNo}} - Delete temp file"
+        file:
+          path: "{{ansPath}}/{{tempfile}}"
+          state: absent
+    delegate_to: localhost
+    tags:
+      - A20a
+      - A20b
+      - B40a
+      - B40b
+
+  - block:
+      - name: "{{actNo}} - Display library file's details"
+        include_tasks: compareLibFile.yml
+        vars:
+          rowNumber: "{{ outer_item }}"
+        with_items: {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34}
+        loop_control:
+          loop_var: outer_item
+  
+      - debug:
+          msg: "{{actNo}} - Library files' details copied to {{ansPath}}/{{tempfile}}"
+
+    tags:
+      - A20a
+      - A20b
+      - B40a
+      - B40b

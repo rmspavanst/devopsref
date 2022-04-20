@@ -1,0 +1,21 @@
+---
+- block:
+  - name: "{{ actNo }} - Verify {{ line2replace }} exists"
+    lineinfile:
+      name: "{{ file }}"
+      regexp: "{{ line2check }}"
+      line: "{{ line2replace }}"
+      state: present
+    register: grep_stat
+
+  - debug:
+      msg: "{{ actNo }} - {{ line2replace }} exists in {{ file }}. No action taken"
+    when: not grep_stat is changed
+
+  - debug:
+      msg: "{{ actNo }} - {{ line2replace }} has been replaced or inserted into {{ file }}"
+    when: grep_stat is changed or grep_stat is failed
+
+  tags:
+    - A24
+    - B23

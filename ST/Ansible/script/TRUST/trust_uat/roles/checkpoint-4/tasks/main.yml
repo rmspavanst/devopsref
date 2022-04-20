@@ -1,0 +1,13 @@
+---
+- include_tasks: "{{role_path}}/../pre_activities/tasks/DBMirrorCheckSyncAndMirrorRole.yml"
+  vars:
+    DBMirroring: "B2"
+    SQLServerInstance: "??"
+    DBName: "master"
+    checkSync: "SYNCHRONIZED"
+    mirrorRole: "PRINCIPAL"
+    DB2BSwitchOver: "??"
+  when: inventory_hostname in dr_db_ip
+  tags: [B2]
+
+

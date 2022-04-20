@@ -1,0 +1,28 @@
+---
+- block:
+
+    - name: "{{actNo}} - Verify IP address in {{fileName}}"
+      win_shell: |
+        Get-Content -Path {{fileName}}
+      register: fileContent
+    
+    - debug:
+        var: fileContent
+
+    - set_fact:
+        IPAddress: "{{ fileContent.stdout | regex_findall('destIp=(\\d+[.]\\d+[.]\\d+[.]\\d+)') }}"
+
+    - debug:
+        var: IPAddress
+
+    - assert:
+        that:
+          - IPAddress[item] == correctIP
+        success_msg: "{{actNo}} - IP matched with {{correctIP}}"
+        fail_msg: "{{actNo}} - IP does not match {{correctIP}}. Please check!"
+      with_items: {0,1,2,3,4,5,6,7,8}
+      when: 
+        - IPAddress[item] is defined
+
+  tags:
+    - A7c

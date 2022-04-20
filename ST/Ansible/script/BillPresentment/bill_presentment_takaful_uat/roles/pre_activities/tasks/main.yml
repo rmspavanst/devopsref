@@ -1,0 +1,17 @@
+---
+
+- include_tasks: connectCheck.yml
+  when: inventory_hostname in conn_test_from_ip  
+  tags: [P8]
+
+- include_tasks: "{{ role_path }}/../swing_over_DR/tasks/DBMirrorCheckSyncAndMirrorRole.yml"
+  vars:
+    DBMirroring: "P12"
+    SQLServerInstance: "UATTAKFLMSVR01"
+    DBName: "master"
+    checkSync: "SYNCHRONIZED"
+    mirrorRole: "PRINCIPAL"
+    DB2BSwitchOver: "TM"
+  when: inventory_hostname in db_ip
+  tags: [P12]
+

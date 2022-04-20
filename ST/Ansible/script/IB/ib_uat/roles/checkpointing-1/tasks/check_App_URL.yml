@@ -1,0 +1,33 @@
+---
+
+- block:
+    - name: "{{ bring_up_App01_07 }}- URL to check is as follows:"
+      set_fact:
+        url_2b_verify: 'https://{{inventory_hostname}}:9443/rib'
+
+    - name: "{{ bring_up_App01_07 }}- Verifying the url {{ url_2b_verify }}"
+      uri:
+        url: "{{ url_2b_verify }}"
+        validate_certs: no
+      register: validate_result
+      retries: 600
+      delay: 3
+      failed_when: false
+      until: validate_result.status == 200
+
+    - debug:
+        var: validate_result
+
+    - name: "{{ bring_up_App01_07 }}- Report the status of IB Application"
+      debug:
+        msg: "{{ bring_up_App01_07 }}- IB Application is up!"
+      when: validate_result.status == 200
+
+    - fail:
+        msg: "{{ bring_up_App01_07 }}- IB Application is down!"
+      when: validate_result.status != 200
+
+  become: yes
+  tags:
+  - A36a
+  - B14a

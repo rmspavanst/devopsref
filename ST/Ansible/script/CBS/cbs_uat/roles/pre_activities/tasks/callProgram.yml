@@ -1,0 +1,51 @@
+---
+- block:
+    - name: "{{actNo}} - Drop table {{tblName}} if exists"
+      ibm.power_ibmi.ibmi_sql_execute:
+        sql: "drop table {{library}}.{{tblName}}"
+      ignore_errors: yes
+      register: dropTBLState
+
+    - debug:
+        var: dropTBLState
+
+    - name: "{{actNo}} - Run program"
+      ibm.power_ibmi.ibmi_cl_command:
+        cmd: |
+          CALL {{PgmName}}
+      register: pgmrun
+      failed_when: "pgmrun.stdout.find('success') == -1"
+
+    - name: "{{actNo}} - Run query file"
+      ibm.power_ibmi.ibmi_cl_command:
+        cmd: |
+          RUNQRY *N {{PgmName}} OUTTYPE(*OUTFILE) OUTFILE({{library}}/{{tblName}})
+      register: qryrun
+      failed_when: "qryrun.stdout.find('success') == -1"
+
+    - name: "{{actNo}} - retrieve result from above from DB2 table {{tblName}}"
+      ibm.power_ibmi.ibmi_sql_query:
+        sql: "{{sql2run}}"
+      register: select_stat
+
+    - name: "{{actNo}} - Copy the output from above to a local temp file"
+      copy:
+        content: "{{ select_stat.row | to_nice_yaml }}"
+        dest: "{{ansPath}}/{{tempFile}}"
+      become: yes
+      become_user: root
+      delegate_to: 127.0.0.1
+
+    - name: "{{actNo}} - clean up entries in {{ansPath}}/{{tempFile}}"
+      shell: |
+        cat {{ansPath}}/{{tempFile}} | awk -F':' '{print $2}' | sed "s/[ '}]//g" > {{ansPath}}/tempF
+        mv {{ansPath}}/tempF {{ansPath}}/{{tempFile}} 
+      register: cleanupState
+      delegate_to: localhost
+      
+    - debug:
+        var: cleanupState
+
+  tags:
+    - A24a
+    - A24b

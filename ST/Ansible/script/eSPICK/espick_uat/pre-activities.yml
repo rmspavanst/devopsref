@@ -1,0 +1,19 @@
+---
+
+- hosts:
+    - gwc
+  gather_facts: false
+  #  become_method: runas
+  #  vars:
+  #  ansible_become: yes
+  #  ansible_become_user: "bimbsupport"
+  #    ansible_become_password: "{{ ans_password }}"
+
+  tasks:
+   - include_role:
+       name: pre_activities
+     tags: [P3,P5,P6,P7,P8,P11,P13,P14]
+  
+     #  any_errors_fatal: true
+
+

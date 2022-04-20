@@ -1,0 +1,39 @@
+---
+- block:
+    - name: "{{actNo}} - Drop table {{tblName}} if exists"
+      ibm.power_ibmi.ibmi_sql_execute:
+        sql: "drop table {{library}}.{{tblName}}"
+      ignore_errors: yes
+      register: dropTBLState
+
+    - debug:
+        var: dropTBLState
+
+    - name: "{{actNo}} - Display all branch out queue"
+      ibm.power_ibmi.ibmi_cl_command:
+        cmd: QSYS/DSPOBJD OBJ({{appLibrary}}/*ALL) OBJTYPE(*OUTQ) OUTPUT(*OUTFILE) OUTFILE({{library}}/{{tblName}})
+
+    - name: "{{actNo}} - retrieve result from above from DB2 table {{tblName}}"
+      ibm.power_ibmi.ibmi_sql_query:
+        sql: "select coalesce(nullif(ODOBTX,''),'0') AS \"DESC\", ODOBNM AS \"OBJ\", ODLBNM AS \"LIB\" from {{library}}.{{tblName}}"
+      register: select_stat
+
+    - debug:
+        var: select_stat.row
+
+    - name: "{{actNo}} - truncate temp file"
+      shell: truncate -s 0 "{{ansPath}}/{{tempFile}}"
+      delegate_to: localhost
+
+    - name: "{{actNo}} - copy the output from above to a local temp file"
+      include_tasks: BOQcopyRecToTempF.yml
+      vars:
+        rowNumber: "{{ outer_item }}"
+      loop: "{{ range(0, (select_stat.row)| length)|list  }}"
+      loop_control:
+        loop_var: outer_item
+
+  tags:
+    - PA13a
+    - PA13b
+

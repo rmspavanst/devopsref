@@ -1,0 +1,71 @@
+---
+
+- include_tasks: "{{ role_path }}/../pre_activities/tasks/checkDirFileSync.yml"
+  vars:
+    checkSync: "B0" 
+  tags: 
+    - B0
+
+- include_tasks: "{{ role_path }}/../swing_over_DR/tasks/manageWinServ.yml"
+  vars:
+    srv_state: "stop"
+    WinService_act_no: "B2"
+  when: inventory_hostname in dr_app_ips
+  tags: [B2]
+
+- include_tasks: "{{ role_path }}/../swing_over_DR/tasks/disableScheduledTasks.yml"
+  vars:
+    DisableScheduler: "B2a"
+  when: inventory_hostname in dr_app_ips
+  tags: [B2a]
+
+- include_tasks: "{{ role_path }}/../swing_over_DR/tasks/DBMirrorCheckSyncAndMirrorRole.yml"
+  vars:
+    DBMirroring: "B3"
+    SQLServerInstance: "UATBPAYDB01"
+    DBName: "master"
+    checkSync: "SYNCHRONIZED"
+    mirrorRole: "PRINCIPAL"
+    DB2BSwitchOver: "BillPayment"
+  when: inventory_hostname in dr_db_ip
+  tags: [B3.1]
+
+- include_tasks: "{{ role_path }}/../swing_over_DR/tasks/DBMirrorSwitchOver.yml"
+  vars:
+    DBMirroring: "B3"
+    SQLServerInstance: "UATBPAYDB01"
+    DBName: "master"
+    DB2BSwitchOver: "BillPayment"
+  when: inventory_hostname in dr_db_ip
+  tags: [B3.2]
+
+- include_tasks: "{{ role_path }}/../swing_over_DR/tasks/DBMirrorCheckSyncAndMirrorRole.yml"
+  vars:
+    DBMirroring: "B3"
+    SQLServerInstance: "UATBPAYDB01"
+    DBName: "master"
+    checkSync: "SYNCHRONIZED"
+    mirrorRole: "MIRROR"
+    DB2BSwitchOver: "BillPayment"
+  when: inventory_hostname in dr_db_ip
+  tags: [B3.3]
+
+- include_tasks: "{{ role_path }}/../swing_over_DR/tasks/manageWinServ.yml"
+  vars:
+    srv_state: "start"
+    WinService_act_no: "B10"
+  when: inventory_hostname in app_ips
+  tags: [B10]
+
+- include_tasks: "{{ role_path }}/../swing_over_DR/tasks/checkURL.yml"
+  vars:
+    TestURL: "B11"
+  when: inventory_hostname in app_ips
+  tags: [B11]
+
+- include_tasks: "{{ role_path }}/../swing_over_DR/tasks/enableScheduledTasks.yml"
+  vars:
+    EnableScheduler: "B12"
+  when: inventory_hostname in app_ips
+  tags: [B12]
+

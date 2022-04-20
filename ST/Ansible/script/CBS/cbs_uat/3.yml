@@ -1,0 +1,10 @@
+---
+- block:
+    - set_fact:
+        rec: "{{ row[rowNumber].LIB, row[rowNumber].OBJ, row[rowNumber].DESC }}"
+
+    - set_fact:
+        rec1: "{{ rec | replace('(','')| replace(')','') | replace(\"'\",'') | replace(' ','') }}"
+
+    - shell: |
+        echo {{rec1}} >> /tmp/1

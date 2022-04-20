@@ -1,0 +1,45 @@
+---
+- block:
+    - block:
+        - name: "{{actNo}} - Check Production file's checksum"
+          ansible.windows.win_shell: |
+            Get-FileHash {{prodFilepath}} -Algorithm MD5 | %{($_ -split "\s+")[1]}
+          register: result
+
+        - set_fact:
+            MD5HashProd: "{{ result.stdout | regex_search('Hash=(.*)[;]','\\1') }}"
+            
+      when: inventory_hostname == prod_app_ips
+      
+    - block:
+        - name: "{{actNo}} - Check DR file's checksum"
+          ansible.windows.win_shell: |
+            Get-FileHash {{drFilepath}} -Algorithm MD5 | %{($_ -split "\s+")[1]}
+          register: result1
+
+        - set_fact:
+            MD5HashDR: "{{ result1.stdout | regex_search('Hash=(.*)[;]','\\1') }}"
+
+      when: inventory_hostname == dr_app_ips
+
+    - block:
+        - name: "{{actNo}} - Compare file checksum between 2 environments"
+          debug:
+            msg: "checksum for prod file {{prodFilepath}} is {{hostvars[prod_app_ips]['MD5HashProd']}}"
+            
+        - debug:
+            msg: "checksum for DR file {{drFilepath}} is {{hostvars[dr_app_ips]['MD5HashDR']}}"
+      
+        - assert:
+            that:
+              - hostvars[prod_app_ips]['MD5HashProd'] == hostvars[dr_app_ips]['MD5HashDR']
+            success_msg: "{{actNo}} - File checksum matched between Prod server {{prod_app_ips}} and DR server {{dr_app_ips}}"
+            fail_msg: "{{actNo}} - File checksum is not matched between Prod server {{prod_app_ips}} and DR server {{dr_app_ips}}. Please check!"
+          ignore_errors: yes
+          
+      delegate_to: localhost  
+      when: inventory_hostname == dr_app_ips     
+      
+  tags:
+    - P8
+

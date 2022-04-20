@@ -1,0 +1,52 @@
+---
+- block:
+    - set_fact:
+        fileFullName: '{{ result.sheet_index_0[rowNumber] }}'
+
+    - set_fact:
+        fileLibrary: "{{ fileFullName.col_1 }}"
+        fileDSP: "{{ fileFullName.col_2 }}"
+
+
+    - name: "{{actNo}} - Display library file by running CL DSPFD command"
+      ibm.power_ibmi.ibmi_cl_command:
+        cmd: DSPFD FILE({{fileLibrary}}/{{fileDSP}})
+      ignore_errors: yes
+      register: crt_lib_result
+
+    - debug:
+        var: crt_lib_result
+
+    - set_fact:
+        memberCount: "{{ crt_lib_result.stdout | regex_findall('Total number of members \\W+.*:\\s+(\\d+)','\\1') | replace(\"['\",'') | replace(\"']\",'') }}"
+
+    - set_fact:
+        memberRecNumber: "{{ crt_lib_result.stdout | regex_findall('(\\w+)\\s+\\d+\\s+\\d+/\\d+/\\d+\\s+\\d+/\\d+/\\d+\\s+\\d+:\\d+:\\d+\\s+(\\d+)','\\1','\\2') }}"
+
+    - name: "{{actNo}} - Write result to a temp file"
+      lineinfile:
+        path: "{{ansPath}}/{{tempfile}}"
+        line: "{{fileDSP}},{{memberRecNumber[item][0]}},{{memberRecNumber[item][1]}}"
+        create: yes
+      with_items: {0,1,2,3,4,5,6}
+      when: memberRecNumber[item] is defined
+      delegate_to: localhost
+
+#    - name: "{{actNo}} - Write result to a temp file on number of member"
+#      lineinfile:
+#        path: /tmp/fileInfo
+#        line: "{{fileDSP}}-{{memberCount}}"
+#        create: yes
+#      delegate_to: localhost
+
+        
+  when:
+    - result.sheet_index_0[rowNumber] is defined
+    - result.sheet_index_0[rowNumber].col_1 != "None"
+
+  tags:
+    - A20a
+    - A20b
+    - B40a
+    - B40b
+

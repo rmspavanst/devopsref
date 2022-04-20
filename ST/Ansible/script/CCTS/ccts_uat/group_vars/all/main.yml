@@ -1,0 +1,91 @@
+---
+
+conn_test_from_ip: "UATCCIVRIN01.BANKISLAM.COM.MY"
+conn_test_destDir: "D:\\output"
+conn_test_sourceList: "connectivityTest.txt"
+conn_test_destList: "D:\\output\\connectCheck.txt"
+
+# File Servers
+fs_ip: [
+]
+
+dr_fs_ip: [
+]
+
+# GIR Databases
+db_ip: [
+  "UATCCGIRGWS01.BANKISLAM.COM.MY"
+]
+
+dr_db_ip: [
+  "UATCCGIRGWS01.BANKISLAM.COM.MY"
+]
+
+# GIR Linux servers
+linux_ips: [
+  "UATCCGIRGWS01.BANKISLAM.COM.MY"
+]
+
+dr_linux_ips: [
+  "UATCCGIRGWS01.BANKISLAM.COM.MY"
+]
+
+# Central Configuration Manager servers
+ccm_ips: [
+  "UATCCCR01.BANKISLAM.COM.MY"
+]
+
+dr_ccm_ips: [
+  "UATCCCR01.BANKISLAM.COM.MY"
+]
+
+# Speechminer servers
+sm_ips: [
+  "UATCCGIRSMU01.BANKISLAM.COM.MY"
+]
+
+dr_sm_ips: [
+  "UATCCGIRSMU01.BANKISLAM.COM.MY"
+]
+
+# Config and Solution Server
+cfg_pri_ips: [
+  "UATCCCR01.BANKISLAM.COM.MY"
+]
+
+cfg_bkp_ips: [
+  "UATCCCR01.BANKISLAM.COM.MY"
+]
+
+dr_cfg_pri_ips: [
+  "UATCCCR01.BANKISLAM.COM.MY"
+]
+
+dr_cfg_bkp_ips: [
+  "UATCCCR01.BANKISLAM.COM.MY"
+]
+
+# GA Server
+ga_ips: [
+  "UATCCGIRGWS01.BANKISLAM.COM.MY"
+]
+
+dr_ga_ips: [
+  "DRCCWAS01.BANKISLAM.COM.MY"
+]
+
+tpin_ips: [
+]
+
+dr_tpin_ips: [
+]
+
+# Interactive Voice Response servers
+ivr_ips: [
+  "UATCCIVRIN01.BANKISLAM.COM.MY"
+]
+
+dr_ivr_ips: [
+  "UATCCIVRIN01.BANKISLAM.COM.MY"
+]
+

@@ -1,0 +1,12 @@
+---
+- block:
+  - name: "{{ actNo }} Running {{ cmdStr }} on {{ inventory_hostname }}"
+    shell: "{{ cmdStr }}"
+    register: cmdStat
+
+  - name: "{{ actNo }} - Raw debug of {{ cmdStr }}"
+    debug:
+      var: cmdStat
+
+  tags:
+    - A26

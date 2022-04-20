@@ -1,0 +1,14 @@
+---
+- block:
+    - name: "{{ actNo }} - Check C & D drives usage in GWC App server"
+      include_tasks: checkDriveUsage.yml
+      vars:
+        ansible_become: yes
+        ansible_become_user: bimbsupport
+        ansible_become_method: runas
+        drive: "{{ outer_item }}"
+      with_items: "{{ drives }}"
+      loop_control:
+        loop_var: outer_item
+  tags:
+    - P7

@@ -1,0 +1,26 @@
+---
+- block:
+    - name: "{{actNo}} - {{action}} Job {{jobname}} with entry number {{entryNum}}"
+      ibm.power_ibmi.ibmi_cl_command:
+        cmd: "{{command}} JOB({{jobname}}) ENTRYNBR({{entryNum}})"
+        joblog: true
+      ignore_errors: yes
+      register: crt_lib_result
+      
+    - debug:
+        var: crt_lib_result
+
+    - name: "{{actNo}} - Check action's success or failure"
+      assert:
+        that:
+          - "'success' in crt_lib_result.stdout"
+        fail_msg: "Job schedule entry {{jobname}} number {{entryNum}} cannot be {{actionMsg}}. Please check!"
+        success_msg: "Job schedule entry {{jobname}} number {{entryNum}} successfully {{actionMsg}}"
+
+  tags:
+    - PA17
+    - PA17x
+    - B1
+    - B33a
+    - B33b
+

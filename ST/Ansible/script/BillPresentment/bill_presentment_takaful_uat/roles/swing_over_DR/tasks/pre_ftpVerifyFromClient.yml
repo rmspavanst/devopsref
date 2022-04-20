@@ -1,0 +1,53 @@
+---
+
+- block:
+    - name: "{{verifyFTPfromClient}} - Verify if the directory exists in server {{inventory_hostname}}" 
+      win_stat:
+        path: "{{ ftpdir2bVerifiedfromClient }}"
+        get_checksum: no
+      register: conn_test_path
+
+    - fail:
+        msg: "{{ verifyFTPfromClient}} - directory {{ ftpdir2bVerifiedfromClient }} doesn't exist in server {{inventory_hostname}}!"
+      when: not conn_test_path.stat.exists
+
+    - name: "{{ verifyFTPfromClient }} - Pre-FTP: Retrieve list of files in {{ ftpdir2bVerifiedfromClient }}"
+      win_find:
+        paths: "{{ ftpdir2bVerifiedfromClient }}"
+        file_type: file
+      register: filesInDir
+
+    - name: "{{ verifyFTPfromClient }} - Check for {{ file_list_client }} existence"
+      win_stat:
+        path: "{{ file_list_client }}"
+        get_checksum: no
+      register: fileReg
+
+    - name: "{{ verifyFTPfromClient }} - clear the file {{ file_list_client }} if exist"
+      win_shell: Clear-Content {{ file_list_client }}
+      when: fileReg.stat.exists
+
+    - name: "{{ verifyFTPfromClient }} - Save list of files in {{ file_list_client }}"
+      win_lineinfile:
+        state: present
+        create: yes
+        path: "{{ file_list_client }}"
+        line: "{{ item.filename }}"
+        insertbefore: BOF
+      loop: "{{ filesInDir.files }}"
+
+    - name: "{{ verifyFTPfromClient }} - Read file list"
+      win_shell: 'type {{file_list_client}}'
+      register: clientfiles
+
+    - set_fact:
+        filesInClientDir: "{{ clientfiles.stdout_lines }}"
+
+    - name: "{{ verifyFTPfromClient }} - Pre-FTP: There are {{ filesInClientDir | length }} files in {{ ftpdir2bVerifiedfromClient }}"
+      debug:
+        var: filesInClientDir
+
+  tags:
+    - A16a
+    - B18a
+

@@ -1,0 +1,13 @@
+---
+
+- block:
+    - include_tasks: bring_down_web.yml
+      when: inventory_hostname in web_ips
+      tags: [B35,B36,B37,B38,B39,B40]
+
+    - include_tasks: del_authorized_keys.yml
+      when: inventory_hostname in web_ips or inventory_hostname in app_ips
+      tags: [B46]
+
+  become: yes
+

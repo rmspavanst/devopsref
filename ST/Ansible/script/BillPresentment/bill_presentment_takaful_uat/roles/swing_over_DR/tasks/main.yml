@@ -1,0 +1,73 @@
+---
+- block:
+    - include_tasks: DBMirrorCheckSyncAndMirrorRole.yml
+      vars:
+        DBMirroring: "A5"
+        SQLServerInstance: "UATTAKFLMSVR01"
+        DBName: "master"
+        checkSync: "SYNCHRONIZED"
+        mirrorRole: "PRINCIPAL"
+        DB2BSwitchOver: "TM"
+      when: inventory_hostname in db_ip
+      tags: [A5.1]
+
+    - include_tasks: DBMirrorSwitchOver.yml
+      vars:
+        DBMirroring: "A5"
+        SQLServerInstance: "UATTAKFLMSVR01"
+        DBName: "master"
+        DB2BSwitchOver: "TM"
+      when: inventory_hostname in db_ip
+      tags: [A5.2]
+
+    - include_tasks: DBMirrorCheckSyncAndMirrorRole.yml
+      vars:
+        DBMirroring: "A5"
+        SQLServerInstance: "UATTAKFLMSVR01"
+        DBName: "master"
+        checkSync: "SYNCHRONIZED"
+        mirrorRole: "MIRROR"
+        DB2BSwitchOver: "TM"
+      when: inventory_hostname in db_ip
+      tags: [A5.3]
+
+    - include_tasks: disableScheduledTasks.yml
+      when: inventory_hostname in app_ips
+      tags: [A10]
+
+    - include_tasks: enableScheduledTasks.yml
+      when: inventory_hostname in dr_app_ips
+      tags: [A11]
+
+    - include_tasks: verifyAndDeleteFilesFromCBSFTP.yml
+      vars:
+        verifyFTPfromCBS: "A15"
+      when: inventory_hostname in dr_app_ips
+      tags: [A15]
+
+    - include_tasks: pre_ftpVerifyFromClient.yml
+      vars:
+        verifyFTPfromClient: "A16a"
+      when: inventory_hostname in dr_app_ips
+      tags: [A16a]
+
+    - include_tasks: post_ftpVerifyAndDeleteFromClient.yml
+      vars:
+        verifyFTPfromClient: "A16c"
+      when: inventory_hostname in dr_app_ips
+      tags: [A16c]
+
+    - include_tasks: verifyDBUpdateAfterOutboundFileProcessed.yml
+      vars:
+        verifyDBUpdate: "A23"
+        SQLServerInstance: "UATTAKFLMSVR01"
+        DBName: "TM"
+        DBQuery: > 
+          select count(*) from dailybalance where proc_date >= '{{servDate}}'; 
+          select count(*) from recinfo where rec_date >= '{{servDate}}'; 
+          select count(*) from dailystatement where trx_date >= '{{servDate}}'; 
+          select count(*) from dailyreceive where rec_date >= '{{servDate}}';
+      when: inventory_hostname in dr_db_ip
+      tags: [A23]
+
+

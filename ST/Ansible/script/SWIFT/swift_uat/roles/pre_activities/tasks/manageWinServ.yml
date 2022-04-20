@@ -1,0 +1,95 @@
+---
+- block:
+
+    - debug:
+        msg: "{{ WinService_act_no }}- To {{srv_state}} Windows Service"
+
+    - set_fact:
+        service_state: 'Stopped'
+      when: srv_state == 'stop'
+
+    - set_fact:
+        service_state: 'Running'
+      when: srv_state == 'start'
+
+    - name: "{{ WinService_act_no }} - {{srv_state}} Windows Service"
+      win_shell: iisreset /{{srv_state}}
+
+    - name: "{{ WinService_act_no }} - Check {{service_state}} status"
+      win_shell: iisreset /status
+      register: service_stat
+      become: yes
+      become_user: bimbsupport
+
+    - debug:
+        var: service_stat
+
+    - set_fact:
+        serviceStatus: []
+
+    - set_fact:
+        serviceStatus: "{{ serviceStatus + [item] }}"
+      with_items: "{{ service_stat.stdout_lines | map('regex_search', '^Status for.*: (\\w+)$','\\1') | reject('none') | list }}"
+
+    - debug:
+        var: serviceStatus
+
+    - set_fact:
+        serviceStatusLineCnt: "{{ serviceStatus|length }}"
+
+    - debug:
+        var: serviceStatusLineCnt
+
+    - block:             
+        - set_fact:
+            verifyTrue: true
+
+        - set_fact:
+            verifyTrue: false
+          when:
+            - serviceStatus[item] is defined
+            - serviceStatus[item] != 'Running'
+          with_items: {0,1,2,3,4,5,6,7,8,9}
+
+        - debug:
+            msg: "{{ WinService_act_no }} - The App services are in running status in {{inventory_hostname}}"
+          when:
+            - verifyTrue
+            - serviceStatusLineCnt|int > 0
+
+        - fail:
+            msg: "{{ WinService_act_no }} - Some or all of the App services are not in running status in {{inventory_hostname}}. Please check!"
+          when: not verifyTrue or serviceStatusLineCnt|int == 0
+
+      when: srv_state == 'start'
+
+    - block:             
+        - set_fact:
+            verifyTrue: true
+
+        - set_fact:
+            verifyTrue: false
+          when:
+            - serviceStatus[item] is defined
+            - serviceStatus[item] != 'Stopped'
+          with_items: {0,1,2,3,4,5,6,7,8,9}
+
+        - debug:
+            msg: "{{ WinService_act_no }} - The App services are stopped in {{inventory_hostname}}"
+          when:
+            - verifyTrue
+            - serviceStatusLineCnt|int > 0
+
+        - fail:
+            msg: "{{ WinService_act_no }} - Some or all of the App services are running in {{inventory_hostname}}. Please check!"
+          when: not verifyTrue or serviceStatusLineCnt|int == 0
+
+      when: srv_state == 'stop'
+
+  tags:
+    - A12
+    - A4
+    - B2
+    - B10
+
+
