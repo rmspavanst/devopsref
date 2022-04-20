@@ -1,0 +1,42 @@
+---
+
+- block:
+    - block:
+        - set_fact:
+            serv: '{{ result.sheet_index_0[rowNumber] }}'
+          
+        - set_fact:
+            servIP: "{{ serv.col_1 }}"
+
+        - name: "SSH to remote server and delete the SSH key entry"
+          shell: |
+            ssh {{remote_user}}@{{servIP}} -o ConnectTimeout=2 \
+            "sed '/{{ controller_hostname }}$/d' ~/.ssh/authorized_keys > ~/.ssh/authorized_keys_tmp; \
+            mv ~/.ssh/authorized_keys_tmp ~/.ssh/authorized_keys; chmod 700 ~/.ssh; chmod 640 ~/.ssh/authorized_keys"
+          register: deleteKeyResult
+          failed_when: false
+
+        - debug:
+            var: deleteKeyResult
+
+        - name: "Check SSH Key deletion status"
+          set_fact:
+            keyDeleteStatus: "SSH Key deleted from {{ servIP }}"
+          when: deleteKeyResult.rc|int == 0
+
+        - set_fact:
+            keyDeleteStatus: "SSH Key not deleted from {{ servIP }}!"
+          when: deleteKeyResult.rc|int != 0
+
+        - name: "Write result to a temp file"
+          lineinfile:
+            path: /tmp/SSHKeyDelete
+            line: "{{keyDeleteStatus}}"
+            create: yes
+
+      when: 
+        - result.sheet_index_0[rowNumber] is defined
+        - result.sheet_index_0[rowNumber].col_1 != "None"
+  become: yes
+  tags:
+    - sshkey

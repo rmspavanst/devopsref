@@ -1,0 +1,101 @@
+---
+
+### Solaris Cluster & Oracle DG Broker Info ###
+clrs: "/usr/cluster/bin/clrs"
+primary_cluster_resource: "prdcms-db-rs"
+dr_cluster_resource: "drcms-db-rs"
+custom_mrp_cluster_resource: "drcms-mrp-rs"
+prod_db_server_ip: "10.22.80.82"
+dr_db_server_ip: "10.22.80.82"
+primary_db: MBTEST
+dr_db: MBTESTDR
+oracle_home: "/opt/oracle/product/12.2.0/dbhome_1"
+DB_User: sys
+DB_Password: "{{ DB_Password }}"
+
+pause_duration: "2"
+
+### Apache server(s) variables ###
+primary_apache_server_ips: [
+  "172.31.222.227"
+]
+
+DR_apache_server_ips: [
+  "172.31.222.227"
+]
+
+### JBoss process variables ###
+primary_jboss_server_ip: "172.31.127.187"
+DR_jboss_server_ip: "172.31.127.187"
+
+### JBoss modules variables ###
+primary_jboss_instances_ip: [
+  "172.31.127.187"
+]
+
+DR_jboss_instances_ip: [
+  "172.31.127.187"
+]
+
+primary_cache_refresh_server_ip: [
+  "172.31.127.187"
+]
+
+DR_cache_refresh_server_ip: [
+  "172.31.127.187"
+]
+
+### URL testing ###
+conn_test_from_ip: "172.31.127.187"
+mobile_admin_login_url: "https://172.31.127.187:8444/AppzillonAdmin"
+
+
+
+######## (fixed variables) ########
+
+### Connectivity Test ###
+connectivity_script_file: "/app/maintenance/scripts/connectionStatus.sh"
+connected: "Connected"
+
+### Apache server(s) variables ###
+apache_server_bin_path: "/data/apache/apache-2.4.41/bin"
+
+### JBoss process variables ###
+jboss_eap_path: "/app/EAP-7.3.0/bin"
+
+### Cache refresh script ###
+cache_refresh_script: "/app/maintenance/scripts/clear_cache.sh"
+
+jboss_stop_banking_script: "/app/maintenance/scripts/stopBankingModule.sh"
+jboss_stop_reporting_script: "/app/maintenance/scripts/stopReportingModule.sh"
+jboss_stop_admin_script: "/app/maintenance/scripts/stopAdminModule.sh"
+
+jboss_start_banking_script: "/app/maintenance/scripts/startBankingModule.sh"
+jboss_start_reporting_script: "/app/maintenance/scripts/startReportingModule.sh"
+jboss_start_admin_script: "/app/maintenance/scripts/startAdminModule.sh"
+jboss_start_reporting_instance: "/app/maintenance/scripts/invokeQuartz.sh"
+
+spring_cloud_start_script_path: "/app/maintenance/scripts/startSC.sh"
+
+### /etc/hosts file - IP-FQDN change ###
+ep_dr_dir_path: "/app/GO"
+ep_dr_file_path: "/app/GO/EP_DR"
+
+ep_dr_file_contents: [
+  "# FDS",
+  "172.31.123.38 fds.bankislam.com.my",
+  "# IBAPI",
+  "172.31.123.62 ibapi.bankislam.com.my",
+  "# SMS",
+  "172.31.110.50 smsweb.bankislam.com.my"
+]
+
+line_to_delete_in_hosts_file: [
+  "FDS$",
+  "fds.bankislam.com.my$",
+  "IBAPI$",
+  "ibapi.bankislam.com.my$",
+  "SMS$",
+  "smsweb.bankislam.com.my$"
+]
+

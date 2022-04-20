@@ -1,0 +1,38 @@
+---
+- block:
+  - stat:
+     path: "{{ spring_cloud_start_script_path }}"
+     #st is acronym for status and sc for spring cloud
+    register: st_sc_script_path
+
+  - fail:
+     msg: "{{ start_SC_act_no }}- Spring cloud script path {{ spring_cloud_start_script_path }} doesn't exist."
+    when: not st_sc_script_path.stat.exists
+
+  - name: "{{ start_SC_act_no }}- Starting the spring cloud"
+    shell:
+      cmd: bash -l "{{ spring_cloud_start_script_path }}"
+
+  - pause:
+      seconds: "{{ pause_duration }}"
+
+  #Verify if the springcloud is already started
+  - name: "{{ start_SC_act_no }}- Checking the status of spring cloud"
+    shell: ps -ef | grep AppzillonBanking
+    ignore_errors: yes
+    register: springCloud_status
+
+  - debug:
+      var: springCloud_status
+
+  - fail:
+      msg: "{{ start_SC_act_no }}- Failed to start the spring cloud"
+    when: springCloud_status.stdout_lines|length <= 2
+
+  - debug:
+      msg: "{{ start_SC_act_no }}- SpringCloud started."
+
+  tags:
+    - B13
+    - A11
+

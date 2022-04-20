@@ -1,0 +1,58 @@
+---
+
+## Run this Playbook to send SSH key from Ansible Controller to remote hosts
+## Make sure to manually accept SSH fingerprint(Are you sure you want to continue connecting (yes/no/[fingerprint]))
+## before running this playbook
+## make sure to use the correct variable: excelFileName, excelSheetNameSSHKey, excelSheetNameUnixLinuxConnTest, rowInExcel,
+## ansibleController, remote_user
+
+- hosts:
+    - ansibleController
+  gather_facts: no
+
+  tasks:
+    - block:
+        - name: "Query servers' entries in Excel file named {{excelFileName}}"
+          open_excel:
+            src: "{{excelFileName}}"
+            sheet_name: "{{excelSheetNameSSHKey}}"
+            index_by_name: false
+            op: "r"
+            read_range: "{{ {'start_row': 1, 'start_col': 1, 'end_row': '{{rowInExcel}}', 'end_col': 2} }}"
+          register: result
+
+        - debug:
+            var: result
+
+        - name: "Delete temp file"
+          file:
+            path: /tmp/SSHKeySend
+            state: absent
+
+        - name: "Send SSH keys to remote servers"
+          include_tasks: sendSSHKeyintoServer.yaml
+          vars:
+            rowNumber: "{{ outer_item }}"
+          with_items:
+            - 0
+            - 1
+            - 2
+            - 3
+            - 4
+            - 5
+            - 6
+            - 7
+            - 8
+            - 9
+          loop_control:
+            loop_var: outer_item
+
+        - name: "SSH Key sent result"
+          debug:
+            msg: "Please check file /tmp/SSHKeySend on the SSH Key proliferation result"
+
+      become: yes
+      delegate_to: 127.0.0.1
+      tags:
+        - sshkey
+

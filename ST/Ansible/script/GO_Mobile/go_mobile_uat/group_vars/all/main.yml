@@ -1,0 +1,121 @@
+---
+
+excelFileName: "servList.xlsx"
+excelSheetNameSSHKey: "SSHKeySentForUnixLinux"
+excelSheetNameUnixLinuxConnTest: "Unix-Linux"
+rowInExcel: "10"
+ansibleController: 10.22.64.88
+remote_user: "ansible"
+
+## parameter for /etc/hosts file change
+FDSProdIP: "172.31.23.38"
+FDSDRIP: "172.31.123.38"
+IBAPIProdIP: "172.31.23.82"
+IBAPIDRIP: "172.31.128.9"
+SMSGatewayProdIP: "172.31.111.100"
+SMSGatewayDRIP: "172.31.110.50"
+
+### Solaris Cluster & Oracle DG Broker Info ###
+clrs: "/usr/cluster/bin/clrs"
+primary_cluster_resource: "MBPRD-db-rs"
+prod_db_server_ip: "10.22.80.81"
+dr_db_server_ip: "10.22.80.81"
+primary_db: MBUAT
+dr_db: MBUAT
+oracle_home: "/opt/oracle/product/12.2.0/dbhome_1"
+
+pause_duration: "5"
+
+### Apache server(s) variables ###
+primary_apache_server_ips: [
+  "172.31.222.225",
+  "172.31.222.226"
+]
+
+DR_apache_server_ips: [
+  "172.31.222.225",
+  "172.31.222.226"
+]
+
+### JBoss process variables ###
+primary_jboss_server_ip: "172.31.127.185"
+DR_jboss_server_ip: "172.31.127.185"
+
+### JBoss modules variables ###
+primary_jboss_instances_ip: [
+  "172.31.127.185",
+  "172.31.127.186"
+]
+
+DR_jboss_instances_ip: [
+  "172.31.127.185",
+  "172.31.127.186"
+]
+
+primary_cache_refresh_server_ip: [
+  "172.31.127.185"
+]
+
+DR_cache_refresh_server_ip: [
+  "172.31.127.185"
+]
+
+### URL testing ###
+conn_test_from_ip: "172.31.127.185"
+mobile_admin_login_url: "https://172.31.127.185:8444/AppzillonAdmin"
+
+
+######## (fixed variables) ########
+
+### Connectivity Test ###
+connectivity_script_file: "/app/maintenance/scripts/connectionStatus.sh"
+connected: "Connected"
+
+### Apache server(s) variables ###
+apache_server_bin_path: "/data/apache/apache-2.4.41/bin"
+
+### JBoss process variables ###
+jboss_eap_path: "/app/EAP-7.3.0/bin"
+
+### Cache refresh script ###
+cache_refresh_script: "/app/maintenance/scripts/clearPromoCache.sh"
+
+jboss_stop_banking_script: "/app/maintenance/scripts/stopBankingModule.sh"
+jboss_stop_reporting_script: "/app/maintenance/scripts/stopReportingModule.sh"
+jboss_stop_admin_script: "/app/maintenance/scripts/stopAdminModule.sh"
+
+jboss_start_banking_script: "/app/maintenance/scripts/startBankingModule.sh"
+jboss_start_reporting_script: "/app/maintenance/scripts/startReportingModule.sh"
+jboss_start_admin_script: "/app/maintenance/scripts/startAdminModule.sh"
+jboss_start_reporting_instance: "/app/maintenance/scripts/invokeQuartz.sh"
+
+jboss_check_Banking_log: "/app/EAP-7.3.0/domain/servers/Banking/log/server.log"
+jboss_check_Admin_log: "/app/EAP-7.3.0/domain/servers/Admin/log/server.log"
+jboss_check_Reporting_log: "/app/EAP-7.3.0/domain/servers/Reporting/log/server.log"
+
+spring_cloud_start_script_path: "/app/maintenance/scripts/startSC.sh"
+
+### /etc/hosts file - IP-FQDN change ###
+ep_dr_dir_path: "/app/GO"
+ep_dr_file_path: "/app/GO/EP_DR"
+
+ep_dr_file_contents: [
+  "# FDS",
+  "172.31.123.38 fds.bankislam.com.my",
+  "# IBAPI",
+  "172.31.123.62 ibapi.bankislam.com.my",
+  "# SMS",
+  "172.31.110.50 smsweb.bankislam.com.my"
+]
+
+line_to_delete_in_hosts_file: [
+  "FDS$",
+  "fds.bankislam.com.my$",
+  "IBAPI$",
+  "ibapi.bankislam.com.my$",
+  "SMS$",
+  "smsweb.bankislam.com.my$"
+]
+
+environment:
+  PYTHONWARNINGS: ignore

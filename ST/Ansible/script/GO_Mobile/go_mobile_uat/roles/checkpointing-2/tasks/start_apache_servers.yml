@@ -1,0 +1,39 @@
+---
+- block:
+  - debug:
+      msg: "{{ start_apache_act_no }}- Bringing up apache servers"
+
+  - stat:
+      path: "{{ apache_server_bin_path }}"
+    register: apache_server_path
+
+  - fail:
+      msg: "{{ start_apache_act_no }}- Apache server bin path {{ apache_server_bin_path }}  doesn't exist."
+    when: not apache_server_path.stat.exists
+
+  - name: "Starting the server"
+    shell:
+      chdir: '{{ apache_server_bin_path }}'
+      cmd: bash -l ./apachectl start
+    ignore_errors: yes
+
+  - pause:
+      seconds: "{{ pause_duration }}"
+
+  - name: "{{ start_apache_act_no }}- ApacheServer: Checking the status of apache server"
+    shell: ps -ef | grep httpd
+    ignore_errors: yes
+    changed_when: false
+    register: service_apache_status
+
+  - name: "{{ start_apache_act_no }}- ApacheServer: Reporting the status of Apache. "
+    fail:
+      msg: "{{ start_apache_act_no }}- Service apache is not running."
+    when: not '"httpd -k start" in service_apache_status.stdout'
+
+  - debug:
+      msg: "{{ start_apache_act_no }}- Apache service started."
+
+  tags:
+    - A15
+    - B17

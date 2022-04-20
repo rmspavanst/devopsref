@@ -1,0 +1,12 @@
+- hosts:
+    - all
+  gather_facts: no
+  become: yes
+  become_user: uatmbapp
+
+  tasks:
+   - include_role:
+       name: checkpointing-7
+     tags: [B23,B23.1]
+
+  any_errors_fatal: true

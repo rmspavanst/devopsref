@@ -1,0 +1,46 @@
+---
+
+- include_tasks: "{{ role_path }}/../checkpointing-2/tasks/start_springcloud.yml"
+  vars:
+    start_SC_act_no: B13
+  when: inventory_hostname in primary_jboss_instances_ip
+  tags:
+    - B13
+
+- include_tasks: "{{ role_path }}/../checkpointing-2/tasks/start_jboss.yml"
+  vars:
+    start_JBoss_act_no: B14
+  when: inventory_hostname in primary_jboss_instances_ip
+  tags:
+    - B14
+
+- include_tasks: "{{ role_path }}/../checkpointing-2/tasks/start_jboss_modules.yml"
+  vars:
+    start_JBoss_module_act_no: B15
+    start_JBoss_module_2_act_no: B16
+  when: inventory_hostname==primary_jboss_server_ip
+  tags:
+    - B15
+    - B16
+
+- block:
+  - include_tasks: "{{ role_path }}/../checkpointing-2/tasks/start_apache_servers.yml"
+    vars:
+      start_apache_act_no: B17
+  become: yes
+  become_user: root
+  when: inventory_hostname in primary_apache_server_ips
+  tags:
+    - B17
+
+## Checking the login
+- block:
+  - include_tasks: "{{ role_path }}/../commons/tasks/check_url.yml"
+    vars:
+      check_uri_act_no: B18
+  become: yes
+  become_user: root
+  when: inventory_hostname in primary_jboss_server_ip
+  tags:
+    - B18
+

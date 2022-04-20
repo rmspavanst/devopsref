@@ -1,0 +1,12 @@
+- hosts:
+    - all
+  gather_facts: no
+  become: yes
+  become_user: uatmbapp
+
+  tasks:
+   - include_role:
+       name: checkpointing-5a
+     tags: [B1,B1.1,B2,B3,B4,B5]
+
+  any_errors_fatal: true

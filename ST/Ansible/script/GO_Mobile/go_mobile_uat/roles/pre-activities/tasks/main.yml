@@ -1,0 +1,16 @@
+---
+
+- include_tasks: prelim.yml
+  vars:
+    prelim_act_no: P7
+  when: inventory_hostname in conn_test_from_ip
+  tags:
+    - P7
+  
+- include_tasks: check_connectivity.yml
+  vars:
+    chk_conn_act_no: P7
+  when: inventory_hostname in conn_test_from_ip
+  tags:
+    - P7
+

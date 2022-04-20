@@ -1,0 +1,36 @@
+---
+
+- include_tasks: start_springcloud.yml
+  when: inventory_hostname in DR_jboss_instances_ip
+  tags:
+    - A11
+
+- include_tasks: start_jboss.yml
+  when: inventory_hostname in DR_jboss_instances_ip
+  tags:
+    - A12
+
+- include_tasks: start_jboss_modules.yml
+  when: inventory_hostname in DR_jboss_server_ip
+  tags:
+    - A13
+    - A14
+
+- block:
+  - include_tasks: start_apache_servers.yml
+  become: yes
+  become_user: root
+  when: inventory_hostname in DR_apache_server_ips
+  tags:
+    - A15
+
+- block:
+  - include_tasks: "{{ role_path }}/../commons/tasks/check_url.yml"
+    vars:
+      - url: "{{ mobile_admin_login_url }}"
+  become: yes
+  become_user: root
+  when: inventory_hostname in DR_jboss_server_ip
+  tags:
+    - A17
+
