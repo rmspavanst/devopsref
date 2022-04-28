@@ -9,3 +9,20 @@ sudo nmap -sTU -O IP-address-Here
 
 sudo firewall-cmd --list-all
 
+
+## nfs:config
+https://www.youtube.com/watch?v=Wa0sM4D56qQ
+
+install nfs-utils
+
+vi /etc/fstab
+
+eu-west-1a.fs-1c****efsname****:/ /var/lib/jenkins/jobs nfs defaults 0 0
+systemctl stop jenkins
+
+mount /var/lib/jenkins/jobs
+
+df -h
+
+chown -R jenkins:jenkins /var/lib/jenkins/jobs
+systemctl start jenkins
