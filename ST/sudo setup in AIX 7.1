@@ -1,0 +1,14 @@
+https://www.sudo.ws/getting/download/
+
+rpm -qa | grep sudo
+rpm -e sudo-1.9.5p2-1.ppc
+mkdir /tmp/sudo; chmod 777 /tmp/sudo
+cd /tmp/sudo
+smitty install 
+visudo
+ansible         ALL=(ALL) NOPASSWD: ALL
+su - ansible
+sudo su -
+
+
+
