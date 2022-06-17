@@ -1,0 +1,279 @@
+---
+- name: Demonstrate the "in" keyword
+  hosts: all
+  gather_facts: yes
+  vars:
+    supported_distros:
+      - RedHat
+      - Fedora
+  tasks:
+    - name: Install httpd using yum, where supported
+      yum:
+        name: http
+        state: present
+      when: ansible_distribution in supported_distros
+
+---
+- name: Loop Register Test
+  gather_facts: no
+  hosts: localhost
+  tasks:
+    - name: Looping Echo Task
+      shell: "echo This is my item: {{ item }}"
+      loop:
+        - one
+        - two
+      register: echo_results1
+
+    - name: Show echo_results variable
+      debug:
+        var: echo_results2
+
+---
+- name: Loop Register Test
+  gather_facts: no
+  hosts: localhost
+  tasks:
+    - name: Looping Echo Task
+      shell: "echo This is my item: {{ item }}"
+      loop:
+        - one
+        - two
+      register: echo_results
+
+    - name: Show stdout from the previous task.
+      debug:
+        msg: "STDOUT from previous task: {{ item.stdout }}"
+      loop: "{{ echo_results['results'] }}"
+
+
+---
+- name: Restart HTTPD if Postfix is Running
+  hosts: all
+  tasks:
+    - name: Get Postfix server status
+      command: /usr/bin/systemctl is-active postfix 1
+      ignore_errors: yes2
+      register: result3
+
+    - name: Restart Apache HTTPD based on Postfix status
+      service:
+        name: httpd
+        state: restarted
+      when: result.rc == 04
+
+## Handlers
+
+---
+- name: Restart HTTPD if Postfix is Running
+  hosts: all
+  tasks:
+    - name: copy demo.example.conf configuration template
+      template:
+        src: /var/lib/templates/demo.example.conf.template
+        dest: /etc/httpd/conf.d/demo.example.conf
+      notify:
+        - restart mysql
+        - restart apache
+  
+  handlers:
+    - name: restart mysql
+      service:
+        name: mariadb
+        state: restarted
+  
+    - name: restart apache
+      service:
+        name: httpd
+        state: restarted
+
+
+---
+- name: MariaDB server is installed
+  hosts: databases
+  vars:
+    db_packages:
+      - mariadb-server
+      - python3-PyMySQL
+    db_service: mariadb
+    resources_url: http://materials.example.com/labs/control-handlers
+    config_file_url: "{{ resources_url }}/my.cnf.standard"
+    config_file_dst: /etc/my.cnf
+  tasks:
+    - name: "{{ db_packages }} packages are installed"
+      yum:
+        name: "{{ db_packages }}"
+        state: present
+      notify:
+        - set db password
+
+    - name: Make sure the database service is running
+      service:
+        name: "{{ db_service }}"
+        state: started
+        enabled: true
+
+    - name: The {{ config_file_dst }} file has been installed
+      get_url:
+        url: "{{ config_file_url }}"
+        dest: "{{ config_file_dst }}"
+        owner: mysql
+        group: mysql
+        force: yes
+      notify:
+        - restart db service
+
+  handlers:
+    - name: restart db service
+      service:
+        name: "{{ db_service }}"
+        state: restarted
+
+    - name: set db password
+      mysql_user:
+        name: root
+        password: redhat
+
+
+---
+- name: Task Failure Exercise
+  hosts: databases
+  vars:
+    web_package: http
+    db_package: mariadb-server
+    db_service: mariadb
+  tasks:
+    - name: Install {{ web_package }} package
+      yum:
+        name: "{{ web_package }}"
+        state: present
+
+    - name: Install {{ db_package }} package
+      yum:
+        name: "{{ db_package }}"
+        state: present
+
+    - name: Install {{ web_package }} package
+      yum:
+        name: "{{ web_package }}"
+        state: present
+      ignore_errors: yes
+
+    - name: Install {{ db_package }} package
+      yum:
+        name: "{{ db_package }}"
+        state: present
+
+#Update the playbook by nesting the first task in a block clause. Remove the line that sets ignore_errors: yes. The block should read as follows:
+
+    - name: Attempt to set up a webserver
+      block:
+        - name: Install {{ web_package }} package
+          yum:
+            name: "{{ web_package }}"
+            state: present
+#Nest the task that installs the mariadb-server package in a rescue clause. The task will execute if the task listed in the block clause fails. The block clause should read as follows:
+
+      rescue:
+        - name: Install {{ db_package }} package
+          yum:
+            name: "{{ db_package }}"
+            state: present
+#Finally, add an always clause to start the database server upon installation using the service module. The clause should read as follows:
+
+      always:
+        - name: Start {{ db_service }} service
+          service:
+            name: "{{ db_service }}"
+            state: started
+
+---
+  tasks:
+    - name: Check local time
+      command: date
+      register: command_result
+      changed_when: false
+
+    - name: Print local time
+      debug:
+        var: command_result.stdout
+
+    - block:
+        - name: Install {{ web_package }} package
+          yum:
+            name: "{{ web_package }}"
+            state: present
+          failed_when: web_package == "httpd"
+
+
+
+---
+- name: Playbook Control Lab
+  hosts: webservers
+  vars_files: vars.yml
+  tasks:
+    #Fail Fast Message
+    - name: Show Failed System Requirements Message
+      fail:
+        msg: "The {{ inventory_hostname }} did not meet minimum reqs."
+      when: >
+        ansible_memtotal_mb < min_ram_mb or
+        ansible_distribution != "RedHat"
+
+    #Install all Packages
+    - name: Ensure required packages are present
+      yum:
+        name: "{{ packages }}"
+        state: latest
+
+    #Enable and start services
+    - name: Ensure services are started and enabled
+      service:
+        name: "{{ item }}"
+        state: started
+        enabled: yes
+      loop: "{{ services }}"
+
+    #Block of config tasks
+    - name: Setting up the SSL cert directory and config files
+      block:
+        - name: Create SSL cert directory
+          file:
+            path: "{{ ssl_cert_dir }}"
+            state: directory
+
+        - name: Copy Config Files
+          copy:
+            src: "{{ item.src }}"
+            dest: "{{ item.dest }}"
+          loop: "{{ web_config_files }}"
+          notify: restart web service
+
+      rescue:
+        - name: Configuration Error Message
+          debug:
+            msg: >
+              One or more of the configuration
+              changes failed, but the web service
+              is still active.
+
+    #Configure the firewall
+    - name: ensure web server ports are open
+      firewalld:
+        service: "{{ item }}"
+        immediate: true
+        permanent: true
+        state: enabled
+      loop:
+        - http
+        - https
+
+  #Add handlers
+  handlers:
+    - name: restart web service
+      service:
+        name: "{{ web_service }}"
+        state: restarted
+
+
+        
