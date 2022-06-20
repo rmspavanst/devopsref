@@ -1,0 +1,104 @@
+# tasks/environment.yml
+---
+  - name: Install the {{ package }} package
+    yum:
+      name: "{{ package }}"
+      state: latest
+  - name: Start the {{ service }} service
+    service:
+      name: "{{ service }}"
+      enabled: true
+      state: started
+
+# tasks/firewall.yml
+---
+  - name: Install the firewall
+    yum:
+      name: "{{ firewall_pkg }}"
+      state: latest
+
+  - name: Start the firewall
+    service:
+      name: "{{ firewall_svc }}"
+      enabled: true
+      state: started
+
+  - name: Open the port for {{ rule }}
+    firewalld:
+      service: "{{ item }}"
+      immediate: true
+      permanent: true
+      state: enabled
+    loop: "{{ rule }}"
+
+# tasks/placeholder.yml
+---
+  - name: Create placeholder file
+    copy:
+      content: "{{ ansible_facts['fqdn'] }} has been customized using Ansible.\n"
+      dest: "{{ file }}"
+
+
+# plays/test.yml
+
+---
+- name: Test web service
+  hosts: localhost
+  become: no
+  tasks:
+    - name: connect to internet web server
+      uri:
+        url: "{{ url }}"
+        status_code: 200
+
+
+# playbook.yml
+---
+- name: Configure web server
+  hosts: servera.lab.example.com
+
+  tasks:
+    - name: Include the environment task file and set the variables
+      include_tasks: tasks/environment.yml
+      vars:
+        package: httpd
+        service: httpd
+
+    - name: Import the firewall task file and set the variables
+      import_tasks: tasks/firewall.yml
+      vars:
+        firewall_pkg: firewalld
+        firewall_svc: firewalld
+        rule:
+          - http
+          - https
+
+    - name: Import the placeholder task file and set the variable
+      import_tasks: tasks/placeholder.yml
+      vars:
+        file: /var/www/html/index.html
+
+- name: Import test play file and set the variable
+  import_playbook: plays/test.yml
+  vars:
+    url: 'http://servera.lab.example.com'
+
+
+#handlers
+
+---
+- name: Install and configure web service
+  hosts: server*.lab.example.com
+
+  tasks:
+    - name: Import the web_tasks.yml task file
+      import_tasks: tasks/web_tasks.yml
+
+    - name: Import the firewall_tasks.yml task file
+      import_tasks: tasks/firewall_tasks.yml
+
+  handlers:
+    - name: restart httpd
+      service:
+        name: httpd
+        state: restarted
