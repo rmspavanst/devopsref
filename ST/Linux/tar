@@ -1,0 +1,32 @@
+## How to Create a Simple Archive
+
+sudo tar -c -f myarchive.tar file1, file2, file3
+
+## How to Tar a Directory
+
+sudo tar -c -f -z -v gzipped.tar.gz /home/ubuntu
+
+## How to Show Contents of a tar Archive
+
+tar -t -f gzipped.tar.gz
+
+## How to Extract a Tar Archive
+
+tar -xvf myarchive.tar
+
+## How to Extract a Specific File/ dir
+
+tar -xvf sample.wma info.txt backup.log
+mkdir ~/myarchive && tar -xvf myarchive.tar -C /home/ubuntu/myarchive
+
+
+## How to Remove Files from an Archive
+tar -xvf --delete myarchive.tar file1 file2 file3
+
+
+## Zip
+
+ zip -r temp.zip Documents
+
+ find / -name *.zip 2> /dev/null
+ find . -maxdepth 1 -type d -exec zip archive.zip {} +
