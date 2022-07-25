@@ -34,11 +34,11 @@
 - include_tasks: DBMirrorCheckSyncAndMirrorRole.yml
   vars:
     DBMirroring: "P11"
-    SQLServerInstance: "??"
+    SQLServerInstance: "PRDGWCDB01"
     DBName: "master"
     checkSync: "SYNCHRONIZED"
     mirrorRole: "PRINCIPAL"
-    DB2BSwitchOver: "??"
+    DB2BSwitchOver: "GWC"
   when: inventory_hostname in db_ip
   tags: [P11]
 
