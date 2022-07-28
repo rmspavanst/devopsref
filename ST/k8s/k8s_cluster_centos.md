@@ -84,7 +84,7 @@ cat /etc/sysconfig/network-scripts/ifcfg-enp0s3
 In Master node:
 ----------------
 
-kubeadm init --pod-network-cidr 10.244.0.0/16 --apiserver-advertise-address=192.168.0.120 (change to master ip)
+kubeadm init --pod-network-cidr 10.244.0.0/16 --apiserver-advertise-address=192.168.0.157 (change to master ip)
 
 watch docker images
 
@@ -103,4 +103,18 @@ kubeadm join 192.168.0.120:6443 --token 77h1ak.dkb8iu8lvwb3btrg --discovery-toke
 In Worker Node:
 -----------------
 
-kubeadm join 192.168.0.120:6443 --token 77h1ak.dkb8iu8lvwb3btrg --discovery-token-ca-cert-hash sha256:fe300860ee55a41082aa068d874d876dcb3e596318d604baf898b16ce9ef7c92
+
+
+kubeadm join 192.168.0.157:6443 --token ycu5yd.att8mgqyf8qg9w44 --discovery-token-ca-cert-hash sha256:b2e9753ab8b2672cc8bfd75437f024b1289c4bcee28c001f780fae4a30812fdb
+
+
+[ERROR CRI]: container runtime is not running
+
+rm /etc/containerd/config.toml
+systemctl restart containerd
+
+
+kubectl label node <node name> node-role.kubernetes.io/<role name>=<key - (any name)>
+
+
+
