@@ -1,8 +1,0 @@
-[win]
-172.31.126.242 ansible_user=ansible ansible_password=P@ssw0rd
-10.22.163.11 ansible_user=ansible ansible_password=P@ssw0rd
-
-[win:vars]
-ansible_connection=winrm
-ansible_winrm_server_cert_validation=ignore
-

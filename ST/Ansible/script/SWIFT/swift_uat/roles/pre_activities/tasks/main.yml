@@ -1,8 +1,0 @@
----
-
-- include_tasks: disableScheduledTasks.yml
-  vars:
-    DisableScheduler: P23
-  when: inventory_hostname in prod_ips
-  tags: [P23]
-

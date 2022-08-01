@@ -1,9 +1,0 @@
-pending
-=======
-P17-Enable-ScheduledTask -TaskName "PAYMENZ RENTAS" not in APP02 server
-
-
-Completed:
------------
-B13 changed to B13.1a,B13.1b,B13.1c,B13.2a,B13.2b,B13.2c 
-A5- Cannot find path 'D:\GlassfishBHIv5\glassfish\domains\domain1\logs\Paymenz_HealthCheckLog.log' because it does not exist

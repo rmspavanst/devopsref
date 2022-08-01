@@ -1,7 +1,0 @@
----
-- hosts: all
-  gather_facts: false
-
-  tasks:
-    - name: connectivity test to windows server
-      ansible.windows.win_ping:
