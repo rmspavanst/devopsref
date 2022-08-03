@@ -67,9 +67,9 @@ cat > /etc/docker/daemon.json <<EOF
 EOF
 
 
-mkdir -p /etc/systemd/system/docker.service.d 
-systemctl daemon-reload 
-systemctl restart docker 
+#mkdir -p /etc/systemd/system/docker.service.d 
+systemctl daemon-reload
+systemctl restart docker
 systemctl enable docker
 
 
@@ -110,8 +110,10 @@ kubeadm join 192.168.0.157:6443 --token ycu5yd.att8mgqyf8qg9w44 --discovery-toke
 
 [ERROR CRI]: container runtime is not running
 
-rm /etc/containerd/config.toml
+rm -rf /etc/containerd/config.toml
 systemctl restart containerd
+
+systemctl status containerd
 
 
 kubectl label node <node name> node-role.kubernetes.io/<role name>=<key - (any name)>
