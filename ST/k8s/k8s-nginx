@@ -42,3 +42,76 @@ spec:
 # kubectl create -f /tmp/nginx.yml
 # kubectl get pods
 
+
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx-first-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx-first-app
+  template:
+    metadata:
+      labels:
+        app: nginx-first-app
+    spec:
+      containers:
+      - name: nginx-pod
+        image: nginx
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: nginx-first-app
+
+
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-myservicea
+spec:
+  rules:
+  - host: myservicea.foo.org
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: myservicea
+            port:
+              number: 80
+  ingressClassName: nginx
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-myserviceb
+spec:
+  rules:
+  - host: myserviceb.foo.org
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: myserviceb
+            port:
+              number: 80
+  ingressClassName: nginx
