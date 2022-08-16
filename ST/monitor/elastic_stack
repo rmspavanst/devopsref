@@ -1,0 +1,10 @@
+vi main.yml
+
+---
+- hosts: server.example.com
+  become: yes
+  remote_user: cloud-user
+  roles:
+    - elk
+
+

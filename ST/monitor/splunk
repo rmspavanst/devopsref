@@ -1,0 +1,18 @@
+sudo yum install podman -y
+
+sudo podman pull splunk/splunk
+
+sudo podman images
+
+sudo podman run -itd -e SPLUNK_START_ARGS=--accept-license -e SPLUNK_ROLE=splunk_search_head --hostname sh1 -e SPLUNK_PASSWORD=helloworld -p 8000:8000 -p 8088:8088 splunk/splunk start
+
+
+sudo podman ps
+
+
+
+http://localhost:8000/
+User name: admin
+Password: helloworld
+
+
