@@ -3,9 +3,18 @@ configure GitLab for HA
 =======================
 https://forge.etsi.org/rep/help/administration/high_availability/gitlab.md
 
+http://repositories.compbio.cs.cmu.edu/help/administration/high_availability/gitlab.md
+
+
+https://forge.etsi.org/rep/help
+
+
 Configure PostgreSQL for HA for GitLab
 ======================================
 https://forge.etsi.org/rep/help/administration/high_availability/database.md
+
+http://repositories.compbio.cs.cmu.edu/help/administration/high_availability/database.md
+
 
 PostgresDB:
 ============
