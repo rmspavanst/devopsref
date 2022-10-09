@@ -1,0 +1,24 @@
+adduser ansible
+passwd ansible
+
+usermod -aG wheel anible (add to sudo group)
+
+User account ansible now have sudo privileges. Verify it by running the id command or grep command on /etc/passwd and /etc/group files:
+id ansible
+grep '^ansible' /etc/passwd
+grep '^wheel' /etc/group
+
+
+or
+
+sudo vi /etc/sudoers
+
+ansible ALL=(ALL) NOPASSWD:ALL (add under without a password)
+
+sudo usermod -aG wheel ansible
+
+
+verify:
+---------
+
+login to anisble user and enter cmd " visudo " to check sudo access
