@@ -2,6 +2,9 @@ $ sudo dnf install -y epel-release
 $ sudo dnf update
 $ sudo dnf install ansible -y
 $ ansible --version
+$ pip install pywinrm (for windows host)
+
+
 Create a new user called ansible and assign it to sudo group
 $ adduser ansible
  $ passwd ansible
@@ -48,3 +51,57 @@ Verify the hosts are active with PING
 $ ansible -i hosts -m ping all
 
 
+Verify PowerShell, .NET and set up WinRM
+-----------------------------------------
+
+1. verify PowerShell version
+
+Get-Host | Select-Object Version
+
+2. verify .NET version
+
+Get-ChildItem 'HKLM:\SOFTWARE\Microsoft\NET Framework Setup\NDP' -Recurse | Get-ItemProperty -Name version -EA 0 | Where { $_.PSChildName -Match '^(?!S)\p{L}'} | Select PSChildName, version
+
+3. Verify WinRM not-configured
+
+winrm get winrm/config/Service
+
+4. Setup WinRM
+
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+$url = "https://raw.githubusercontent.com/ansible/ansible/devel/examples/scripts/ConfigureRemotingForAnsible.ps1"
+$file = "$env:temp\ConfigureRemotingForAnsible.ps1"
+(New-Object -TypeName System.Net.WebClient).DownloadFile($url, $file)
+powershell.exe -ExecutionPolicy ByPass -File $file
+
+5. Verify WinRM configured
+
+winrm get winrm/config/Service
+winrm get winrm/config/Winrs
+winrm enumerate winrm/config/Listener
+
+
+inventory:
+------------
+
+[windows]
+windows10 ansible_host=192.168.0.59
+[windows:vars]
+ansible_user=ansible
+ansible_password=SuperSecurePassword123@
+ansible_port=5986
+ansible_connection=winrm
+ansible_winrm_transport=basic
+ansible_winrm_server_cert_validation=ignore
+
+
+win_ping.yml
+------------
+---
+- name: win_ping module demo
+  hosts: windows
+  become: false
+  gather_facts: false
+  tasks:
+    - name: test connection
+      ansible.windows.win_ping:
