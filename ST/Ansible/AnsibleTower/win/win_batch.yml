@@ -1,0 +1,38 @@
+---
+- hosts: localhost
+  tasks:
+    - name: Run command in cmd
+      win_shell: sample.bat
+
+    # Run a command under a non-Powershell interpreter (cmd in this case)
+    - win_shell: C:\path\sample.bat
+      args:
+        executable: cmd
+      register: command_result
+      ignore_errors: True
+
+    - debug:
+        vars: command_result   
+
+    - name: Run command that only runs if folder exists and runs from a specific folder
+      ansible.windows.win_command: wbadmin -backupTarget:C:\backup\
+      args:
+        chdir: C:\somedir\
+        creates: C:\backup\
+    
+    - name: Run an executable and send data to the stdin for the executable
+      ansible.windows.win_command: powershell.exe -
+      args:
+        stdin: Write-Host test
+    
+    # Newer style using module options. The command and other arguments are
+    # defined as module options and are indended like another other module.
+    - name: Run the 'whoami' executable with the '/all' argument
+      ansible.windows.win_command:
+        cmd: whoami.exe /all
+    
+    - name: Run executable in 'C:\Program Files' with a custom chdir
+      ansible.windows.win_command:
+        # When using cmd, the arguments need to be quoted manually
+        cmd: '"C:\Program Files\My Application\run.exe" "argument 1" -force'
+        chdir: C:\Windows\TEMP 
