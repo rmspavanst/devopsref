@@ -6,3 +6,10 @@
       path: /tmp/abc.txt 
       state: touch
 ...
+
+
+  - name: line insert
+    lineinfile:
+      path: /Users/mdtutorials2/Documents/Ansible/Input.txt
+      line: 'Added Line 1'
+      insertbefore: BOF
