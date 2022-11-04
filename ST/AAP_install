@@ -120,3 +120,14 @@ $ ./setup.sh -b -- -b -k -K
 ~~~
 
 
+
+# what components you just installed
+
+ls -1 /usr/lib/python3.8/site-packages/ansible/modules
+
+# set the default python to python3.8
+
+sudo alternatives --set python3 /usr/bin/python3.8
+
+pip3 freeze (explore your packages and setup)
+
