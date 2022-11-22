@@ -100,6 +100,10 @@ https://access.redhat.com/downloads/content/480/ver=2.2/rhel---8/2.2/x86_64/prod
 
 3) Extract the 2) and configure the inventory file on it.  You may have the current inventory file at /install/AAP_211/ansible-automation-platform-setup-bundle-2.1.1-2/inventory on the PRDANSPLAT01 (10.20.61.183).
 
+
+tar -xf ansible-automation-platform-setup-bundle.tar.gz
+
+
 The structure of the inventory file is the same as the previous version though, I recommend copying the template file in the installer and modifying it for your installation.
 
 4) Upgrading the cluster with performing ./setup.sh on the AAP 2.2.1 installer directory.  The setup.sh procedure will upgrade all nodes in the cluster at once.  I recommend planning a maintenance window for a few hours.
