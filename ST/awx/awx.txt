@@ -46,7 +46,7 @@ $ git clone -b "17.1.0" https://github.com/ansible/awx.git
 02- Next, generate a secret encryption key with the command:
 
 $ openssl rand -base64 30
-PblrUyeSvBMVWqHaaDMFcABcjzgG5dAhfeOgge4S
+YWf8JdWtrVL3QI+tYPjw2knOenogvAfi28N+3qSD
 
 03- navigate to the awx/installer directory and locate the inventory file. We need to adjust a few parameters:
 
