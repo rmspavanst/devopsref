@@ -19,7 +19,7 @@ docker exec awx_postgres psql -U awx -l
 1. dnf module list postgresql
 2. sudo dnf module enable postgresql:10
 3. sudo dnf install postgresql-server
-4. sudo postgresql-setup --initdb
+4. sudo postgresql-setup --initdb or sudo /usr/pgsql-13/bin/postgresql-13-setup initdb
 5. sudo systemctl start postgresql
 6. sudo systemctl enable postgresql
 
@@ -61,6 +61,7 @@ host    replication     all             ::1/128                 scram-sha-256
 3.CREATE USER awx WITH ENCRYPTED PASSWORD 'awxpass';
 4.GRANT ALL PRIVILEGES ON DATABASE awx TO awx;
 #ALTER USER postgres WITH PASSWORD '123' (optional)
+4.1 \q
 5. psql -d awx
 6. \conninfo
 7. \d

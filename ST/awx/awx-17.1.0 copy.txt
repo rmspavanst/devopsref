@@ -164,7 +164,17 @@ Step 6: to configure external postgresDB
 docker exec -it awx_web vi /etc/tower/conf.d/credentials.py
 
 
-
+DATABASES = {
+    'default': {
+        'ATOMIC_REQUESTS': True,
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': "awx",
+        'USER': "awx",
+        'PASSWORD': "awxpassword",
+        'HOST': "postgres",
+        'PORT': "5432",
+    }
+}
 
 
 
