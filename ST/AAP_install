@@ -135,3 +135,35 @@ sudo alternatives --set python3 /usr/bin/python3.8
 
 pip3 freeze (explore your packages and setup)
 
+
+
+==============================================================================================================
+
+Here are the steps I have confirmed on my side.
+
+1) Please make sure your backup archive will not be removed.
+
+2) Uninstall the AAP 2.2.1 by following steps.
+
+~~~
+# automation-controller-service stop
+# dnf remove automation-controller* redis* postgresql* supervisor* receptor* ansible* # rm -rf /etc/tower /etc/supervisord.d /var/lib/pgsql /var/lib/awx /var/lib/ansible-automation-platform-bundle
+# dnf clean metadata --enablerepo="ansible-automation-platform"
+~~~
+
+3) Install the AAP 2.1.1. (extract the archive, configure the inventory file, run setup.sh)
+
+Please make sure that you should set pg_database='awx' in the inventory file.
+
+4) Restore the backup to 3).
+
+~~~
+# ./setup.sh -e 'restore_backup_file=/foo/bar/automation-platform-backup-latest.tar.gz' -r ~~~
+
+5) Check if all data is restored as expected from the Web UI.
+
+6) Upgrade 4) to AAP 2.2.1 as discussed in this support case. (extract the archive, configure the inventory file, run setup.sh)
+
+
+
+
