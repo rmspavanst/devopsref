@@ -1,3 +1,9 @@
+https://www.tecmint.com/backup-and-restore-postgresql-database/#:~:text=To%20restore%20a%20PostgreSQL%20database,%2C%20tar%2C%20or%20directory).
+
+
+
+
+
 ##to check DB owner:
 
 docker exec awx_postgres psql -U awx -l
@@ -74,6 +80,8 @@ host    replication     all             ::1/128                 scram-sha-256
 
 psql -U awx -d awx -1 -f dump_05-07-2021_02_24_27.sql
 
+psql -U postgres -d awx -1 -f dump_01-12-2022_17_43_33.sql
+
 ##List owner and database:
 
 psql -U postgres -l
@@ -91,6 +99,23 @@ psql -U postgres -l
 1. login to container " docker exec -it containerID bash"
 2. cd /etc/tower/conf.d/
 3. vi credentials.py
+orginal:
+=========
+DATABASES = {
+    'default': {
+        'ATOMIC_REQUESTS': True,
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': "awx",
+        'USER': "awx",
+        'PASSWORD': "awxpassword",
+        'HOST': "postgres",
+        'PORT': "5432",
+    }
+}
+
+
+
+
 4. awxpassDATABASES = {
     'default': {
         'ATOMIC_REQUESTS': True,
