@@ -69,7 +69,7 @@ User.create!(username: "test", email: "test@example.com", password: "test", pass
 
 to reset root password
 
-user = User.where(id: 1).first user.password ='passw0rd' user.password_confirmation ='passw0rd' user.save!
+user = User.where(id: 1).first user.password ='password' user.password_confirmation ='password' user.save!
 
 or
 

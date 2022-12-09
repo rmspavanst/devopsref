@@ -10,6 +10,9 @@ vi ansible-automation-platform-setup-bundle-2.*.*.*/inventory
 10.20.61.184
 10.20.61.185
 
+#10.22.64.88 ansible_connection=local
+
+
 [automationhub]
 10.20.61.181
 
