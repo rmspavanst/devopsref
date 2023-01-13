@@ -171,6 +171,19 @@ pipeline {
 
 
 
+# Jenkins-Email:
+
+https://www.edureka.co/blog/email-notification-in-jenkins/
+
+https://naiveskill.com/jenkins-pipeline-email-notification/
+
+https://medium.com/@gustavo.guss/jenkins-sending-email-on-post-build-938b236545d2
+
+https://www.youtube.com/watch?v=AzP1NWqQd_g
+
+https://stackoverflow.com/questions/66050811/jenkins-manual-email-approval-before-deployment
+
+
 # install Sonarqube on docker:
 ===============================
 

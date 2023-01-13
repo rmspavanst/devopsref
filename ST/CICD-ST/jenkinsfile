@@ -17,23 +17,28 @@ pipeline {
                    sh "mvn package"
               }
 	  }
-
-    stage('copy artifacts') {
-            steps {
-                sshagent(['sshkey']){
-                    sh "scp -o StrictHostKeyChecking=no cicd_demo/target/webapp/webapp.war 
-                    root@192.168.0.221:/root/webapps/"
-                  }
-                }
-            } 
-
-      stage('Waiting for Approvals') {
+	  
+      stage('copy artifacts') {
+        steps {
+              //sshPublisher(publishers: [sshPublisherDesc(configName: 'Docker', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '/webapp/', remoteDirectorySDF: false, removePrefix: '', sourceFiles: 'create-container-image.yaml Dockerfile')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+              sshPublisher(publishers: [sshPublisherDesc(configName: 'Docker', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '/webapp/', remoteDirectorySDF: false, removePrefix: 'target', sourceFiles: 'target/webapp.war')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+                
+            }
+              
+      }
+	  stage('Waiting for Approvals') {
         steps{
                     input('Test Completed ? Please provide  Approvals for Prod Release ?')
 			  }
       } 
-      
-    }
+	  
+	  stage('Deploy to container') {
+        steps{
+               sshPublisher(publishers: [sshPublisherDesc(configName: 'Docker', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: 'ansible-playbook create-container-image.yaml;', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: '/webapp/', remoteDirectorySDF: false, removePrefix: '', sourceFiles: 'create-container-image.yaml Dockerfile')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+			 }
+      } 
+	  
+   }
 }
 
 

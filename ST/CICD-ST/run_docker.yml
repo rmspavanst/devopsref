@@ -1,0 +1,26 @@
+#Create Custom Container Image
+#Build the image and run container
+
+---
+- hosts: localhost
+  tasks:
+    - name: Stop tomcat container
+      command: docker stop webapp
+      ignore_errors: yes
+
+    - name: remove tomcat container
+      command: docker rm webapp
+      ignore_errors: yes
+
+
+    - name: remove docker image
+      command: docker rmi webapp
+      ignore_errors: yes
+
+    - name: Build image and with build args
+      command: docker build -t webapp /root/webapp/.
+      args:
+        chdir: /root/
+
+    - name: run the webapp container
+      command: docker container run -it -d --name webapp -p 8088:8080 webapp
