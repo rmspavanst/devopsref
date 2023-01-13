@@ -1,0 +1,39 @@
+pipeline {
+  agent any
+  tools {
+    maven 'M2_HOME'
+        }
+    stages {
+
+      stage ('Checkout SCM'){
+        steps {
+            git credentialsId: '6c41fe6e-50f3-40dc-a50d-db497361d17d', url: 'http://192.168.0.221:8081/gitlab-instance-e4de7c04/cicd-demo.git'
+              }
+        }
+    	  
+	  stage ('Build')  {
+	    steps {
+                   sh "mvn clean install"
+                   sh "mvn package"
+              }
+	  }
+
+    stage('copy artifacts') {
+            steps {
+                sshagent(['sshkey']){
+                    sh "scp -o StrictHostKeyChecking=no cicd_demo/target/webapp/webapp.war 
+                    root@192.168.0.221:/root/webapps/"
+                  }
+                }
+            } 
+
+      stage('Waiting for Approvals') {
+        steps{
+                    input('Test Completed ? Please provide  Approvals for Prod Release ?')
+			  }
+      } 
+      
+    }
+}
+
+
