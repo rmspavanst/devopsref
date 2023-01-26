@@ -40,6 +40,9 @@ docker.io/registry
  mkdir -p k8s-master.st.com:5000
  
  cp -rf /root/domain.crt k8s-master.st.com\:5000/
+
+
+
  
  
    

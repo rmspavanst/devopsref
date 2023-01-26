@@ -16,9 +16,7 @@ sudo yum install docker-ce docker-ce-cli containerd.io docker-compose-plugin
 or
 dnf install docker-ce --nobest -y
 
-sudo systemctl start docker
-
-sudo systemctl Enable docker
+sudo systemctl start docker && sudo systemctl enable docker
 
 docker --version
 

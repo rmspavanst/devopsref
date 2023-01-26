@@ -1,0 +1,41 @@
+pipeline {
+  agent any
+  tools {
+    maven 'M2_HOME'
+        }
+    stages {
+        stage('Checkout SCM'){
+            steps {
+                git credentialsId: '6c41fe6e-50f3-40dc-a50d-db497361d17d', url: 'http://192.168.0.221:8081/gitlab-instance-e4de7c04/cicd-demo.git'
+              }
+        }
+
+        stage('Build')  {
+            steps {
+                   sh "mvn clean install"
+                   sh "mvn package"
+              }
+          }
+
+        stage('Copy Artifacts') {
+            steps{
+                sshagent(['docker-ss']) {
+                    sh "scp -o StrictHostKeyChecking=no create-container-image.yaml Dockerfile /target/webapp.war root@192.168.0.221:/root/webapp"
+            }
+         }
+      }
+        stage('Waiting for Approvals') {
+            steps{
+                    input('Test Completed ? Please provide  Approvals for Prod Release ?')
+                }
+        }
+
+        stage('Deploy') {
+            steps{
+                sshagent(['docker-ss']) {
+                    sh "ssh -o StrictHostKeyChecking=no root@192.168.0.221 -C \"sudo ansible-playbook /root/webapp/create-container-image.yaml\""
+                }
+            }
+        }
+    }
+} 
