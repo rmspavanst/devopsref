@@ -25,11 +25,17 @@ cat keystonerc_admin
 
 # https://www.devopsschool.com/tutorial/openstack/install-openstack-in-rhel-centos7.html
 # https://www.rdoproject.org/install/packstack/
-# https://www.linuxtechi.com/install-openstack-centos-8-with-packstack/
+# https://www.linuxtechi.com/install-openstack-centos-8-with-packstack/ (## working)
 # https://computingforgeeks.com/install-openstack-victoria-on-centos/
 # https://haihh2.notion.site/1-Install-OpenStack-on-RHEL-8-VMware-all-in-one-3f4b6809d0a14c318de3b39efc0a91d1#c04a7090b7154c7696ffec4b2be387a7
 
 # https://www.edureka.co/community/64660/how-do-i-install-openstack-in-rhel-7-centos-7
+
+
+
+
+
+
 
 
 Redhat Openstack:
@@ -51,6 +57,12 @@ Docker:
 =========
 
 https://serverhealers.com/blog/deploying-openstack-using-docker-container-with-kolla-and-hyper-v
+
+## Terraform:
+
+https://computingforgeeks.com/deploy-vm-instance-on-openstack-with-terraform/
+
+
 
 
 
@@ -150,4 +162,51 @@ If you have run Packstack previously, there will be a file in your home director
 The installer will ask you to enter the root password for each host node you are installing on the network, to enable remote configuration of the host so it can remotely configure each node using Puppet.
 
 Once the process is complete, you can log in to the OpenStack web interface Horizon by going to http://$YOURIP/dashboard. The user name is admin. The password can be found in the file keystonerc_admin in the /root directory of the control node.
+
+
+
+## Install Packages
+
+subscription-manager register
+subscription-manager attach
+subscription-manager release --set=8.4
+subscription-manager repos --disable=*
+dnf install -y https://www.rdoproject.org/repos/rdo-release.el8.rpm
+subscription-manager repos \
+--enable=rhel-8-for-x86_64-baseos-rpms \
+--enable=rhel-8-for-x86_64-appstream-rpms \
+--enable=rhel-8-for-x86_64-highavailability-rpms \
+--enable=rhel-8-for-x86_64-supplementary-rpms \
+--enable=codeready-builder-for-rhel-8-x86_64-rpms
+dnf update -y
+dnf install -y network-scripts
+systemctl enable --now network
+systemctl stop NetworkManager 
+systemctl disable NetworkManager
+systemctl stop firewalld 
+systemctl disable firewalld
+
+
+
+subscription-manager repos \
+--enable=rhel-8-for-x86_64-baseos-rpms \
+--enable=rhel-8-for-x86_64-appstream-rpms \
+--enable=codeready-builder-for-rhel-8-x86_64-rpms
+
+sudo packstack --os-neutron-ml2-tenant-network-types=vxlan \
+--os-neutron-l2-agent=openvswitch \
+--os-neutron-ml2-type-drivers=vxlan,flat \
+--os-neutron-ml2-mechanism-drivers=openvswitch \
+--keystone-admin-passwd=P@ssw0rd \
+--nova-libvirt-virt-type=kvm \
+--provision-demo=n \
+--cinder-volumes-create=n \
+--os-heat-install=y \
+--os-swift-storage-size=10G \
+--gen-answer-file /root/answers.txt
+
+sudo packstack --answer-file /root/answers.txt
+
+
+
 
