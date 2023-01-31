@@ -29,6 +29,6 @@
         cinder volume
         shared the filesystem service
 
-#lab
+# lab
 
-
+==> Launch 2 nodes in virtual box and attach 2nic cards( 1 for bridge to access internet and another adaptor use for internal)
