@@ -96,6 +96,11 @@ sudo chown $(id -u):$(id -g) $HOME/.kube/config
 ## to create network
 kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+
+# curl https://docs.projectcalico.org/manifests/calico.yaml -O
+# kubectl apply -f calico.yaml
+
 
 kubeadm join 192.168.0.120:6443 --token 77h1ak.dkb8iu8lvwb3btrg --discovery-token-ca-cert-hash sha256:fe300860ee55a41082aa068d874d876dcb3e596318d604baf898b16ce9ef7c92
 

@@ -199,6 +199,10 @@ openstack command list | grep openstack.identity -A 40
  openstack image list
  openstack image create --min-disk 2 --private --disk-format qcow2 --file <image_file> <image_name>
 
+ openstack image create --min-disk 2 --private --disk-format qcow2 --file cirros-0.6.0-x86_64-disk.img cirros6
+
+ openstack image create cirros --container-format bare --disk-format qcow2 --public --file cirros-0.4.0-x86_64-disk.img
+
  openstack image show cirros
 
 
@@ -322,6 +326,10 @@ openstack flavor list
 openstack flavor create -h
 # create a flavor with ID=10, 256 mb ram, 2 gb disk & visible to others
 openstack flavor create --id 10 --ram 256 --disk 2 --public tinier
+
+openstack flavor create --ram 512 --disk 1 --vcpu 1 --public tiny
+
+
 # get help for server create command
 openstack server create -h
 # create a keypair named mykeypair and copy to mykeypair.key file

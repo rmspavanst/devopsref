@@ -3,6 +3,10 @@
 
 https://www.youtube.com/watch?v=ieDhyHGcqK0
 
+https://www.youtube.com/watch?v=qnLJejvoQUQ
+
+
+
 https://infohub.delltechnologies.com/l/red-hat-openstack-platform-16-1-with-dell-powerflex-family-1/director-undercloud-installation-2
 
 https://atl.kr/dokuwiki/doku.php/%ED%81%B4%EB%9D%BC%EC%9A%B0%EB%93%9C
@@ -200,6 +204,160 @@ After a successful deployment, you can use the clouds.yaml configuration file in
 
 To access the dashboard, go to to http://192.168.0.144/dashboard and use the default username admin and the undercloud_admin_password from the ~/standalone-passwords.conf file
 
+
+
+[stack@all-in-one]$ export OS_CLOUD=standalone
+[stack@all-in-one]$ openstack endpoint list
+
+[stack@all-in-one]$ sudo yum list installed | grep openstack-*
+[stack@all-in-one]$ openstack service list
+[stack@all-in-one]$ openstack --version
+
+[stack@all-in-one]$ cat .config/openstack/cloud.yaml
+
+
+#standalone with project networking and provider networking
+export OS_CLOUD=standalone
+export GATEWAY=192.168.24.1
+export STANDALONE_HOST=192.168.24.2
+export PUBLIC_NETWORK_CIDR=192.168.24.0/24
+export PRIVATE_NETWORK_CIDR=192.168.100.0/24
+export PUBLIC_NET_START=192.168.24.4
+export PUBLIC_NET_END=192.168.24.5
+export DNS_SERVER=8.8.8.8
+
+
+
+openstack security group rule create basic --protocol tcp --dst-port 22:22 --remote-ip 0.0.0.0/0
+
+openstack security group rule create --protocol icmp basic
+
+openstack security group rule create --protocol udp --dst-port 53:53 basic
+
+openstack network createe external_network --provider:network_type flat --provider:physical_network datacentre --router:external
+
+neutron net-create external_network --provider:network_type flat --provider:physical_network datacentre --router:external
+
+neutron subnet-create --name public_subnet --enable_dhcp=False --allocationpool start=192.168.10.120,end=192.168.10.150 --gateway=192.168.10.1 external_network 192.168.10.0/24
+
+
+openstack network create --external --provider-physical-network datacentre --provider-network-type flat public
+$ openstack network create --internal private
+$ openstack subnet create public-net \
+    --subnet-range $PUBLIC_NETWORK_CIDR \
+    --no-dhcp \
+    --gateway $GATEWAY \
+    --allocation-pool start=$PUBLIC_NET_START,end=$PUBLIC_NET_END \
+    --network public
+$ openstack subnet create private-net \
+    --subnet-range $PRIVATE_NETWORK_CIDR \
+    --network private
+
+
+
+NOTE: In this case an IP will be automatically assigned
+# from the allocation pool for the subnet.
+$ openstack router create vrouter
+$ openstack router set vrouter --external-gateway public
+$ openstack router add subnet vrouter private-net
+
+
+openstack floating ip create public
+
+openstack server create --flavor tiny --image cirros --key-name default --network private --security-group basic myserver
+
+openstack server add floating ip myserver <FLOATING_IP>
+
+openstack server add floating ip myserver 192.168.24.10
+
+
+
+
+
+
+
+
+==================================================================================================
+### Example 1: Launching an instance with one NIC on the project and provider networks
+Use this example to understand how to launch an instance with the private project network and the provider network after you deploy the all-in-one Red Hat OpenStack Platform (RHOSP) environment. The following example is based on a single NIC configuration and requires at least three IP addresses.
+
+Prerequisites
+
+One IP address for the OpenStack services.
+One IP address for the virtual router to provide connectivity to the project network. This IP address is assigned automatically in this example.
+At least one IP address for floating IPs on the provider network.
+Procedure
+
+Create configuration helper variables:
+
+# standalone with project networking and provider networking
+export OS_CLOUD=standalone
+export GATEWAY=192.168.25.1
+export STANDALONE_HOST=192.168.25.2
+export PUBLIC_NETWORK_CIDR=192.168.25.0/24
+export PRIVATE_NETWORK_CIDR=192.168.100.0/24
+export PUBLIC_NET_START=192.168.25.4
+export PUBLIC_NET_END=192.168.25.15
+export DNS_SERVER=1.1.1.1
+Create a basic flavor:
+
+$ openstack flavor create --ram 512 --disk 1 --vcpu 1 --public tiny
+Download CirrOS and create an OpenStack image:
+
+$ wget https://download.cirros-cloud.net/0.4.0/cirros-0.4.0-x86_64-disk.img
+$ openstack image create cirros --container-format bare --disk-format qcow2 --public --file cirros-0.4.0-x86_64-disk.img
+Configure SSH:
+
+$ ssh-keygen -m PEM -t rsa -b 2048 -f ~/.ssh/id_rsa_pem
+$ openstack keypair create --public-key ~/.ssh/id_rsa_pem.pub default
+Create a simple network security group:
+
+$ openstack security group create basic
+Configure the new network security group:
+
+Enable SSH:
+
+$ openstack security group rule create basic --protocol tcp --dst-port 22:22 --remote-ip 0.0.0.0/0
+Enable ping:
+
+$ openstack security group rule create --protocol icmp basic
+Enable DNS:
+
+$ openstack security group rule create --protocol udp --dst-port 53:53 basic
+Create Neutron networks:
+
+$ openstack network create --external --provider-physical-network datacentre --provider-network-type flat public
+$ openstack network create --internal private
+$ openstack subnet create public-net \
+    --subnet-range $PUBLIC_NETWORK_CIDR \
+    --no-dhcp \
+    --gateway $GATEWAY \
+    --allocation-pool start=$PUBLIC_NET_START,end=$PUBLIC_NET_END \
+    --network public
+$ openstack subnet create private-net \
+    --subnet-range $PRIVATE_NETWORK_CIDR \
+    --network private
+Create a virtual router:
+
+# NOTE: In this case an IP will be automatically assigned
+# from the allocation pool for the subnet.
+$ openstack router create vrouter
+$ openstack router set vrouter --external-gateway public
+$ openstack router add subnet vrouter private-net
+Create a floating IP:
+
+$ openstack floating ip create public
+Launch the instance:
+
+$ openstack server create --flavor tiny --image cirros --key-name default --network private --security-group basic myserver
+Assign the floating IP:
+
+$ openstack server add floating ip myserver <FLOATING_IP>
+Replace <FLOATING_IP> with the address of the floating IP that you created.
+Test SSH:
+
+ssh cirros@<FLOATING_IP>
+Replace <FLOATING_IP> with the address of the floating IP that you created.
 
 
 

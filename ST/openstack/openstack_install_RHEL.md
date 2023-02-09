@@ -229,4 +229,36 @@ sudo packstack --answer-file /root/answers.txt
 
 
 
+export OS_CLOUD=standalone
+
+/home/stack/.config/openstack/cloud.yaml
+
+clouds:
+  standalone:
+    auth:
+      auth_url: http://192.168.0.120:5000
+      password: 8VuR83gNHKSwKabIfsCgI96xn
+      project_domain_name: Default
+      project_name: admin
+      user_domain_name: Default
+      username: admin
+    cacert: ''
+    identity_api_version: '3'
+    region_name: regionOne
+
+
+vi admin-openrc
+
+1 export OS_USERNAME=admin
+2 export OS_PASSWORD=123456
+3 export OS_PROJECT_NAME=admin
+4 export OS_USER_DOMAIN_NAME=Default
+5 export OS_PROJECT_DOMAIN_NAME=Default
+6 export OS_AUTH_URL=http://controller:35357/v3
+7 export OS_IDENTITY_API_VERSION=3
+
+
+
+
+
 
