@@ -19,6 +19,11 @@ Multinode-OPSK:
 # https://medium.com/@ebrar/how-to-install-4-nodes-openstack-rocky-on-centos7-c348a00c0d54
 
 
+# https://www.informaticar.net/how-to-install-openstack-on-centos/
+
+
+
+
 
 
 # pre:(do this in all nodes)
@@ -49,6 +54,10 @@ sudo subscription-manager repos \
 yum update -y
 
 
+scp /etc/hosts root@192.168.122.101:/etc/hosts ; scp /etc/hosts root@192.168.122.102:/etc/hosts ; scp /etc/hosts root@192.168.122.103:/etc/hosts
+
+
+scp /etc/hosts root@192.168.0.137:/etc/hosts ; scp /etc/hosts root@192.168.0.98:/etc/hosts 
 
 vi /etc/hosts
 192.168.0.203     oscontroller01

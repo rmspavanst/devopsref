@@ -37,6 +37,27 @@ reboot
 # after the reboot check the status of selinux, it should be disabled
 getenforce
 # On CentOS install the latest release of openstack package
+
+
+{{{
+# repo (https://repos.fedorapeople.org/repos/openstack/) to install ofiline 
+# https://rpmfind.net/linux/rpm2html/search.php?query=centos-release-openstack
+
+
+$ wget https://repos.fedorapeople.org/repos/openstack/openstack-wallaby/rdo-release-wallaby-0.el8.noarch.rpm
+$ wget https://repos.fedorapeople.org/repos/openstack/openstack-wallaby/rdo-release-wallaby-1.el8.noarch.rpm
+
+$ rpm -Uvh rdo-release-wallaby-0.el8.noarch.rpm
+$ rpm -Uvh rdo-release-wallaby-1.el8.noarch.rpm 
+
+
+yum install centos-release-openstack-rocky
+yum upgrade
+yum install python-openstackclient
+yum install openstack-selinux
+
+}}}
+
 sudo yum install -y centos-release-openstack-train
 sudo yum install yum-utils
 sudo yum-config-manager --enable openstack-train

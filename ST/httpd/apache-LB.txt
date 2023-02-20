@@ -31,6 +31,8 @@ mod_proxy_balancer
 
 vi /etc/httpd/conf.d/loadbalancer.conf
 
+/etc/apache2/sites-available
+
 ProxyRequests off
 
 <Proxy balancer://testload>
