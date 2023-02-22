@@ -24,7 +24,9 @@ systemctl start network
 cat /etc/sysconfig/network-scripts/ifcfg-enp0s3
 
 TYPE=:"Ethernet"
-
+IPADDR=192.168.0.203
+PREFIX=24
+GATEWAY=192.168.1.1
 
 
 
@@ -58,6 +60,10 @@ yum install openstack-selinux
 
 }}}
 
+# https://computingforgeeks.com/install-openstack-victoria-on-centos/
+
+sudo dnf search centos-release-openstack
+
 sudo yum install -y centos-release-openstack-train
 sudo yum install yum-utils
 sudo yum-config-manager --enable openstack-train
@@ -68,8 +74,10 @@ sudo yum install -y openstack-packstack
 # to check the IP addresses on your machine
 ip address show
 
+
+
 # run the packstack installer with below parameters
-packstack --allinone --provision-demo=n --os-neutron-ovs-bridge-mappings=extnet:br-ex --os-neutron-ml2-mechanism-drivers=openvswitch --os-neutron-l2-agent=openvswitch --os-neutron-ovs-bridge-interfaces=br-ex:enp0s3 --os-neutron-ml2-type-drivers=vxlan,flat --os-neutron-ml2-tenant-network-types=vxlan
+packstack --allinone --provision-demo=n --os-neutron-ovs-bridge-mappings=extnet:br-ex --os-neutron-ml2-mechanism-drivers=openvswitch --os-neutron-l2-agent=openvswitch --os-neutron-ovs-bridge-interfaces=br-ex:ens18 --os-neutron-ml2-type-drivers=vxlan,flat --os-neutron-ml2-tenant-network-types=vxlan --keystone-admin-passwd=P@ssw0rd --os-heat-install=y 
 # to check the IP addresses on your machine
 ip address show
 
@@ -212,6 +220,10 @@ openstack command list | grep openstack.identity -A 40
 
   wget http://centos.mirror.liquidtelecom.com/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-boot.iso
   https://computingforgeeks.com/how-to-create-centos-8-kvm-image-template-for-openstack/
+
+  https://computingforgeeks.com/add-rhel-8-image-to-openstack-glance/
+
+  
 
  
  # Manage Glance from CLI
