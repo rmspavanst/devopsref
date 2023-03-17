@@ -1,4 +1,16 @@
 https://www.liquidweb.com/kb/how-to-install-jenkins-on-centos-8/
 
 
+https://www.howtoforge.com/how-to-install-jenkins-on-rocky-linux-9/
+
+change default port : vi /usr/lib/systemd/system/jenkins.service
+
+docker run -d --name jenkins -p 8081:8080 -v /root/jenkins/ jenkins/jenkins
+docker run -p 8080:8080 -p 50000:50000 -d -v my-jenkins-home: /var/jenkins_home jenkins/jenkins:lts 
+
+https://devopscube.com/setup-jenkins-on-kubernetes-cluster/
+
+
+
+
 
