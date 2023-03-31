@@ -1,0 +1,91 @@
+
+https://developer.entando.com/v6.2/tutorials/ecr/how-to-setup-nexus-on-kubernetes-cluster.html#steps
+https://support.sonatype.com/hc/en-us/articles/7706583820691-How-to-install-Nexus-Pro-instance-using-Sonatype-helm3-chart
+
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+    name: sonatypestorage
+    namespace: nexus
+    labels:
+        name: sonatypestorage # claim for volume
+spec:
+    storageClassName: default # same storage class as pvc
+    capacity:
+        storage: 40Gi
+    accessModes:
+        - ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    hostPath:
+        path: "/var/nexus-data"
+#nfs:
+#    server: 192.168.14.117 # ip addres of nfs server
+#    path: "/mnt/nfs-volume"  # path to directory, make sure directory is available
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    name: sonatype-registry-data
+    namespace: nexus
+    labels:
+      app: sonatype-registry
+spec:
+    accessModes:
+    - ReadWriteOnce
+    storageClassName: default
+    resources:
+        requests:
+            storage: 40Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: sonatype-service
+    namespace: nexus
+spec:
+    type: ClusterIP
+    ports:
+        - port: 8081
+          targetPort: 8081
+    selector:
+        app: sonatype-registry
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sonatype-registry
+  namespace: nexus
+  labels:
+    app: sonatype-registry
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: sonatype-registry
+  template:
+      metadata:
+        labels:
+          app: sonatype-registry
+      spec:
+        containers:
+        - name: sonatype-nexus
+          image: sonatype/nexus3
+          ports:
+          - containerPort: 8081
+          volumeMounts:
+          - name: registry-vol
+            mountPath: /var/nexus-data
+            subPath: sonatype
+        volumes:
+        - name: registry-vol
+          persistentVolumeClaim:
+            claimName: sonatype-registry-data
+
+

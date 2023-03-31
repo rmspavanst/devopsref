@@ -3,6 +3,9 @@
 ## https://devopscube.com/setup-jenkins-on-kubernetes-cluster/
 
 
+## https://adamtheautomator.com/jenkins-kubernetes/ (agents in jenkins)
+
+
 Kubernetes Cluster up and running now we can Deploy the Jenkins on K8s
 
 Step 1 Create the namespace:
