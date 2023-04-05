@@ -1,0 +1,132 @@
+## https://medium.com/open-devops-academy/set-up-docker-registry-and-a-docker-regui-8340bb287276
+
+
+Docker:
+yum install -y yum-utils
+yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+yum install -y docker-ce docker-ce-cli containerd.io
+systemctl start docker
+
+
+Docker Compose:
+curl -L "https://github.com/docker/compose/releases/download/1.27.3/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
+ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+
+
+Let’s verify that Docker and Docker Compose are well installed:
+
+docker run hello-world
+docker-compose --version
+
+
+Set up Docker Registry and Docker Registry UI
+Let’s install a Docker Registry from a Docker image.
+
+Create a docker_registry directory:
+
+mkdir docker_registry
+cd docker_registry
+
+docker pull registry:2
+
+mkdir /tmp/docker_registry
+
+docker run -d -p 5000:5000 --name docker_registry -v /tmp/docker_registry:/var/lib/registry registry:2
+
+docker logs docker_registry
+
+Let’s launch a Docker image for the user interface:
+
+docker run -d \
+  -p 8086:80 \
+  --name=docker_registry_ui \
+  -e REGISTRY_HOST=0.0.0.0 \
+  -e REGISTRY_PORT=443 \
+  -e REGISTRY_PROTOCOL=https \
+  -e SSL_VERIFY=false \
+  -e ALLOW_REGISTRY_LOGIN=true \
+  -e REGISTRY_ALLOW_DELETE=true \
+  parabuzzle/craneoperator:latest
+
+
+  docker logs docker_registry_ui
+
+  #####
+  ####  Improvement by using Docker Compose
+
+mkdir /tmp/docker_registry
+
+
+cat << EOF > docker-compose.yml
+version: '3'
+services:
+    docker-registry:
+        image: registry:2
+        volumes:
+        - "/tmp/docker_registry:/var/lib/registry"
+        ports:
+        - "5000:5000"
+        restart: always
+    docker-registry-ui:
+        image: parabuzzle/craneoperator:latest
+        ports:
+        - "8086:80"
+        environment:
+        - REGISTRY_HOST=docker-registry
+        - REGISTRY_PORT=5000
+        - REGISTRY_PROTOCOL=http
+        - SSL_VERIFY=false
+        - USERNAME=admin
+        - PASSWORD=mypassword
+        restart: always
+        depends_on:
+        - docker-registry
+EOF
+
+
+docker-compose up -d
+
+docker pull alpine
+
+docker tag alpine 8.208.91.39:5000/alpine
+docker push 8.208.91.39:5000/alpine
+
+
+if got error https/http
+
+vi /etc/docker/daemon.json
+
+{ "insecure-registries": ["8.208.91.39:5000"] }
+
+
+systemctl restart docker
+
+
+
+if you afe using ciro:
+
+vi /etc/containers/registries.conf
+
+[registries.insecure]
+registries = ['10.0.16.191:5000']
+#insecure = true
+
+systemctl restart crio.service
+
+
+
+docker push 8.208.91.39:5000/alpine
+
+still not works:
+
+docker login 8.208.91.39:5000
+username:
+password:
+
+docker push 8.208.91.39:5000/alpine
+docker pull 8.208.91.39:5000/alpine
+
+
+
+

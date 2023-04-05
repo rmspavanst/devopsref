@@ -5,6 +5,8 @@
 
 ## https://adamtheautomator.com/jenkins-kubernetes/ (agents in jenkins)
 
+## https://devopscube.com/jenkins-build-agents-kubernetes/
+
 
 Kubernetes Cluster up and running now we can Deploy the Jenkins on K8s
 

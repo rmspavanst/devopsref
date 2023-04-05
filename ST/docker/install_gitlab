@@ -1,0 +1,22 @@
+mkdir /srv/gitlab
+
+export GITLAB_HOME=/srv/gitlab
+
+export GITLAB_HOME=$HOME/gitlab
+
+sudo docker run --detach \
+  --hostname gitlab.example.com \
+  --publish 8443:443 --publish 8087:80 --publish 22:22 \
+  --name gitlab \
+  --restart always \
+  --volume $GITLAB_HOME/config:/etc/gitlab \
+  --volume $GITLAB_HOME/logs:/var/log/gitlab \
+  --volume $GITLAB_HOME/data:/var/opt/gitlab \
+  --shm-size 256m \
+  gitlab/gitlab-ee:latest
+
+
+  docker logs gitlab
+
+  docker exec -it <gitlab-container-name> grep 'Password:' /etc/gitlab/initial_root_password
+

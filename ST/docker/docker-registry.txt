@@ -1,7 +1,13 @@
 
 https://adamtheautomator.com/private-docker-registry/
 
+https://docs.oracle.com/cd/E64747_01/E64749/html/osusg-install-docker-setup.html
 
+https://www.alibabacloud.com/blog/set-up-a-private-docker-registry-with-a-ui-on-alibaba-cloud_596660
+
+https://github.com/Joxit/docker-registry-ui
+
+https://www.c-sharpcorner.com/article/setup-and-host-your-own-private-docker-registry/ (****)
 
 
 
