@@ -1,5 +1,8 @@
 ## https://medium.com/open-devops-academy/set-up-docker-registry-and-a-docker-regui-8340bb287276
+Harbor
+ ## https://computingforgeeks.com/install-harbor-registry-centos-debian-ubuntu/
 
+ ## https://goharbor.io/docs/1.10/install-config/harbor-ha-helm/
 
 Docker:
 yum install -y yum-utils

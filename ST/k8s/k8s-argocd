@@ -1,0 +1,65 @@
+1. Install Argo CD
+
+kubectl create namespace argocd
+kubectl get ns
+
+helm repo list
+helm repo add argo https://argoproj.github.io/argo-helm
+
+helm repo list
+helm repo update
+
+helm install argocd argo/argo-cd -n argocd
+
+provide details to login username and password 
+
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+ucGu3W5f4fxJ8GQd
+
+helm list -n argocd
+
+kubectl get pod -n argocd
+
+kubectl get svc -n argocd
+kubectl edit svc argocd-server -n argocd
+  --: change the type to NodePort
+
+kubectl get svc -n argocd
+  : try to login with nodeport
+  : if not able to access edit the deployment file add insecure under
+      spec:
+        containers:
+        - command:
+          - argocd-server
+          - insecure
+
+kubectl -n argocd get deployments.apps
+kubectl -n argocd edit deployments.apps argocd-server
+
+      spec:
+        containers:
+        - command:
+          - argocd-server
+          - insecure
+
+kubectl -n agrocd get pod
+kubectl -n argocd get svc
+    : edit the argocd-server svc type change to NodePort
+
+kubectl edit svc arocd-server -n argocd
+  --: change the type to NodePort
+
+
+if lost default password
+
+kubectl -n argocd get secrets
+kubectl -n argocd edit secrets argocd-initial-admin-secret
+    : copy the password
+    : open base64decode website paste the password and decode
+
+
+
+
+
+
+
