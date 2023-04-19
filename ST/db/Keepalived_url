@@ -1,0 +1,15 @@
+# mysql,keepalived (MySql master-slave replication & Keepalived with virtual IP)
+--------------------------
+
+https://www.linkedin.com/pulse/mysql-master-slave-replication-keepalived-virtual-ip-mahadi-hasan-joy/?trk=pulse-article_more-articles_related-content-card
+
+https://nuwant.medium.com/managing-failovers-with-keepalived-haproxy-c8de98d0c96e
+
+https://gist.github.com/azet/68201ff87820f1b2f4dc4f8316c5008a
+
+https://www.pentestpartners.com/security-blog/how-to-use-keepalived-for-high-availability-and-load-balancing/
+
+https://stackoverflow.com/questions/70923232/keepalived-notify-not-running-the-script
+
+
+
