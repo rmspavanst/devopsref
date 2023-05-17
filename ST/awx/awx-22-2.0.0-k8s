@@ -1,0 +1,101 @@
+sudo yum -y install git make tar curl
+
+git clone https://github.com/ansible/awx-operator.git
+
+kubectl create ns awx
+
+cd awx-operator
+
+sudo yum -y install jq
+
+git checkout 2.0.0
+
+export NAMESPACE=awx
+make deploy
+
+kubectl get pods -n awx
+NAME                                               READY   STATUS    RESTARTS   AGE
+awx-operator-controller-manager-57867569c4-mwvfb   2/2     Running   0          35m
+
+kubectl get deploy
+NAME                              READY   UP-TO-DATE   AVAILABLE   AGE
+awx-operator-controller-manager   1/1     1            1           19m
+
+kubectl logs -f deployments/awx-operator-controller-manager -c awx-manager
+
+
+
+vi public-static-pvc.yaml
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: public-static-data-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 10Gi
+	  
+	  
+
+kubectl apply -f public-static-pvc.yaml -n awx
+
+vi awx-instance-deployment.yml
+---
+apiVersion: awx.ansible.com/v1beta1
+kind: AWX
+metadata:
+  name: awx
+spec:
+  service_type: nodeport
+  projects_persistence: true
+  projects_storage_access_mode: ReadWriteOnce
+  web_extra_volume_mounts: |
+    - name: static-data
+      mountPath: /var/lib/projects
+  extra_volumes: |
+    - name: static-data
+      persistentVolumeClaim:
+        claimName: public-static-data-pvc
+		
+		
+kubectl apply -f awx-instance-deployment.yml -n awx
+
+# watch kubectl get pods -l "app.kubernetes.io/managed-by=awx-operator" -n awx
+NAME                   READY   STATUS    RESTARTS   AGE
+awx-postgres-0         1/1     Running   0          2m58s
+awx-75698588d6-qz2gf   4/4     Running   0          2m42s
+
+Extra PVCs are created automatically:
+
+# kubectl  get pvc
+
+NAME                      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+postgres-awx-postgres-0   Bound    pvc-34a25045-486c-42a8-9763-d14a7bb3e9e8   8Gi        RWO            local-path     72s
+public-static-data-pvc    Bound    pvc-3484e513-8d00-482c-bdce-6e77820f237e   1Gi        RWO            local-path     5m13s
+awx-projects-claim        Bound    pvc-e56ab471-97f1-455b-9d51-ba05b7d9982b   8Gi        RWO            local-path     60s
+
+
+kubectl get pods -n awx
+NAME                            READY   STATUS    RESTARTS   AGE
+awx-operator-545497f7d5-bqlcs   1/1     Running   0          65m
+awx-postgres-0                  1/1     Running   4          8m22s
+awx-75698588d6-7kg9j            4/4     Running   0          8m10s
+
+
+
+kubectl get service -n awx
+NAME           TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)        AGE
+awx-postgres   ClusterIP   None           <none>        5432/TCP       5m17s
+awx-service    NodePort    10.43.54.203   <none>        80:32169/TCP   5m7s
+
+
+http://10.0.16.104:32169
+
+Obtain admin user password by decoding the secret with the password value:
+
+kubectl -n awx get secret awx-admin-password -o jsonpath="{.data.password}" | base64 --decode
