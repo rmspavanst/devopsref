@@ -170,3 +170,11 @@ Please make sure that you should set pg_database='awx' in the inventory file.
 
 
 
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/tower/tower.key -out /etc/tower/tower.cert
+
+
+mkdir -p /etc/tower/
+
+
+
+

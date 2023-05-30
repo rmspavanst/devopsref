@@ -1,0 +1,40 @@
+sudo dnf install wget yum-utils make gcc openssl-devel bzip2-devel libffi-devel zlib-devel
+
+wget https://www.python.org/ftp/python/3.9.16/Python-3.9.16.tgz
+tar xzf Python-3.9.16.tgz
+cd Python-3.9.16
+sudo ./configure --with-system-ffi --with-computed-gotos --enable-loadable-sqlite-extensions
+sudo make -j ${nproc}
+sudo make altinstall
+
+python3.9 -V
+
+pip3.9 -V
+
+alternatives --list
+
+cp -r /usr/local/bin/py* /usr/bin/
+
+ln -sf /usr/bin/python3.9 /usr/bin/python
+
+alternatives --remove python /usr/libexec/no-python
+alternatives --install /usr/bin/python python /usr/bin/python3.9 1
+alternatives --config python
+alternatives --list
+
+python3.9 -m pip install --user ansible-core==2.14.5
+
+python3.9 -m pip install --upgrade --user ansible
+
+/usr/local/bin/python3.9 -m pip install --upgrade pip
+
+/usr/local/bin/python3.9 -m pip install --upgrade --user ansible
+
+python3 -m pip install  ansible-core==2.14.5
+python -m pip install  ansible-core==2.14.5
+
+ansible --version
+
+pip install PyYAML==5.4.1
+pip install yamllint==1.25.0
+pip install packaging==21.3

@@ -68,7 +68,7 @@ It now says that the service is available on port 80 internally, and port 32441 
 Install Contour Ingress Controller:
 
 wget https://projectcontour.io/quickstart/contour.yaml -O /root/contour.yaml
-kubectl apply -f contour.yaml
+kubectl apply -f contour.yaml 
 
 
 kubectl get pods -n projectcontour

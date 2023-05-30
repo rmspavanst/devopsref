@@ -99,3 +99,30 @@ http://10.0.16.104:32169
 Obtain admin user password by decoding the secret with the password value:
 
 kubectl -n awx get secret awx-admin-password -o jsonpath="{.data.password}" | base64 --decode
+
+
+
+
+External PostgreSQL Service
+To configure AWX to use an external database, the Custom Resource needs to know about the connection details. To do this, create a k8s secret with those connection details and specify the name of the secret as postgres_configuration_secret at the CR spec level.
+
+The secret should be formatted as follows:
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: <resourcename>-postgres-configuration
+  namespace: <target namespace>
+stringData:
+  host: <external ip or url resolvable by the cluster>
+  port: <external port, this usually defaults to 5432>
+  database: <desired database name>
+  username: <username to connect as>
+  password: <password to connect with>
+  sslmode: prefer
+  type: unmanaged
+type: Opaque
+
+
+
