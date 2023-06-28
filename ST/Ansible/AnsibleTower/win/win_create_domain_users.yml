@@ -61,9 +61,20 @@
       register: created_users
       ignore_errors: yes
 
+    - name: Filter created user details
+      set_fact:
+        filtered_users: []
+
+    - name: Extract name and password
+      set_fact:
+        filtered_users: "{{ filtered_users + [{'name': item.item.name, 'password': item.item.password}] }}"
+      loop: "{{ created_users.results }}"
+      when: not item.failed
+      
     - name: Show created user details
       debug:
-        var: created_users.results.item.name
+        var: filtered_users
+
 
     - name: Show successful message
       debug:
@@ -73,7 +84,7 @@
     - name: Show failure message
       debug:
         msg: "Failed to create users."
-      when: created_users is failed or created_users.results | rejectattr('failed', 'defined') | list | length > 0
+      when: created_users is failed or created_users.results | rejectattr('failed', 'defined') | list | length > 0 
         
 
 
