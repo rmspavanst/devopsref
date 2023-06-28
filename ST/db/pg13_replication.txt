@@ -1,0 +1,132 @@
+
+Master:(10.0.16.210)
+=====================
+sudo su - postgres
+
+psql
+
+alter system set listen_addresses = '*';
+alter user postgres password 'password';
+
+
+#Create the archive dir to archive wal file on primary:
+sudo su - postgres
+mkdir -p /var/lib/pgsql/pg_log_arch/primary
+
+#Add below for primary:
+
+# to check log " tail -10f $PGDATA/log/postgresql-Tue.log"
+
+
+psql -c 'alter system set wal_level = replica;'
+psql -c 'alter system set wal_log_hints = on ;'
+psql -c 'alter system set archive_mode = on ;'
+
+#psql -c 'alter system set archive_command = 'test!-f
+#/var/lib/pgsql/pg_log_arch/primary/%f && cp %p /var/lib/pgsql/pg_log_arch/primary/%f';'
+
+psql
+alter system set archive_command = 'test ! -f /var/lib/pgsql/pg_log_arch/primary/%f && cp %p /var/lib/pgsql/pg_log_arch/primary/%f';
+\q
+
+psql -c 'alter system set max_wal_senders = 10 ;'
+psql -c 'alter system set wal_keep_size = 500 ;'
+psql -c 'alter system set host_standby = on ;'
+
+#Create relication user:
+psql
+CREATE USER repuser REPLICATION;
+\q
+
+#Allow remote access in pg_hba.conf on primary host
+
+vi @PGDATA/pg_hba.conf
+host replication repuser 10.0.16.211/32 trust
+host postgres postgres 10.0.16.210/32 md5 (optional)
+systemctl restart postgresql
+
+
+
+
+
+
+Standby:(10.0.16.211)
+=====================
+
+#Connect to replica as postgres os user/ on slave- Createing a base backup
+
+sudo su - postgres
+psql -U postgres -h 10.0.16.210
+
+cd /var/lib/pgsql
+mkdir -p /var/lib/pgsql/pg_log_arch/replica
+
+
+
+cd /var/lib/pgsql/13/data
+pg_basebackup -h 10.0.16.210 -U repuser --checkpoint=fast -D /var/lib/pgsql/13/data/ -R --slot=testslot -C
+
+tail -10f $PGDATA/log/postgresql-Tue.log
+
+systemctl start postgresql
+
+
+
+Master:
+=======
+
+psql
+SELECT * FROM pg_stat_replication;
+\x
+SELECT * FROM pg_stat_replication;
+
+
+standby:
+=========
+pgsql
+\x
+SELECT * FROM pg_stat_wal_receiver;
+
+
+
+
+#stop the primary
+
+systemctl stop postgresql
+tail -10f $PGDATA/log/postgresql-Tue.log
+
+#promote the replica to master (standby)
+
+/usr/pgsql-13/bin/pg_ctl promote -D /var/lib/pgsql/13/data
+tail -10f $PGDATA/log/postgresql-Tue.log
+
+
+#Startup Primary cluster as a replica instance" (master)
+
+cd $PGDATA
+
+touch standby.signal
+
+vi $PGDATA/postgresql.conf
+restore_command = 'cp /var/lib/pgsql/pg_log_arch/primary/%f %p'
+recovery_traget_timeline = 'latest'
+#standby_mode = 'on'
+primary_conninfo = 'user=repuser passfile="/var/lib/pgsql/.pass" channel_binding=prefer host=10.0.16.211 port=5432 sslmode=prefer sslcompression=0 ssl_min+protocol_version=TLSv1.2 gssencmode=prefer krbsrvname=postgres traget_session_attrs=any'
+
+archive_cleanup_command = 'pg_archivecleanup/var/lib/pgsql/pg_log_arch/primary %r' (optional)
+
+systemctl restart postgresql
+
+
+add ip of replication on pg_hba.conf(on replica server)
+
+host replication repuser 10.0.16.210/32 trust
+systemctl restart postgresql
+
+
+
+
+
+
+
+

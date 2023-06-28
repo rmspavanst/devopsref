@@ -1,0 +1,85 @@
+- name: Create users in Windows Server
+  hosts: all
+  gather_facts: no
+
+  vars:
+    excel_file: /root/done_script/demo_takaful/user.csv
+
+  tasks:
+    - name: Read user details from CSV file
+      read_csv:
+        path: "{{ excel_file }}"
+      register: user_list
+      delegate_to: localhost
+      
+    - name: Show the user data on csv
+      debug:  
+        var: user_list.list 
+
+    - name: extract name from all dictionaries
+      debug:
+        msg: "{{ item.name }}"
+      loop: "{{ user_list.list }}"
+      loop_control:
+        loop_var: item
+        
+    - name: Check if users already exist
+      win_domain_user:
+        name: "{{ item.name }}"
+        path: "dc=stinc,dc=com"
+        get_attributes: true
+      loop: "{{ user_list.list }}"
+      register: existing_users
+      ignore_errors: yes  # Ignore errors to proceed with the playbook execution even if some users fail to check
+
+    - name: Show existing users
+      debug:
+        var: existing_users.results | rejectattr('failed', 'defined') | map(attribute='name') | list
+      when: existing_users.results | rejectattr('failed', 'defined') | list | length > 0
+      failed_when: true
+      
+    - name: Fail if existing users found
+      fail:
+        msg: "Existing users found: {{ existing_users.results | rejectattr('failed', 'defined') | map(attribute='name') | list }}"
+      when: existing_users.results | rejectattr('failed', 'defined') | list | length > 0
+            
+        
+    - name: Create users
+      win_domain_user:
+        firstname: "{{ item.firstname }}"
+        surname: "{{ item.surname }}"
+        name: "{{ item.name }}"
+        upn: "{{ item.upn }}"
+        state: present
+        fullname: "{{ item.fullname }}"
+        password: "{{ item.password }}"
+        path: "dc=stinc,dc=com"
+        password_never_expires: yes
+        password_change_required: yes
+        groups: "{{ item.groups }}"
+      loop: "{{ user_list.list }}"
+      register: created_users
+      ignore_errors: yes
+
+    - name: Show created user details
+      debug:
+        var: created_users.results.item.name
+
+    - name: Show successful message
+      debug:
+        msg: "Users created successfully."
+      when: created_users is success
+
+    - name: Show failure message
+      debug:
+        msg: "Failed to create users."
+      when: created_users is failed or created_users.results | rejectattr('failed', 'defined') | list | length > 0
+        
+
+
+
+
+    
+
+
+

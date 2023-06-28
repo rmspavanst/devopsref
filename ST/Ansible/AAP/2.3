@@ -12,6 +12,55 @@ mkdir -p /etc/tower/
 sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/tower/tower.key -out /etc/tower/tower.cert
 
 
+https://www.insentragroup.com/nz/insights/geek-speak/modern-workplace/encrypting-the-password-of-the-postgresql-database-used-by-aap-controllers/
+
+
+cp /etc/tower/conf.d/postgres.py /root/backup 
+
+awx-manage shell_plus 
+
+automation-controller-service stop 
+
+On each AAP controller node, navigate to /etc/tower/conf.d  
+Edit the postgres.py file and change it from the original format:
+# Ansible Automation Platform controller database settings. 
+
+ 
+
+DATABASES = { 
+
+   'default': { 
+
+       'ATOMIC_REQUESTS': True, 
+
+       'ENGINE': 'awx.main.db.profiled_pg', 
+
+       'NAME': 'awx', 
+
+       'USER': 'awx', 
+
+       'PASSWORD': """YOUR_DB_PASSWORD""", 
+
+       'HOST': 'db.example.net', 
+
+       'PORT': '5432', 
+
+       'OPTIONS': { 'sslmode': 'prefer', 
+
+                    'sslrootcert': '/etc/pki/tls/certs/ca-bundle.crt', 
+
+       }, 
+
+   } 
+
+} 
+Ensure that the following line is at the top of the postgres.py file: 
+from awx.main.utils import decrypt_value, get_encryption_key 
+
+
+
+
+
 
 
 

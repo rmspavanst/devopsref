@@ -2,3 +2,17 @@ https://computingforgeeks.com/install-postgresql-13-on-centos-rhel/
 
 
 https://severalnines.com/blog/upgrading-postgresql13/ (pg upgrade)
+
+
+sudo dnf install https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+
+sudo dnf -qy module disable postgresql
+sudo dnf repolist
+sudo yum search postgresql13
+sudo dnf install postgresql13 postgresql13-server
+
+sudo /usr/pgsql-13/bin/postgresql-13-setup initdb
+ls  /var/lib/pgsql/13/data/
+
+sudo systemctl enable --now postgresql-13
+systemctl status postgresql-13
