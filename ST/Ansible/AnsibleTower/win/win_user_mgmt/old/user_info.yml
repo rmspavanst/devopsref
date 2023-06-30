@@ -1,0 +1,49 @@
+---
+- name: Get Windows user info from CSV
+  hosts: all
+  gather_facts: no
+
+  vars:
+    excel_file: /root/done_script/demo_takaful/user.csv
+    
+  tasks:
+    - name: Read user details from CSV file
+      read_csv:
+        path: "{{ excel_file }}"
+      register: user_list
+      delegate_to: localhost
+
+    - name: Check if user exists
+      win_user:
+        name: "{{ item.name }}"
+        state: query
+      loop: "{{ user_list.list }}"
+      register: user_info
+      ignore_errors: true
+
+    - name: user found or user not found
+      debug:
+        msg: |
+          {% if item.state == 'present' %}
+          User: {{ item.name }} was found
+          {% else %}
+          User: {{ item.name }} was not found.
+          {% endif %}
+      loop: "{{ user_info.results }}"
+      loop_control:
+        label: "{{ item.name }}"
+        
+    - name: Display the user info if found
+      debug: 
+        var: user_info.results
+      loop: "{{ user_info.results }}"  
+      when: "item.state == 'present'"
+    
+
+        
+       
+
+
+
+
+

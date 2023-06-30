@@ -1,0 +1,9 @@
+#server deatils
+
+win_ips: [
+  "10.0.16.169"
+]
+
+
+excel_file: "/root/done_script/demo_takaful/user.csv"
+

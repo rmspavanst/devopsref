@@ -1,0 +1,55 @@
+---
+- block:
+
+    - name: Read user details from CSV file
+      read_csv:
+        path: "{{ excel_file }}"
+      register: user_list
+      delegate_to: localhost
+      
+    - name: Create the users
+      win_domain_user:
+        firstname: "{{ item.firstname }}"
+        surname: "{{ item.surname }}"
+        name: "{{ item.name }}"
+        upn: "{{ item.upn }}"
+        state: present
+        fullname: "{{ item.fullname }}"
+        password: "{{ item.password }}"
+        path: "dc=stinc,dc=com"
+        password_never_expires: yes
+        password_change_required: yes
+        groups: "{{ item.groups }}"
+      loop: "{{ user_list.list }}"
+      register: created_users
+
+    - name: Filter created user details
+      set_fact:
+        filtered_users: []
+
+    - name: Extract name and password
+      set_fact:
+        filtered_users: "{{ filtered_users + [{'name': item.item.name, 'password': item.item.password}] }}"
+      loop: "{{ created_users.results }}"
+      when: not item.failed
+      
+    - name: Show created user details
+      debug:
+        var: filtered_users
+
+
+    - name: Show successful message
+      debug:
+        msg: "Users created successfully."
+      when: created_users is success
+
+    - name: Show failure message
+      debug:
+        msg: "Failed to create users."
+      when: created_users is failed or created_users.results | rejectattr('failed', 'defined') | list | length > 0     
+
+
+      
+  tags:
+    - create
+

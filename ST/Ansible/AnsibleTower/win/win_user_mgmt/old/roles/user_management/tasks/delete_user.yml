@@ -1,0 +1,24 @@
+---
+- block:
+
+    - name: Delete users on Windows
+      win_user:
+        name: "{{ item.first_name }} {{ item.last_name }}"
+        state: absent
+      loop: "{{ users_to_delete }}"
+      register: user_deletion_result
+      ignore_errors: true
+
+     - name: Display user deletion results
+       debug:
+         msg: |
+           Users successfully deleted:
+             {{ user_deletion_result.results | selectattr('item', 'in', users_to_delete | map(attribute='name')) | map(attribute='item') | list }}
+
+           Users failed to delete:
+             {{ user_deletion_result.results | rejectattr('item', 'in', users_to_delete | map(attribute='name')) | map(attribute='item') | list }}
+
+      
+  tags:
+    - delete
+

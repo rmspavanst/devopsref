@@ -1,0 +1,63 @@
+- name: Delete users in Windows Server
+  hosts: all
+  gather_facts: yes
+
+  vars:
+    excel_file: /root/done_script/demo_takaful/user.csv
+
+  tasks:
+    - name: Delete user
+      win_domain_user:
+        name: WinTest
+        state: absent
+        
+...
+
+- name: Delete users in Windows Server
+  hosts: all
+  gather_facts: no
+
+  vars:
+    excel_file: /root/done_script/demo_takaful/user.csv
+
+  tasks:
+    - name: Read user details from CSV file
+      read_csv:
+        path: "{{ excel_file }}"
+      register: user_list
+      delegate_to: localhost
+
+    - name: Show the user data on csv
+      debug:
+        var: user_list.list
+
+    - name: Delete users
+      win_domain_user:
+        name: "{{ item.name }}"
+        state: absent
+        path: "dc=stinc,dc=com"
+      loop: "{{ user_list.list }}"
+      register: deleted_users
+      ignore_errors: yes
+
+    - name: Capture deleted user details
+      set_fact:
+        deleted_user_details: "{{ deleted_user_details | default([]) + [item.item.name] }}"
+      loop: "{{ deleted_users.results }}"
+      when: not item.failed
+
+    - name: Show deleted user details
+      debug:
+        var: deleted_user_details
+
+    - name: Show successful message
+      debug:
+        msg: "Users deleted successfully."
+      when: deleted_users is success
+
+    - name: Show failure message
+      debug:
+        msg: "Failed to delete users."
+      when: deleted_users is failed or deleted_users.results | rejectattr('failed', 'defined') | list | length > 0
+
+

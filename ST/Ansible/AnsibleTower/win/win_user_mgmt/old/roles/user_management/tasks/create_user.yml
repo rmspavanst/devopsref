@@ -1,0 +1,60 @@
+---
+- block:
+
+- name: Create users
+  win_user:
+    name: "{{ item.first_name }}{{ item.last_name }}"
+    password: "{{ item.password }}"
+    state: present
+  loop: "{{ users }}"
+  register: user_result
+  ignore_errors: true
+
+
+- name: Show user details
+  debug:
+    msg: "User {{ item.first_name }} {{ item.last_name }} created successfully"
+  loop: "{{ user_result.results }}"
+  when: item.changed == true
+
+- name: Show failure message
+  debug:
+    msg: "Failed to create user {{ item.item.first_name }} {{ item.item.last_name }}"
+  loop: "{{ user_result.results }}"
+  when: item.failed == true
+
+
+
+
+
+    - name: Create users
+      win_user:
+        name: "{{ item.name }}"
+        password: "{{ item.password }}"
+      loop: "{{ users }}"
+
+    - name: Set user position and email
+      win_shell: 'net user "{{ item.name }}" /comment:"Position: {{ item.position }}, Email: {{ item.email }}"'
+      loop: "{{ users }}"
+
+    - name: Add users to groups
+      win_shell: 'net localgroup "{{ item.groups }}" "{{ item.name }}" /add'
+      loop: "{{ users }}"
+
+    - name: Display user details
+      debug:
+        msg: "User {{ item.name }} created successfully. Position: {{ item.position }}, Email: {{ item.email }}, Company: {{ item.company }}"
+      loop: "{{ users }}"
+      when: item.name is defined
+
+    - name: Display failure message
+      debug:
+        msg: "Failed to create user {{ item.name }}"
+      loop: "{{ users }}"
+      when: item.name is not defined
+
+
+      
+  tags:
+    - create
+

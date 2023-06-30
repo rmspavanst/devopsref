@@ -1,0 +1,12 @@
+---
+- name: Manage users on Windows servers 
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: User Management to create or delete user
+      include_role:
+        name: user_management
+      tags: [create,delete,update,details]
+        
+

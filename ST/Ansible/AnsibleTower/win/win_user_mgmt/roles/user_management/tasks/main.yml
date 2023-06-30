@@ -1,0 +1,23 @@
+---
+- include_tasks: create_user.yml
+  when: inventory_hostname in win_ips 
+  tags:
+    - create
+
+- include_tasks: delete_user.yml
+  when: inventory_hostname in win_ips
+  tags:
+    - delete
+
+- include_tasks: update_user.yml
+  when: inventory_hostname in win_ips
+  tags:
+    - update
+
+- include_tasks: info_user.yml
+  when: inventory_hostname in win_ips
+  tags:
+    - details
+
+
+

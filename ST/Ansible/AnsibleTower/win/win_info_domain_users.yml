@@ -1,0 +1,33 @@
+- name: Get Windows domain user info from CSV
+  hosts: all
+  gather_facts: no
+
+  vars:
+    excel_file: /root/done_script/demo_takaful/user.csv
+
+  tasks:
+    - name: Read user details from CSV file
+      read_csv:
+        path: "{{ excel_file }}"
+      register: user_list
+      delegate_to: localhost
+
+#    - name: Show the user data from the CSV
+#      debug:
+#        var: user_list.list
+
+    - name: Get Windows domain user info
+      win_domain_user:
+        name: "{{ item.name }}"
+        path: "dc=stinc,dc=com"
+      loop: "{{ user_list.list }}"
+      register: user_info
+
+    - name: Extract required user info
+      set_fact:
+        extracted_user_info: "{{ extracted_user_info | default([]) + [item | json_query('{name: item.name, fullname: item.fullname, upn: item.upn}')] }}"
+      loop: "{{ user_info.results }}"
+
+    - name: Show Windows domain user info
+      debug:
+        var: extracted_user_info

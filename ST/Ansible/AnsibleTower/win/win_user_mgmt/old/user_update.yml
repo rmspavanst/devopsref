@@ -1,0 +1,79 @@
+- name: Update users in Windows Server
+  hosts: all
+  gather_facts: no
+
+  vars:
+    excel_file: /root/done_script/demo_takaful/user.csv
+
+  tasks:
+    - name: Read user details from CSV file
+      read_csv:
+        path: "{{ excel_file }}"
+      register: user_list
+      delegate_to: localhost
+
+    - name: Check if user exists
+      win_shell: |
+        $username = "{{ item.name }}"
+        $userExists = Get-ADUser -Filter {SamAccountName -eq $username} -Properties SamAccountName
+        if ($userExists) {
+          Write-Output "UserExists"
+        } else {
+          Write-Output "UserNotExists"
+        }
+      loop: "{{ user_list.list }}"
+      register: user_exists
+      changed_when: false
+      
+    - name: user found or user not found
+      debug:
+        msg: |
+          {% if 'UserExists' in item.stdout_lines %}
+          User: {{ item.item.name }} was found
+          {% else %}
+          User: {{ item.item.name }} was not found.
+          {% endif %}
+      loop: "{{ user_exists.results }}"
+      loop_control:
+        label: "{{ item.item.name }}"
+  
+    - name: Update users
+      win_domain_user:
+        name: "{{ item.item.name }}"
+        state: present
+        firstname: "{{ item.item.firstname }}"
+        surname: "{{ item.item.surname }}"
+        upn: "{{ item.item.upn }}"
+        fullname: "{{ item.item.fullname }}"
+        password: "{{ item.item.password }}"
+        path: "dc=stinc,dc=com"
+        password_never_expires: yes
+        password_change_required: yes
+        groups: "{{ item.item.groups }}"
+      loop: "{{ user_list.list }}"
+      register: updated_users
+      when: "'UserExists' in item.stdout"   
+      loop: "{{ user_exists.results }}"    
+      
+#    - name: Show updated user details
+#      debug:
+#       var: updated_users
+
+    - name: Show successful message with user list
+      debug:
+        msg: |
+          Users updated successfully.
+          User List:
+          {% for user in user_list.list %}
+          - Name: {{ user.name }}, Fullname: {{ user.fullname }}, UPN: {{ user.upn }}
+          {% endfor %}
+      when: updated_users.changed == true 
+
+    - name: Show failure message
+      debug:
+        msg: "Failed to update users."
+      when: updated_users.changed != true     
+
+
+  
+

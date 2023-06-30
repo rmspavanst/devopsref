@@ -1,0 +1,3 @@
+﻿sl,firstname,surname,password,upn,name,fullname,groups
+1,test1,test,P@ssw0rd,test.test1@stinc.com,test1,user test1,"development,testing"
+2,test2,test,P@ssw0rd,test.test2@stinc.com,test2,sample test2,testing
