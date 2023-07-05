@@ -1,0 +1,21 @@
+frontend http_frontend
+    bind *:80
+    mode http
+    option forwardfor
+    acl domain1 hdr(host) -i domain1.com
+    acl domain2 hdr(host) -i domain2.com
+
+    use_backend domain1_backend if domain1
+    use_backend domain2_backend if domain2
+
+backend domain1_backend
+    mode http
+    balance roundrobin
+    server server1 192.168.0.1:80 check
+    server server2 192.168.0.2:80 check
+
+backend domain2_backend
+    mode http
+    balance roundrobin
+    server server1 192.168.0.3:80 check
+    server server2 192.168.0.4:80 check
