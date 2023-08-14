@@ -236,6 +236,41 @@ crontab -e
  
  
  
+HAPROXY:
+=========
 
+
+DB:
+========
+
+global
+    maxconn 100
+
+defaults
+    mode tcp
+    log global
+    retries                 3
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout check           10s
+
+
+frontend pgsql
+  bind *:5432
+  acl readonly.pgsql nbsrv(pgsql) eq 0
+  use_backend readonly.pgsql if readonly.pgsql
+  acl pgsql nbsrv(pgsql) gt 0
+  use_backend pgsql if pgsql
+
+backend pgsql
+  mode tcp
+  option tcp-check
+  server master-db 10.0.16.134:5432 check
+
+backend readonly.pgsql
+  mode tcp
+  option tcp-check
+  server standby-db 10.0.16.135:5432 check
 
 
