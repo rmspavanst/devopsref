@@ -8,6 +8,19 @@ http://repositories.compbio.cs.cmu.edu/help/administration/high_availability/git
 
 https://forge.etsi.org/rep/help
 
+https://noobient.com/2018/06/25/migrating-gitlab-from-internal-to-external/
+
+
+Upgrading from Community Edition to Enterprise Edition from source
+==================================================================
+
+http://www.ubimol.it/12.0/ee/update/upgrading_from_ce_to_ee.html
+
+
+Gitlab in AWS_HA
+============================
+https://dev.to/stack-labs/deploying-production-ready-gitlab-on-amazon-eks-with-terraform-3coh
+
 
 Configure PostgreSQL for HA for GitLab
 ======================================
@@ -143,6 +156,7 @@ or
 
 Database Configuration
 The next step is to configure the GitLab DB settings, we use postgreSQL for our database. Copy the configuration file and change the permissions:
+/opt/gitlab/embedded/service/gitlab-rails/config
 
 sudo -u git -H cp config/database.yml.postgresql config/database.yml
 sudo -u git -H chmod o-rwx config/database.yml

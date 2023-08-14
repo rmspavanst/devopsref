@@ -1,4 +1,7 @@
+
+
 Mount the downloaded RHEL installation ISO to a directory like /media/rheldvd,
+mkdir /media/rheldvd
 
 # mount -o loop <downloaded iso name> /media/rheldvd
 
@@ -35,3 +38,10 @@ As a final step, it might be a good idea to run the command yum clean all once
 Check whether you can get the packages list from the DVD repositories.
 
 # yum  --noplugins list
+
+
+df -h
+
+/etc/fstab:
+
+/dev/loop0  /media/rheldvd xfs defaults 0 0

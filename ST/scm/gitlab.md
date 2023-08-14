@@ -86,7 +86,7 @@ gitlab_rails['db_encoding'] = 'utf8'
 gitlab_rails['db_host'] = '20.40.99.114' 
 gitlab_rails['db_port'] = 5432
 gitlab_rails['db_username'] = 'gitlab'
-gitlab_rails['db_password'] = 'gitlab******'
+gitlab_rails['db_password'] = 'gitlab123'
 
 
 

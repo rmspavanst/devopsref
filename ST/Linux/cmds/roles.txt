@@ -1,0 +1,14 @@
+Monitor system performance and utilization
+Install, configure, and document new servers and applications
+Maintain and audit user accounts
+Manage fileserver utilization (shared folders, quotas, etc.)
+Maintain servers and system security according to campus standards
+Track vulnerabilities and apply appropriate patches and upgrades
+Generate statistics for operational review and planning
+Manage backup process and perform data recoveries as needed.
+Ensure systems team support requests are answered within one business day.
+Respond rapidly to system maintenance needs, including on weekends and evenings.
+Automate the manual tasks using shell scripting.
+creating the load balancer, Routing using HAproxy, Apache
+
+

@@ -232,5 +232,10 @@ crontab -e
 0 2 * * * /path/to/backup.sh
 
  the script will be executed at 2:00 AM every day.
+ 
+ 
+ 
+ 
+
 
 

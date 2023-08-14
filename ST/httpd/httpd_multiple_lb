@@ -94,3 +94,20 @@ bash
     # SSL configuration for example2.com
     # Load balancer configuration for example2.com
 </VirtualHost>
+
+
+<Proxy balancer://example1_cluster>
+    BalancerMember http://backend1.example1.com:80
+    BalancerMember http://backend2.example1.com:80
+</Proxy>
+
+<Proxy balancer://example2_cluster>
+    BalancerMember http://backend1.example2.com:80
+    BalancerMember http://backend2.example2.com:80
+</Proxy>
+
+ProxyPass / balancer://example1_cluster/
+ProxyPassReverse / balancer://example1_cluster/
+
+ProxyPass / balancer://example2_cluster/
+ProxyPassReverse / balancer://example2_cluster/
