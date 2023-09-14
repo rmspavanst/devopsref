@@ -198,3 +198,4 @@ registry['gid'] = 9002
 Run sudo gitlab-ctl reconfigure to compile the configuration.
 
 
+git -c http.sslVerify=false clone [URL]

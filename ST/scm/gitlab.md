@@ -196,3 +196,7 @@ enabled
 Quit the database session:
 
 gitlabhq_production> \q
+
+
+
+git -c http.sslVerify=false clone [URL]
