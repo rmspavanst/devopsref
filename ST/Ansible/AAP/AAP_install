@@ -176,5 +176,50 @@ sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/tower/towe
 mkdir -p /etc/tower/
 
 
+## AAP hub####
+
+cd ~/certified-EEs/
+skopeo login hub.lab.example.com
+Username: admin
+Password: redhat
+Login Succeeded!
+
+
+Set the HUB and AAP shell variables to reduce typing in the following skopeo commands.
+
+[student@workstation certified-EEs]$ HUB="hub.lab.example.com"
+[student@workstation certified-EEs]$ AAP="ansible-automation-platform-22"
+
+[student@workstation certified-EEs]$ skopeo copy \
+> docker-archive:ee-29-rhel8.tgz docker://${HUB}/${AAP}/ee-29-rhel8:latest
+...output omitted...
+
+[student@workstation certified-EEs]$ skopeo copy \
+> docker-archive:ee-minimal-rhel8.tgz \
+> docker://${HUB}/${AAP}/ee-minimal-rhel8:latest
+...output omitted...
+
+[student@workstation certified-EEs]$ skopeo copy \
+> docker-archive:ee-supported-rhel8.tgz \
+> docker://${HUB}/${AAP}/ee-supported-rhel8:latest
+...output omitted...
+
+
+
+
+[student@workstation certified-EEs]$ podman load -i ee-supported-rhel8.tgz
+...output omitted...
+[student@workstation certified-EEs]$ podman tag \
+> registry.redhat.io/ansible-automation-platform-22/ee-supported-rhel8 \
+> hub.lab.example.com/ansible-automation-platform-22/ee-supported-rhel8
+...output omitted...
+[student@workstation certified-EEs]$ podman push \
+> hub.lab.example.com/ansible-automation-platform-22/ee-supported-rhel8
+...output omitted...
+
+
+
+
+
 
 
