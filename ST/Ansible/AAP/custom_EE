@@ -1,0 +1,51 @@
+execution-environments.yml
+-----------------------------
+
+---
+verison: 1
+build_arg_defaults:
+    EE_BASE_IMAGE: quay.io/ansible/awx-ee:latest
+    EE_BUILDER_IMAGE: auay.io/ansible/ansible-builder:latest
+dependencies:
+    galaxy: requirements.yml
+    #python: requirements.txt
+    #system: bindeep.txt
+
+additioanl_build_steps:
+    prepend: |
+    #    RUN dnf upgrade -y
+        RUN pip3 install --upgrade pip setuptools
+    #append:
+    #    - Run ls -al /
+
+requirements.yml
+----------------
+
+---
+collections:
+    - name: community.aws
+    - name: cisco.ios
+    - name: ansible-utils
+
+requirements.txt
+----------------
+botocore>=1.18.0
+boto3>=1.15.0
+boto>=2.49.0
+ansible
+ansible=pylibssh
+pyats
+ntc-templates
+netmiko
+
+bindep.txt
+----------------
+git [platform:rpm]
+git [platform:dpkg]
+iputils [platform:rpm]
+
+
+# install ansible-builder && ansible-runner
+
+ansible-builder build -t my_custom_ee -v 3
+
