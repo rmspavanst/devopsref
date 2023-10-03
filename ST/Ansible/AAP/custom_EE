@@ -1,8 +1,8 @@
-execution-environments.yml
+execution-environment.yml
 -----------------------------
 
 ---
-verison: 1
+version: 1
 build_arg_defaults:
     EE_BASE_IMAGE: quay.io/ansible/awx-ee:latest
     EE_BUILDER_IMAGE: auay.io/ansible/ansible-builder:latest
@@ -11,12 +11,30 @@ dependencies:
     #python: requirements.txt
     #system: bindeep.txt
 
-additioanl_build_steps:
+additional_build_steps:
     prepend: |
     #    RUN dnf upgrade -y
         RUN pip3 install --upgrade pip setuptools
     #append:
     #    - Run ls -al /
+
+
+#    python: requirements.txt
+#    system: bindeep.txt
+
+#additional_build_steps:
+#    prepend: |
+#        #RUN dnf upgrade -y
+#        RUN pip3 install --upgrade pip setuptools
+#    append:
+#        - Run ls -al /
+
+
+#    append:
+      #- RUN dnf upgrade -y
+      #- RUN pip3 install --upgrade pip setuptools
+      #- RUN microdnf install which
+
 
 requirements.yml
 ----------------
@@ -48,4 +66,65 @@ iputils [platform:rpm]
 # install ansible-builder && ansible-runner
 
 ansible-builder build -t my_custom_ee -v 3
+
+
+============================================================================================================
+vi Containerfile
+
+ARG EE_BASE_IMAGE="10.0.16.207/ee-minimal-rhel8:latest"
+ARG EE_BUILDER_IMAGE="10.0.16.207/ansible-builder-rhel8:latest"
+ARG ANSIBLE_GALAXY_CLI_COLLECTION_OPTS=""
+
+# Base build stage
+FROM $EE_BASE_IMAGE as base
+USER root
+ARG EE_BASE_IMAGE
+ARG EE_BUILDER_IMAGE
+ARG ANSIBLE_GALAXY_CLI_COLLECTION_OPTS
+
+# Galaxy build stage
+FROM base as galaxy
+ARG EE_BASE_IMAGE
+ARG EE_BUILDER_IMAGE
+ARG ANSIBLE_GALAXY_CLI_COLLECTION_OPTS
+
+#RUN /output/scripts/check_galaxy
+COPY _build /build
+WORKDIR /build
+
+RUN ANSIBLE_GALAXY_DISABLE_GPG_VERIFY=1 ansible-galaxy collection install $ANSIBLE_GALAXY_CLI_COLLECTION_OPTS -r requirements.yml --collections-path "/usr/share/ansible/collections"
+
+# Builder build stage
+FROM base as builder
+WORKDIR /build
+ARG EE_BASE_IMAGE
+ARG EE_BUILDER_IMAGE
+ARG ANSIBLE_GALAXY_CLI_COLLECTION_OPTS
+
+
+COPY --from=galaxy /usr/share/ansible /usr/share/ansible
+
+
+# Final build stage
+FROM base as final
+ARG EE_BASE_IMAGE
+ARG EE_BUILDER_IMAGE
+ARG ANSIBLE_GALAXY_CLI_COLLECTION_OPTS
+
+
+COPY --from=galaxy /usr/share/ansible /usr/share/ansible
+
+LABEL ansible-execution-environment=true
+
+
+
+podman build -f context/Containerfile -t my-custom-ibmi-ee:1.0 context
+
+podman tag localhost/my-custom-ibmi-ee 10.101.6.5/my-custom-ibmi-ee
+podman save -o local-custom-ibmi-ee.tar localhost/my-custom-ibmi-ee:latest
+
+podman load --quiet -i podman load --quiet -i fedora.tar
+or
+podman load --input images.tar or podman load -q -i https://server.com/archive.tar or podman load < fedora.tar or cat fedora.tar | podman load
+
 
