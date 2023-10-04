@@ -128,3 +128,5 @@ or
 podman load --input images.tar or podman load -q -i https://server.com/archive.tar or podman load < fedora.tar or cat fedora.tar | podman load
 
 
+
+ansible-navigator run Configure-SSL-for-HTTPD.yml -i inventory -m stdout --eei 10.0.16.207/my-custom-ee-crypto
