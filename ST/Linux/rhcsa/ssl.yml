@@ -1,0 +1,34 @@
+---
+- name: Configure SSL 
+  hosts: ansible 
+  become: true
+  tasks:
+
+    - name: Verify that the directory we want to use exists on the server.
+      file:
+        path: /var/lib/awx/ssl
+        state: directory
+
+    - name: Create certificate private key on the server.
+      community.crypto.openssl_privatekey:
+        path: /var/lib/awx/ssl/10.0.16.144.key
+
+    - name: Create certificate signing request on the server
+      community.crypto.openssl_csr:
+        csr_path: /var/lib/awx/ssl/10.0.16.144.csr
+        privatekey_path: /var/lib/awx/ssl/10.0.16.144.key
+        common_name: yourdomain.com
+
+    - name: Request a certificate from ECS
+      community.crypto.ecs_certificate:
+        path: /var/lib/awx/ssl/10.0.16.144.crt
+        csr: '{{ csr_path }}'
+        requester_name: systemizer
+        requester_email: example@123.com
+        requester_phone: 0123456789
+        cert_type: UC_SSL
+        entrust_api_user: API-username  
+        entrust_api_key: API-key  
+        entrust_api_client_cert_path:  /var/lib/awx/ssl/10.0.16.144cert.pem
+        entrust_api_client_cert_key_path:  /var/lib/awx/ssl/10.0.16.144private.key
+        
