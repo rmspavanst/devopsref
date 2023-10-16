@@ -1,0 +1,435 @@
+
+n/w:
+=========
+
+nmcli dev status 
+
+#if ens19 is shoing disconnected
+nmcli con add con-name ens19 ifname ens19 type ethernet ipv4 192.168.0.120/24  gw4 192.168.0.1
+nmcli con mod ens19 ipv4.dns 8.8.8.8
+nmcli con mod ens19 ipv4.methaod manaual
+nmcli con mod ens19 connection.autoconnect true
+
+
+nmcli dev status
+nmcli con show ens19
+nmcli con down ens19 && nmcli con up ens19
+
+------------------------------------------------------------------------------------------------------
+
+Recover Root Password:
+=========================
+
+reboot
+e
+rd.break
+Ctrl+x
+mount -o remount,rw /sysroot
+chroot /sysroot
+passwd
+touch /.autorelable
+exit
+reboot
+
+-------------------------------------------------------------------------------------------------------
+
+Set Hostname & boot target:
+============================
+
+hostnamectl set-hostname serverb.example.com
+bash
+
+#default boot target to multi-user.target
+
+systemctl set-default multi-user.target
+systemctl get-default
+
+-------------------------------------------------------------------------------------------------------
+
+SELinux to enforcing mode:
+=============================
+
+vi /etc/selinux/config
+SELINUX=disabled change to enforcing/permissive/disabled
+reboot
+
+getenforce
+
+
+-------------------------------------------------------------------------------------------------------
+
+Create User, Groups & Group Membership:
+========================================
+
+groupadd sysgrp
+
+useradd andrew
+usermod -aG sysgrp andrew
+useradd susan
+usermod -aG sysgrp susan
+useradd sarah -s /sbin/nologin
+
+id username (to check and verify)
+
+-------------------------------------------------------------------------------------------------------
+
+Directory Permission & Ownership:
+==================================
+
+mkdir -p /redhat/sysgrp
+
+chgrp sysgrp /redhat/sysgrp
+chmod 770 /reboot/sysgrp
+
+chmod g+s /reboot/sysgrp (2770 is the gid)
+
+-------------------------------------------------------------------------------------------------------
+
+Enble IP Forwarding:
+====================
+
+vi /etc/sysctl.conf
+net.ipv4.ip_forward = 1
+
+sysctl -p
+
+sysctl -a | grep -i net.ipv4.ip_forward
+
+-------------------------------------------------------------------------------------------------------
+
+Users & Permissions:
+======================
+
+cp -p /etc/fstab /var/tmp
+
+ll /var/tmp/fstab
+
+setfacl -m u:andrew:rw- /var/tmp/fstab
+setfacl -m u:susan:--- /var/tmp/fstab
+getfacl /var/tmp/fstab
+
+-------------------------------------------------------------------------------------------------------
+
+Add Users:
+=============
+Add user john with userif 1099 and find the file which owned by user sam and copy the file into
+/root/findresults dir.
+
+useradd -u 1099 john
+
+find / -user sam
+
+find / -user sam -exec cp -pr {} /root/findresults/\;
+
+-------------------------------------------------------------------------------------------------------
+
+Create an archive file:
+========================
+#/root/local.tgz for /usr/local and it should be compressed by gzip
+
+tar -cvzf /root/local.tgz /usr/local
+cd /root/
+file local.tgz
+
+-------------------------------------------------------------------------------------------------------
+
+Search the String:
+==================
+# John in the /etc/passwd file and save the output in /root/lines
+
+grep john /etc/passwd
+or 
+cat /etc/passwd | grep -i john
+cat /etc/passwd | grep -i john > /root/lines
+cat /root/lines
+
+-------------------------------------------------------------------------------------------------------
+
+Create a physical partition:
+=============================
+#Create a new 150MB physical partition od using disk "/dev/sdb" and mount it under /oradb
+
+lsblk
+fdiak -l
+fdisk /dev/sdb
+p
+n
+p
++150M
+p
+w
+partx /dev/sdb
+
+mkfs.ext4 /dev/sdb1
+
+mkdir -p /oradb
+
+blkid (to get uuid)
+
+vi /etc/fstab
+UUID=***** /oradb ext4 default 0 0
+
+mount -a
+
+df -h
+
+-------------------------------------------------------------------------------------------------------
+
+Create Swap Partition:
+========================
+#Increase Swap
+
+# 2 methods we can create the swap space (Uisng Swap Partition / swap file)
+
+swapon -s or free -m
+
+lsblk
+fdisk -l
+fdisk /dev/sdb
+p
+n
+p
++1024M
+p
+t
+l
+82
+w
+
+partx /dev/sdb
+mkswap /dev/sdb2
+swapon /dev/sdb2
+swapon -s
+
+
+blkid (to get uuid)
+
+vi /etc/fstab
+/dev/sdb2 swap swap default 0 0
+
+mount -a
+
+-------------------------------------------------------------------------------------------------------
+
+Create Yum Repository:
+============================
+#for http://contect.example.com/rhel8.8/x86_64/dvd
+
+vi /etc/yum.repos.d/myserver.repo
+
+[localrepo]
+name=local repo for dvd
+baseurl=http://contect.example.com/rhel8.8/x86_64/dvd
+gpgchk=0
+enabled=1
+
+yum clean all
+yum list all
+yum repolist
+
+-------------------------------------------------------------------------------------------------------
+
+Install the appropriate kernel update:
+=======================================
+
+vi /etc/yum.repos.d/kernel.repo
+
+[kernelrepo]
+name=kernel repo 
+baseurl=http://contect.example.com/rhel8.8/x86_64/errata
+gpgchk=0
+enabled=1
+
+yum clean all
+yum repolist
+
+uname -a (to chekc kernel version)
+
+yum install kernel
+uname -r(if it shows old kernel, rboot and check)
+uname -r
+
+-------------------------------------------------------------------------------------------------------
+
+Configure LDAP Client:
+==========================
+Bind the LDAP used provided by classroom.example.com for user authentication.
+
+Note the following:
+--> The LDAP search base DN is dc=example,dc=com
+--> The LDAP certificate file is
+http://classroom.example.com/pub/EXAMPLE-CA-CERT
+
+-->ldapuserX should be able to login into your system, where X is your serverX ((hint:Where X is your domain number),
+	but will not have a home directory, until you havew completed the autofs requirement, below all LDAP users have
+	password of "password"
+
+
+yum install auth* -y
+yum install authconfig-gtk  sssd krb5-workstation
+authconfig-gtk (it will open auth configuration fill the details)
+
+getent passwd ladapuserx (to verify with user)
+
+su - ladapuserx
+
+
+
+
+
+-------------------------------------------------------------------------------------------------------
+
+Configure autofs to automount the home directories of LDAP users :
+==================================================================
+systemctl start ssshd.service
+systemctl enable ssshd.service
+
+getent passwd ldapuserx
+yum install autofs
+
+vi /etc/auto.master.d/home1.autofs
+/home/guests /etc/auto.home1
+
+vi /etc/auto.home1
+ldapuserx -rw,sysnc classroom.example.com:/home/guests/&
+
+
+systemctl restart autofs
+
+su - ldapuserx
+touch test test1 test2 (go to ldap server and check)
+exit
+
+-------------------------------------------------------------------------------------------------------
+
+Configure NTP Client:
+========================
+
+#of classroom.example.com
+
+timedatectl
+systemctl status chronyd (if not install chrony)
+
+vi /etc/chrony.conf
+classroom.example.com
+
+systemctl restart chronyd
+systemctl enable chronyd
+
+chronyc -V
+
+-------------------------------------------------------------------------------------------------------
+
+Create a volume group:
+========================
+#in the name of "datavg" and physical volume extent is 16mb.
+#Create a new logical volume in the name of datacopy with the size of 50 extents and 
+file system must ext4 then mount it under /datasource
+
+fdisk -l
+
+fdisk /dev/sdb
+n
+p
+1
+enter
+p
+8e (linux LVM)
+w
+
+partx /dec/sdb
+
+#now create Physical volume
+pvcreate /dev/sdb1
+
+# now create volume group
+vgcreate -s 16M datavg /dev/sdb1
+vgdisplay
+
+# now create logical volume
+lvcreate -l 50 -n datacopy datavg
+
+mkfs -t ext4 /dev/datavg/datacopy
+
+mkdir /datasource
+blkid
+
+vi /etc/fstsab
+UUID=****** /datasource ext4 default 0 0 
+
+mount -a
+df -h
+
+-------------------------------------------------------------------------------------------------------
+
+Resize the logical volume:
+===========================
+#"datacopy"and reduce filesystem to 400MB
+	*make sure that the filesyustem contents remain intact.
+	*(note: Partitions are seldom excatly the size requested, so any thing within the range 
+	 of 370MB to 430MB is acceptable)
+
+df -h (the /datasource is 800MB reduce to 400MB)
+
+# 1st have to unmount the file system
+unmount /datasource
+df -h
+
+e2fsck -f /dev/datavg/datacopy
+resize2fs /dev/datavg/datacopy 400M
+
+lvreduce -L 400M /dev/datavg/datacopy
+mount -a
+df -h (now can see /datasource is reduced to 400MB)
+
+-------------------------------------------------------------------------------------------------------
+
+Schedule a cron job:
+=======================
+
+# user andrew must configure a cronjob that runs daily at 14:30 localtime
+and executes /bin/echo hello
+
+yum install cronie
+systemctl enable crond
+
+crontab -eu andrew
+
+30 14 * * * /bin/echo hello
+crontab -l -u andrew
+
+
+
+
+-------------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------------------------------
+
+
+-------------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------------------------------
