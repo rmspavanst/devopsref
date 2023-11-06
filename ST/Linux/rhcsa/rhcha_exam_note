@@ -1,0 +1,775 @@
+RHCSA_NOTES:
+===============
+
+1. Set network connection
+nmtui : to change/add the ip
+
+
+2. Set a proper target
+find / -name "runlevel*.target"
+
+systemctl --type=target --all
+
+systemctl get-default
+systemctl set-default multi-user.target
+
+
+
+3. Install package
+yum-config-manager --add-repo http://main.example.com/repo
+or
+vi /etc/yum.repos.d/pkg.repo
+[repopkg]
+name=pkgrepo
+baseurl=http://main.example.com/repo
+gpgchk=0
+enabled=1
+
+yum repolist
+
+yum install httpd -y
+systemctl start httpd && systemctl enable httpd
+
+systemctl status httpd
+
+vi /etc/httpd/conf/httpd.conf (change the Listen port 80 to 35000)
+systemctl restart httpd
+
+firewall-cmd --permanent --add-port=35000/tcp
+firewall-cmd --reload
+
+
+4. Set users and groups
+
+- Create a group named students
+groupadd students
+
+- Create 3 users named Anna, Bob, Joe with the main group of students
+useradd -G students Anna
+useradd -G students Bob
+useradd -G students Joe
+
+- Add Anna supplementary group administrators
+groupadd administrators
+usermod -aG administrators Anna
+
+- Add group administrators Sudo privileges without using a password
+
+visudo
+%administrators All=(ALL) NOPASSWD: ALL
+
+
+5. User modifications
+- Change the password policy for the Bob account to require a new password every 30 days
+useradd bob
+chage -l bob
+chage -M 30 bob
+
+- Change default shell for the account Joe to nologin
+useradd -s joe /sbin/nologin
+usermod -s joe /sbin/nologin
+
+
+- Force Anna and Bob to change their passwords on the first login
+chage -d 0 Anna
+chage -d 0 bob
+
+
+6. Collaborative directory
+
+- Create directory /collaboration
+
+mkdir /collaboration
+
+- Set group students as an owner of /collaboration directory
+groupadd students
+chgrp students /collaboration
+
+- Others should have forbidden access to the directory
+- Every file created in /collaboration directory should have group students
+chmod 2770 /collaboration
+
+
+7. Permissions
+
+- Copy /etc/passwd file to /var/tmp/passwd_backup
+cp -r /etc/passwd /var/tmp/passwd_backup
+
+- Set the owner of /var/tmp/passwd_backup user Anna and group administrators
+chown anna:administartors /var/tmp/passwd_backup
+chmod o-r /var/tmp/passwd_backup
+
+- Additionally, only user Bob should have read-only access to /var/tmp/passwd_backup
+setfacl -m u:Bob:r-- /var/tmp/passwd_backup
+getfacel /var/tmp/passwd_backup
+
+
+8. Set cron job for a user
+- Set cron job for a user Anna to send message “Hello World” to logs every 5 minutes
+crontab -e -u Anna
+*/5 * * * * logger "Hello World”
+
+or 
+
+vi /etc/crontab
+*/5 * * * * Anna logger "Hello World”
+
+
+
+9. Set time synchronization
+- Set server main.example.com for a default NTP server
+yum install chronyd
+systemctl start chronyd
+systemctl enbale chronyd
+
+
+vi /etc/chrony.conf
+server main.example.com ibrust
+
+systemctl restart chronyd
+timdatectl
+chronyc sources
+
+
+10. Automount NFS directory
+- Configure automatically mount directory /mnt/nfs_share 
+- Filesystem is exported from host main.example.com:/export_files
+
+yum install autofs nfs-utils
+
+vi /etc/autofs.master.d/export.autofs
+/. /etc/auto.export
+
+vi /etc/auto.export
+/mnt/nfs_share -rw,sync  main.example.com:/export_files
+
+
+systemctl restart autofs
+df -h /mnt/nfs_share/
+
+
+
+
+
+11. Basic tools management
+- Create directory /findings
+mkdir /findings
+
+- Find all files which belong to user Anna copy them to directory /findings
+
+find / -user Anna -exec cp -rfq {} /findfings/ \;
+
+
+
+12. Create VDO volume
+- Create Logical Volume called rhcsa with logical size 50GB
+yum install vdo kmod-kvdo
+systemctl enable --now vdo
+
+lsblk
+sdb 5.5G
+
+vdo create --name rhcsa --device /dev/sdb --vdoLogicalSize 50G
+
+
+- Mount created logical volume to /vdo_logical with the XFS filesystem
+mkfs.xfs /dev/mapper/rhcsa
+mkdir /vdo_logical
+blkid
+
+- Mount should be persistent
+
+vi /etc/fstab
+uuid="*********"  /vdo_logical xfs defaults,x-systemd.requires=vdo.service 00
+
+mount -a
+
+df -h /vdo_logical/
+
+
+13. Gain access to the host
+
+- Set password for the root user for “unknown”
+
+:e
+rd.break
+ctrl+x
+mount -o remount,rx /sysroot
+chroot /sysroot
+passwd
+touch /.autorelabel
+exit
+reboot
+
+
+
+14. LVM configuration
+- Extend logical volume called “lv_rhcsa” by 512MiB. The filesystem should be also extended
+- LV lv_rhcsa is mounted to mount point /app
+lvs
+vgs
+lvextend -r -L +512MiB /dev/mapper/vgapp-lv_rhcsa
+
+
+15. Swap configuration
+- Create a new partition on a disk /dev/sdb with size 512M
+fdisk /dev/sdb or cfdisk /dev/sdb
+
+free space --> new --> Partition size: 512M -->primary --> Type:82 -->write --> quit
+lsblk
+
+- Use newly created partition to add to current swap space
+mkswap /dev/sdb2
+swapon -s
+
+- New swap should be automatically activated at boot
+vi /etc/fstab
+uuid="****" swap swap defaults 0 0
+
+mount -a
+swapon -a
+swapon -s
+
+
+16. Manage firewalld
+
+- Add service samba to the default zone to open traffic for samba ports
+
+firewall-cmd --list-all
+firewall-cmd --add-service=samba --premanent
+firewall-cmd --reload
+
+================================================================================================================================================
+
+
+Exam 2
+
+Node 1 node1.example.com
+
+
+1. Using basic tools
+- In file /etc/passwd find lines with word “bash” and copy the whole line with matching word to a new file in /root/matches
+
+grep bash /etc/passwd >> /root/matches
+
+
+2. Select a tuning profile
+
+- Set recommended tuning profile
+yum installed tuned -y
+tuned-adm list
+tuned-adm recommended
+tuned-adm profile <profilename>
+tuned-adm active
+
+
+3. Create an archived file
+
+- Create 10 files starting from file1 to file10 in a directory /exam2
+- Archive all files from directory /exam2 to an archive named myarch.tar and put it in /exam2 directory
+
+mkdir /exam2
+touch file{1..10}
+tar -cvf myarch.tar
+
+
+4. Configuring service
+- Create directory /www and create in this directory file index.html
+- In file index.html write the text “I like RHCSA”
+- Edit httpd config to use by default /www directory for search documents
+- Httpd service should start automatically at boot
+
+mkdir /www
+cd /www
+vi index.html
+I like RHCSA
+
+vi /etc/httpd/conf/http.conf
+
+DocumentRoot "/www"
+
+
+<Directory "/www">
+
+<Directory "/www">
+
+systemctl enable httpd
+
+semanage fcontext -a -t httpd_sys_content_t '/www{/.*)?'
+restorecon -Rv /www
+
+
+5. Set environment
+
+- Set environment “EXAM=RHCSA” for user Anna
+- The environment should be persistent
+
+su - Anna
+vi .bash_profile
+export EXAM=RHCSA
+
+logout and login
+
+set | less (verity)
+env (verify)
+
+echo &EXAM
+
+
+
+6. User management
+
+- Create a user named Bob with UID 2000
+- Set the Bob account to expire 10 days from the current day
+- Edit configuration that every newly created user have a password which should change every 30 days
+- Set sudo privileges for user Bob without the requirement of using a password
+
+usearadd -u 2000 Bob
+chage -E $(date -d "+10 days" +"%Y-%m-%d") Bob 
+or
+date -d "+10 days" +%F
+chage -E $(date -d "+10 days" +%F) Bob
+chage -l Bob
+
+vi /etc/login.defs
+PASS_MAX_DAYS 30
+
+visudo
+Bob All=(ALL) NOPASSWD= ALL
+
+
+7. Managing files
+
+- Write bash script which after executing displays sentence “Hello World” – script should be named hello.sh and should be placed in /root directory
+- For script hello.sh set permissions read, write and execute only for user root
+- Create a soft link to script hello.sh and place it in /tmp/soft_link
+
+vi hello.sh
+#!/bin/bash
+echo "Hello World”
+
+chmod 700 hello.sh
+
+ln -s hello.sh /tmp/soft_link
+
+
+8. Ssh connection
+- Set ssh key-based authentication for user Bob from node1 to node2
+- User Bob should connect from node1 to node2 without providing a password
+- Send file /etc/fstab from node1 to node2 with destination /tmp/fstab_backup
+
+ssh-keygen
+ssh-copy-id Bob@node2
+ssh bob@node2
+scp /etc/fstab Bob@node2:/tmp/fstab_backup
+
+
+9. Set hostname
+
+- Set hostname to node1
+hostnamectl set-hostname node1
+
+
+10. Set persistent logs
+- Edit config for System Journal that logs preserve reboots
+- Create config in /etc/rsyslog.d/ with a record that all messages 
+  with authpriv facility and any priority will be send to the file /var/log/rhcsa_secure.log
+
+vi /etc/systemd/journald.conf
+Storage=persistent
+systemctl restart systemd-journald
+ls -la /var/log/journal/
+
+
+vi /etc/rsyslog.d/rhcsa_secure.conf
+authpriv.*  /var/log/rhcsa_secure.log
+
+
+systemctl restart rsyslog
+logger -p authpriv.alert Hello
+
+less /var/log/rhcsa_secure.log                               
+
+11. Mount network share
+
+- Create directory /mnt/my_share
+- Mount to /mnt/my_share Filesystem which is exported from host main.example.com:/export_files
+- NFS share should be mounted after reboot
+
+yum install autofs nfs-utils
+
+showmount -e main.example.com
+
+vi /etc/autofs.master.d/auot.export
+/. /etc/auto.misc
+
+vi /etc/auto.misc
+/mnt/my_share -rw,sync main.example.com:/export_files
+
+systemctl restart autofs
+df -h /mnt/nfs_share/
+
+vi /etc/fstab
+main.example.com:/export_files  /mnt/nfs_share  nfs  defaults 0 0
+
+firewall-cmd --add-service=nfs --permanent
+firewall-cmd --reload
+
+mount -a
+ 
+
+
+
+12. Managing containers
+
+- Log in to the Red Hat repository registry.access.redhat.com
+- Use the httpd image registry.access.redhat.com/rhscl/httpd-24-rhel7
+- As a user student Create a container called mysite
+- Port 8080 should be redirected to the container port 8080
+- Mount the /home/student/www directory to /var/www/html/ directory in container
+- Create the systemd unit named mysite to manage container with systemctl
+- Mysite service should work after reboot and be managed via systemctl commands
+
+yum install container-tools
+su - student
+podman login registry.access.redhat.com
+podman pull registry.access.redhat.com/rhscl/httpd-24-rhel7
+podman run -d -p 8080:8080 -v /home/student/www/:/var/www/html/:z --name mysite httpd-24-rhel7
+
+mkdir -p ~/.config/systemd/user
+podman generate systemd mysite > ~/.config/systemd/user/mysite.service
+or
+podman generate --name mysite --new --files
+systemctl --user daemon-reload
+
+systemctl --user start mysite &&  systemctl --user enable mysite
+systemctl --user status mysite
+
+
+
+
+
+13. Installing module
+
+- Install the postgresql:12 module
+
+yum module install pogresql:12
+
+
+
+14. Managing Stratis
+
+- Create Stratis filesystem named fs1 in Stratis pool1 based on /dev/sdb
+- Mount Stratis filesystem fs1 to directory /my_stratis
+- Stratis filesystem should be XFS and be mounted after reboot
+
+yum install stratis-cli stratisd
+systemctl start stratisd &&  systemctl enable stratisd
+
+stratis pool create pool1 /dev/sdb
+stratis pool list
+
+stratis filesystem create pool1 fs1
+stratis filesystem list 
+
+mkdir /my_stratis
+
+blkid
+vi /etc/fstab
+UUID=d54ft562547893217752317 /my_stratis xfs defaults,x-systemd.requires=stratisd.service 0 0
+
+mount -a
+
+
+
+Node 2 node2.example.com
+
+
+1. Set Selinux
+
+- Set SELinux to permissive mode
+
+vi /etc/selinux/config
+SELINUX=permissive
+
+
+2. Create partition
+
+- On disk /dev/sdb create new GPT partition with size 512MiB
+- Make vfat filesystem for newly created partition
+- Mount newly created partition to /vfat_rhcsa directory
+- Partition should be mounted after reboot
+
+fdisk
+:n
+:p
+:512M
+:w
+
+mkfs.vfat /dev/sdb1
+blkid
+
+mkdir  /vfat_rhcsa
+vi /etc/fstab
+UUID="rrrrrr" /vfat_rhcsa vfat defaults 0 0 
+
+mount -a
+
+
+3. Managing LVM
+
+- On a disk /dev/sdb create a new partition with size 1GiB
+- Create a physical volume using newly created 1GiB partition
+- Create volume group named vgex with default physical extents 10MiB from a new physical volume
+- Create logical volume belongs to vgex volume group with size 30PE and named lv_rhcsa
+
+fdisk /dev/sdb
+n
+p
++1G
+w
+
+pvcreate /dev/sdb2
+vgcreate vgex -s 10Mid /dev/sdb2
+vgdisplay
+
+lvcreate --name lv_rhcsa -l 30 vgex
+lvs
+
+
+
+4. Managing SWAP
+
+- On a disk /dev/sdb create a new swap partition 512MiB
+- Create swap from newly created partition and set that newly created swap will have the highest priority
+- New swap should be additional swap space and should preserve reboot
+
+fdisk /dev/sdb
+n
+p
+512M
+82
+w
+ 
+mkswap /dev/sdb3
+
+vi /etc/fstab
+UUID="ccccccC" swap swap pri=5 0 0 
+
+swapon -a
+swapon -s
+mount -a
+
+
+5. Resolving names
+
+- Set resolution for name rhcsa.example.com as an address 192.168.0.10
+
+vi /etc/hosts
+192.168.0.10 rhsa.example.com 
+
+
+6. Basic tools
+
+- Find all files in directory /etc with a size larger than 3MB and copy them to /findings directory
+
+find /etc -type f -size +3M -exec cp {} /findings/ \;
+
+
+
+===============================================================================================================
+
+Exam 3
+
+Node 1 node1.example.com
+
+
+1. Set network connection
+- Add secondary IPv4 address 10.0.0.10/24 for connection enp0s3
+- Connection enp0s8 shouldn’t start automatically on boot
+
+nmtui 
+
+
+2. User management
+- Create user Admin
+- Change user Admin password for “secret123”
+- Set a welcome message for user Admin – that after switching on user Admin you will see the message “Welcome Admin!”
+- Update comment for user Admin with content “Administrator Account RHCSA”
+- Set that every newly created user will have in home directory file named notes.txt
+
+useradd Admin
+passwd Admin
+
+vi .bashrc
+echo "Wlcome Admin"
+
+usermod -c "Administrator Account RHCSA" Admin
+
+vi /etc/skel/notes.txt
+
+
+3. Time configuration
+- Set timezone to America/Detroit
+
+timedatectl set-timezone America/Detroit
+
+
+4. Adjusting boot process
+- Set default timeout for grub2 menu to 10 seconds
+vi /etc/default/grub
+GRUB_TIMEOUT=10
+
+grub2-mkconfig -o /boot/grub2/grub.cfg
+
+
+5. Scheduling task
+- Schedule job to run command "echo "Test file" > /tmp/newfile.txt" one time at 09:00 pm
+
+00 21 * * * echo "Test file" > /tmp/newfile.txt
+
+or atq
+at 21:00
+echo "Test file" > /tmp/newfile.txt
+
+
+6. Managing systemd temporary files
+- Create configuration in /etc/tmpfiles.d/ named 15sec.conf
+- Directory /var/15sec should be created after using systemd-tmpfiles command
+- Permissions should be 0755
+- Owner and Group for /var/15sec directory should be the root
+- Age for files in /var/15sec should be 15 seconds
+
+man tmpfiles.d
+vi /etc/temfiles.d/15sec.conf
+d /var/15sec 0755 root root 15s
+
+ls -ld /var/15sec
+systemd-tmpfiles --create /etc/tmpfiles.d/15sec.conf
+
+
+
+7. Compressing files
+- Archive and compress in gzip format directory /etc/
+- Archive file should be named config.tar.gz and stored in /root directory
+
+tar -czf config.tar.gz /etc
+
+
+8. Managing services
+- Mask service firewalld
+
+systemctl mask firewalld
+
+
+9. Package installation
+- Install zsh-5.5.1-6.el8_1.2.x86_64.rpm  package from /root directory
+yum localinstall zsh-5.5.1-6.el8_1.2.x86_64.rpm
+
+
+
+10. Managing SELinux
+- Set boolean httpd_anon_write for true
+- Setting should preserve reboot
+
+getsebool httpd_anon_write
+setsebool -P httpd_anon_write true
+
+
+11. LVM Management
+- Umount LV agent-logs from /var/agent-logs and disable from the mount during the boot process
+- Remove LV agent-logs
+- Remove VG logs
+- Remove PV /dev/sdc1
+
+vi /etc/fstab
+commnet the /var/agent-logs
+
+unmount /var/agent-logs
+lvs
+
+lvremove /dev/mapper/logs-agent--logs
+vgremove logs
+pvremove /dev/sdc1
+
+
+12. Disk Management
+- Create a new partition on disk /dev/sdb with size 512MiB
+- Create filesystem XFS and Label agents
+- Create directory /agents
+- Mount newly created partition using Label agents to mount point /agents
+- Setting should preserve reboot
+
+cfdisk /dev/sdc -->new-->512M-->Write
+mkfs.xfs -L agents /dev/sdc1
+blkid
+mkdir /agents
+
+vi /etc/fstab
+LABEL="agents" /agents xfs defaults 0 0 
+
+mount -a
+
+
+
+
+Node 2 node2.example.com
+
+1. Firewalld Configuration
+- Allow traffic for services nfs and http
+- Allow traffic for source IP address 192.168.0.50
+firewall-cmd --add-service=nfs --permanent
+firewall-cmd --add-service=http --permanent
+firewall-cmd --add-source=192.168.0.50/32 --permanent
+firewall-cmd --reload
+
+
+2. Container Management
+- Create a container using image docker.io/library/nginx
+- Container name should be web
+- Copy environments from container and put them to container host directory /var/env.txt
+
+yum module install container-tools
+podman run -d --name web docker.io/library/nginx
+podman exec web env > /var/env.txt
+
+
+3. File Management
+- Create hard link named linked to file /root/list
+- Hard link should be stored in /root directory
+ls -l /root/list
+ln /root/list /root/linked
+ls -l
+cat linked
+cat list
+
+
+
+4. Script
+- Create a bash script named numbers.sh in /root directory
+- Script should display "First" when input $1 is "1"
+- Script should display "Second" when input $1 is "2"
+- Script should be executable
+
+vi numbers.sh
+#!/bin/bash
+
+num=$1
+if [ $num -eq "1" ]
+then
+	echo "First"
+else
+	echo "Second"
+fi
+
+chmod +x numbers.sh
+./numbers.sh 1
+
+
+
+
+
+
+
+
+
