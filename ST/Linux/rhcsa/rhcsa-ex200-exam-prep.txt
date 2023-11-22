@@ -1,0 +1,298 @@
+Q2.)
+
+vi /etc/yum.repos.d/pkg.repo
+
+[base]
+name=base
+baseurl=http://example.com/rhel8.2/BaseOS
+gpgchk=o
+enabled=1
+
+
+[app]
+name=app
+baseurl=http://example.com/rhel8.2/AppStream
+gpgchk=o
+enabled=1
+
+Q3.)
+semanage port -l | grep 80
+
+semanage port -a -t http_port_t -p tcp 82
+semanage fcontext -m -t httpd_sys_content_t "/var/www/html/file1"
+
+
+firewall-cmd  --list-all
+firewall-cmd  --permanent --add-service={http,https}
+firewall-cmd  --permanent --add-port=80/tcp
+firewall-cmd  --reload
+
+
+
+Q4.)
+groupadd sysadm
+useradd -G sysadm harry
+useradd -G sysadm natasha
+useradd -s /sbin/nologin/ sarah
+
+visudo
+%sysadm ALL=/usr/sbin/useradd
+harry ALL=(ALL)       NOPASSWD: /usr/bin/passwd
+
+
+Q5.)
+
+mkdir /shared/sysadm
+
+chgrp sysadm /shared/sysadm
+chmod 2770 /shared/sysadm
+
+Q6.)
+
+crontab -e -u natasha
+*/1 * * * * logger "Ex200 test"
+
+systemctl restart crond
+
+
+Q7.)
+
+yum install nfs-utils autofs
+
+vi /etc/auto.master
+
+/netdir /etc/auto.misc
+
+vi /etc/auto.misc
+netuserX   -fstype=nfs.rw,sync classroom.example.com:/home/guests/netuserX
+
+systemctl restart autofs
+
+su - netuserX
+
+
+Q8.)
+
+tar -cvjf myetcbackup.tar.bz2 /etc/
+
+Q9.)
+
+cp /etc/fstab /var/tmp/fstab
+
+setfacl -m u:natasha:rw- /var/tmp/fstab
+setfacl -m u:harry:- /var/tmp/fstab
+
+getfacl /var/tmp/fstab
+
+Q10.)
+
+timedatectl
+
+yum install chrony
+
+vi /etc/chrony.conf
+server classroom.example.com iburst
+
+systemctl restart chronyd
+chronyc sources -v
+
+
+Q11.)
+
+find / -user natasha -exec cp -rf {} /root/natashafiles/ \;
+
+vi /opt/file-search.sh
+
+#!/bin/bash
+find / -user natasha -exec cp -rf {} /root/natashafiles/ \;
+
+chmod 755 /opt/file-search.sh
+
+
+
+Q12.)
+
+grep "ich" /usr/share/dict/words > /root/linesfile
+
+Q13.)
+
+useradd -u 2334 unilao
+passwd unilao
+ablerate
+
+Q14.)
+
+e
+rd.break or init=/bin/bash
+ctrl+x
+mount -o remount,rw /sysroot/
+choot /sysroot/
+passwd
+touch /.autorelabel
+exit
+reboot
+
+dnf config-manager --ad-repo http://content.example.com/rhel8.2/BaseOS
+dnf config-manager --ad-repo http://content.example.com/rhel8.2/AppStream
+
+
+Q15.)
+
+lsblk
+pv-->vg-->vl
+
+fdisk /dev/vdb (8*50=500mb)
+n
+p
++500M
+t
+8e (linux LVM)
+w
+
+partprobe /dev/vdb
+
+
+pvcreate /dev/vdb1 (physical volume created)
+vgcreate -s 8M wgroup /dev/vdb1 (volume group created)
+
+lvcreate -l 50 -n wshare /dev/wgroup (lvm created)
+lvs
+
+mkfs.ext4 /dev/wgroup/wshare
+
+mkdir  /mnt/wshare
+
+vi /etc/fstab
+/dev/wgroup/wshare /mnt/wshare ext4 defaults 0 0
+mount -a
+df -h
+
+
+
+lvremove /dev/wgroup/wshare
+vgremove /dev/wgroup
+
+
+Q16.)
+fdisk /dev/vdb
+n
+p
++400M
+t
+82
+w
+
+partprobe /dev/vdb
+mkswap /dev/vdb2
+swapon /dev/vdb2
+
+blkid (to get UUID)
+
+vi /ect/fstab
+uuid=********** swap  swap defaults 0 0
+
+mount -a
+swapon -s
+
+
+Q17.)
+
+resize the vo logical volumr, it should be approx 300MB(note -> only size accepted from 270 to 290mb)
+
+df -Th (to check the file system)
+unmount /mnt/wshare
+
+e2fsck -f /dev/mapper/wgroup-wshare
+resize2fs /dev/mapper/wgroup-wshare 300M
+lvreduce -L -110M -n /dev/mapper/wgroup-wshare
+
+mount -a
+df -h
+
+#Now resize to 400MB
+df -Th
+lvextend -r -L +100M /dev/mapper/wgroup-wshare
+
+df -h
+lvs
+
+
+Q18.)
+
+yum install tuned -y
+systemctl start tuned 
+systemctl enable tuned 
+
+tuned-adm list
+tuned-adm recommend
+
+tuned-adm profile virtual-host
+tuned-adm active
+
+
+Q19.)
+
+useradd ablerate
+
+vi /usr/local/bin/rhcsa
+#!/bin/bash
+echo "WElcome to user ablerate"
+chmod 755 /usr/local/bin/rhcsa
+
+
+vi /home/ablerate/.bashrc
+/usr/local/bin/rhcsa
+(or)
+vi /home/ablerate/.bashrc_profile
+/usr/local/bin/rhcsa
+
+ssh ablerate@localhost
+
+
+Q20.)
+
+wget http://example.com/Containerfile
+
+podman build -t imagename:v1 .
+podman images
+
+
+Q21.)
+
+podman run -it --name mycontainer -v /opt/file/:/opt/incoming/:Z -v /opt/processed/:/opt/outgoing/:Z  imagename:v1
+podman ps -a
+
+loginctl show-user username
+loginctl enable-linger 
+
+mkdir -p ~/.config/systemd/user
+cd ~/.config/systemd/user
+
+podman generate systemd --name mycontainer --files
+systemctl --user start container-mycontainer.service
+systemctl --user enable container-mycontainer.service
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

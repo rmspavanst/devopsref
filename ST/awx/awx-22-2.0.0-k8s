@@ -1,3 +1,25 @@
+https://awstip.com/deploy-ansible-awx-into-a-k3s-single-node-cluster-794c023c514b
+https://gist.github.com/cdot65/e1b853bd4785c57454fc11a2d2806891
+https://www.bitbull.ch/wiki/index.php/Install_AWX_on_K3S
+
+
+
+
+
+https://blog.while-true-do.io/kubernetes-k3s-on-almalinux/
+
+
+ 
+ curl -sfL https://get.k3s.io | sh -
+
+ systemctl status k3s.service
+ systemctl enable k3s.service
+
+ kubectl get nodes
+ ki=ubectl get nodes
+
+
+
 sudo yum -y install git make tar curl
 
 git clone https://github.com/ansible/awx-operator.git
@@ -17,7 +39,7 @@ kubectl get pods -n awx
 NAME                                               READY   STATUS    RESTARTS   AGE
 awx-operator-controller-manager-57867569c4-mwvfb   2/2     Running   0          35m
 
-kubectl get deploy
+kubectl get deploy -n awx
 NAME                              READY   UP-TO-DATE   AVAILABLE   AGE
 awx-operator-controller-manager   1/1     1            1           19m
 
@@ -123,6 +145,15 @@ stringData:
   sslmode: prefer
   type: unmanaged
 type: Opaque
+
+
+
+Awx-Execution Environments:
+================================
+
+kubectl exec -it awx-task-7dbb4658b8-ht58v -n awx -c awx-ee -- /bin/bash -c "ansible-galaxy collection list"
+
+
 
 
 

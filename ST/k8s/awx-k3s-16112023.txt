@@ -1,0 +1,108 @@
+1 VM SETUP
+
+1.1 VM requirements
+Just setup a RHEL8 Server VM with the following requirements
+
+OS: centos8 minimal
+CPU: 2
+MEM: 8GB (6 GB may work as well)
+DISK: 40G (7GB used on a fresh setup)
+
+1.2 Prepare OS
+
+dnf -y upgrade
+dnf -y install setroubleshoot-server curl lsof wget make git
+sed -i  '/swap/d' /etc/fstab
+swapoff -a
+firewall-cmd --permanent --zone=public --add-service=https
+firewall-cmd --zone=public --add-masquerade --permanent
+firewall-cmd --reload
+reboot
+
+2 SETUP K3S
+
+curl -sfL https://get.k3s.io | sh
+cat /etc/systemd/system/k3s.service
+systemctl status k3s
+
+kubectl get nodes
+# all pods in running state? fine!
+kubectl get pods --all-namespaces
+
+# install kustomize
+cd /usr/local/sbin/
+curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"  | bash
+
+3 DEPLOY AWX
+
+export NAMESPACE=awx
+kubectl create namespace $NAMESPACE
+kubectl config set-context --namespace=$NAMESPACE --current
+
+cd ; mkdir awx ; cd awx
+vim kustomization.yaml
+
+------------
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  # Find the latest tag here: https://github.com/ansible/awx-operator/releases
+  - github.com/ansible/awx-operator/config/default?ref=<tag>
+
+# Set the image tags to match the git version from above
+images:
+  - name: quay.io/ansible/awx-operator
+    newTag: <tag>
+
+# Specify a custom namespace in which to install AWX
+namespace: awx
+------------
+
+4 INSTALL THE MANIFEST
+
+$ kubectl apply -k .
+
+# Wait a bit and you should have the awx-operator running:
+
+$ kubectl get pods -n awx
+
+# Set the current namespace for kubectl:
+
+$ kubectl config set-context --current --namespace=awx
+
+5 CREATE A FILE NAMED AWX-BITBULL.YML IN THE SAME FOLDER
+
+------------
+
+---
+apiVersion: awx.ansible.com/v1beta1
+kind: AWX
+metadata:
+  name: bitbull
+spec:
+  service_type: nodeport
+
+------------
+
+# Make sure to add this new file to the list of "resources" in your kustomization.yaml file:
+
+...
+resources:
+  - github.com/ansible/awx-operator/config/default?ref=<tag>
+  # Add this extra line:
+  - awx-bitbull.yaml
+...
+
+# Apply the changes to create the AWX instance in your cluster:
+
+$ kubectl apply -k .
+
+# Check operator begin to create new resources:
+
+$ kubectl get pods -l "app.kubernetes.io/managed-by=awx-operator"
+
+$ kubectl get svc -l "app.kubernetes.io/managed-by=awx-operator"
+
+# Final, to retrieve the admin password:
+
+$ kubectl get secret bitbull-admin-password -o jsonpath="{.data.password}" | base64 --decode ; echo
