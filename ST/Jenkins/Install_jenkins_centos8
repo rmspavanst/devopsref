@@ -10,6 +10,10 @@ docker run -p 8080:8080 -p 50000:50000 -d -v my-jenkins-home: /var/jenkins_home 
 
 https://devopscube.com/setup-jenkins-on-kubernetes-cluster/
 
+https://octopus.com/blog/jenkins-dynamic-build-agents
+
+
+
 
 
 
