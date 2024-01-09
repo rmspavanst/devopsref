@@ -38,3 +38,10 @@ ansible --version
 pip install PyYAML==5.4.1
 pip install yamllint==1.25.0
 pip install packaging==21.3
+
+or 
+
+$ git clone https://github.com/ansible/ansible.git
+$ cd ./ansible
+$ make rpm
+$ sudo rpm -Uvh ./rpm-build/ansible-*.noarch.rpm
