@@ -4,6 +4,10 @@ https://www.bitbull.ch/wiki/index.php/Install_AWX_on_K3S
 
 
 
+https://sysadmin.info.pl/en/blog/how-to-uninstall-k3s-and-install-it-on-worker-nodes/
+
+
+
 
 
 https://blog.while-true-do.io/kubernetes-k3s-on-almalinux/
@@ -17,6 +21,25 @@ https://blog.while-true-do.io/kubernetes-k3s-on-almalinux/
 
  kubectl get nodes
  ki=ubectl get nodes
+
+curl -Lo /usr/local/bin/k3s https://github.com/k3s-io/k3s/releases/download/v1.26.5+k3s1/k3s; chmod a+x /usr/local/bin/k3s
+K3S_KUBECONFIG_MODE="644" k3s server
+
+or command flags:
+k3s server --write-kubeconfig-mode=644
+The k3s agent can also be configured this way:
+k3s agent --server https://k3s.example.com --token mypassword
+
+
+
+
+ cat /var/lib/rancher/k3s/server/node-token
+
+ Then, on the machine that will serve as the additional node, download the K3s binary and run the following.
+
+sudo ./k3s agent --server https://myserver:6443 --token NODE-TOKEN
+
+
 
 
 

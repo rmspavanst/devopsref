@@ -89,6 +89,8 @@ automationhub_pg_sslmode='prefer'
 
 3)run (./setup.sh) file
 
+./setup.sh -e disable_no_log=true
+
 
 upgrade:
 ===========

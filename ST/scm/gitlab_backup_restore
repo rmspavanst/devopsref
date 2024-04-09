@@ -1,0 +1,88 @@
+https://docs.gitlab.cn/14.0/ee/raketasks/backup_restore.html
+https://anilaugustinechalissery.medium.com/gitlab-backup-and-restore-a5bd51c3e0ff
+
+
+# Debian/Ubuntu
+sudo apt-get install rsync
+
+# RHEL/CentOS
+sudo yum install rsync
+
+
+GitLab 12.2 or later:
+
+sudo gitlab-backup create
+
+GitLab 12.1 and earlier:
+
+gitlab-rake gitlab:backup:create
+
+If you installed GitLab from source, use the following command:
+
+sudo -u git -H bundle exec rake gitlab:backup:create RAILS_ENV=production
+
+# Stop processes that are connected to the database
+sudo service gitlab stop
+
+sudo -u git -H bundle exec rake gitlab:backup:restore RAILS_ENV=production
+
+sudo service gitlab restart
+
+
+###########################################################################################################
+
+
+#https://noobient.com/2018/06/25/migrating-gitlab-from-internal-to-external/
+
+
+
+Find the URL for the current CentOS 7 PostgreSQL RPM, then install it. E.g.:
+
+yum install https://download.postgresql.org/pub/repos/yum/10/redhat/rhel-7-x86_64/pgdg-centos10-10-2.noarch.rpm
+Then open /etc/yum.repos.d/CentOS-Base.repo and add to the base and updates sections:
+
+exclude=postgresql*
+Install the server and the contrib additions, because GitLab relies on the pg_trgm extension:
+
+yum install postgresql10-server postgresql10-contrib
+Initialize Postgres:
+
+/usr/pgsql-10/bin/postgresql-10-setup initdb
+Set up authentication via /var/lib/pgsql/10/data/pg_hba.conf. Use md5 to have password authentication on the local interfaces instead of ident:
+
+host    all             all             127.0.0.1/32            md5
+host    all             all             ::1/128                 md5
+Finally, start and enable the engine:
+
+systemctl start postgresql-10.service
+systemctl enable postgresql-10.service
+Database Export
+Perform a pg_dumpall on GitLab’s internal DB:
+
+sudo -u gitlab-psql /opt/gitlab/embedded/bin/pg_dumpall --username=gitlab-psql --host=/var/opt/gitlab/postgresql > /var/lib/pgsql/database.sql
+Database Import
+It’s a oneliner:
+
+sudo -u postgres psql -f /var/lib/pgsql/database.sql
+Then make sure to remove /var/lib/pgsql/database.sql.
+
+GitLab Configuration
+First off, you need to set the gitlab PostgreSQL user’s password:
+
+sudo -u postgres psql -c "ALTER USER gitlab ENCRYPTED PASSWORD '***' VALID UNTIL 'infinity';"
+Add these to /etc/gitlab/gitlab.rb:
+
+# Disable the built-in Postgres
+postgresql['enable'] = false
+# Fill in the connection details
+gitlab_rails['db_adapter'] = 'postgresql'
+gitlab_rails['db_encoding'] = 'utf8'
+gitlab_rails['db_host'] = '127.0.0.1'
+gitlab_rails['db_port'] = 5432
+gitlab_rails['db_database'] = "gitlabhq_production"
+gitlab_rails['db_username'] = 'gitlab'
+gitlab_rails['db_password'] = '***'
+Now apply the changes:
+
+gitlab-ctl reconfigure && gitlab-ctl restart
+

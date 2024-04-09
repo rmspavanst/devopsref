@@ -1,0 +1,94 @@
+auto:
+
+curl -1sLf 'https://downloads.enterprisedb.com/h8y5NJrcAL8N85oLQME6CXzgrTLc4fpK/enterprise/setup.rpm.sh' | sudo -E bash
+
+manual:
+
+dnf install yum-utils 
+rpm --import 'https://downloads.enterprisedb.com/h8y5NJrcAL8N85oLQME6CXzgrTLc4fpK/enterprise/gpg.E71EB0829F1EF813.key'
+curl -1sLf 'https://downloads.enterprisedb.com/h8y5NJrcAL8N85oLQME6CXzgrTLc4fpK/enterprise/config.rpm.txt?distro=el&codename=9' > /tmp/enterprise.repo
+dnf config-manager --add-repo '/tmp/enterprise.repo'
+dnf -q makecache -y --disablerepo='*' --enablerepo='enterprisedb-enterprise'
+
+
+
+sudo dnf -y install edb-as16-server edb-as16-server-contrib edb-as16-server-client
+
+
+sudo PGSETUP_INITDB_OPTIONS="-E UTF-8" /usr/edb/as16/bin/edb-as-16-setup initdb
+
+sudo systemctl start edb-as-16
+
+
+sudo su - enterprisedb
+
+psql edb
+
+ALTER ROLE enterprisedb IDENTIFIED BY password;
+
+# running in psql
+CREATE DATABASE hr;
+
+\c hr
+
+
+CREATE USER gitlab CREATEDB;
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE EXTENSION IF NOT EXISTS btree_gist;
+CREATE DATABASE gitlabhq_production OWNER gitlab;
+
+GRANT ALL PRIVILEGES ON DATABASE gitlabhq_production TO gitlab;
+ALTER USER gitlab WITH PASSWORD 'gitlab';
+
+useradd gitlab
+passwd gitlab
+
+
+
+
+sudo -u gitlab -H psql -d gitlabhq_production
+
+Check if the pg_trgm extension is enabled:
+
+SELECT true AS enabled
+FROM pg_available_extensions
+WHERE name = 'pg_trgm'
+AND installed_version IS NOT NULL;
+
+If the extension is enabled this produces the following output:
+
+enabled
+---------
+ t
+(1 row)
+
+Check if the btree_gist extension is enabled:
+
+SELECT true AS enabled
+FROM pg_available_extensions
+WHERE name = 'btree_gist'
+AND installed_version IS NOT NULL;
+
+If the extension is enabled this produces the following output:
+
+enabled
+---------
+ t
+(1 row)
+
+Quit the database session:
+
+gitlabhq_production> \q
+
+
+psql -h 10.102.0.6 -U gitlab -d gitlabhq_production
+
+
+
+CREATE USER awx CREATEDB;
+CREATE DATABASE awx OWNER awx;
+GRANT ALL PRIVILEGES ON DATABASE awx TO awx;
+ALTER USER awx WITH PASSWORD 'awx';
+
+
+psql -h 172.24.112.187 -U awx -d awx

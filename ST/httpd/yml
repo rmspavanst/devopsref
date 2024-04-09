@@ -1,0 +1,54 @@
+---
+- block:
+    - debug:
+        msg: "move and delete {{ appName }} files"
+
+    - name: Copy files to DR servers
+      ansible.builtin.copy:
+        src: "{{ srcPath }}"
+        dest: "{{ destPath }}"
+      delegate_to: "{{ destination_servers }}"
+      register: copy_result
+
+    - name: Display copy result
+      ansible.builtin.debug:
+        var: copy_result
+      when: copy_result.failed
+      failed_when: false
+
+    - name: Create a backup on PROD servers
+      ansible.builtin.archive:
+        path: "{{ srcPath }}"
+        dest: "{{ backupPath }}images_backup_{{ ansible_date_time.date }}_{{ ansible_date_time.time }}.tar.gz"
+      register: backup_result
+
+    - name: Display backup result
+      ansible.builtin.debug:
+        var: backup_result
+        when: backup_result.failed
+      failed_when: false
+
+    - name: Find files in the images directory
+      find:
+        paths: "{{ srcPath }}"
+        patterns: "*"
+      register: found_files
+    
+    - name: Display find result
+      ansible.builtin.debug:
+        var: found_files
+      when: found_files.failed
+      failed_when: false
+    
+    - name: Delete files in the images directory
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      with_items: "{{ found_files.files }}"
+      register: delete_result
+    
+    - name: Display delete result
+      ansible.builtin.debug:
+        var: delete_result
+      when: delete_result.failed
+      failed_when: false

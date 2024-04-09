@@ -1,0 +1,25 @@
+- name: Copy files to destination servers
+  copy:
+    src: "{{ source_path }}"
+    dest: "{{ destination_path }}"
+  delegate_to: "{{ item }}"
+  with_items: "{{ groups['destination_servers'] }}"
+  register: copy_result
+
+- name: Take backup of files on source servers
+  command: "tar -czvf {{ backup_path }}/amax_backup_{{ ansible_hostname }}.tar.gz {{ source_path }}"
+  args:
+    creates: "{{ backup_path }}/amax_backup_{{ ansible_hostname }}.tar.gz"
+  run_once: true
+  register: backup_result
+
+- name: Delete files on source servers
+  file:
+    path: "{{ source_path }}"
+    state: absent
+  run_once: true
+  register: delete_result
+
+- name: Display success or fail messages
+  debug:
+    msg: "{{ 'Success' if copy_result|success and backup_result|success and delete_result|success else 'Failure' }}"
