@@ -76,3 +76,19 @@ xfs_growfs /dev/mapper/rhel-root
 
 
 16000
+
+
+####################################
+
+
+sudo parted /dev/sda
+(parted) resizepart 2 100%
+(parted) quit
+
+sudo pvresize /dev/sda2
+
+sudo lvextend -l +100%FREE /dev/rhel/root
+
+sudo xfs_growfs /
+df -h
+

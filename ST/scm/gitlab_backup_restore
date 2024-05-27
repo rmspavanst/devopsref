@@ -64,6 +64,12 @@ Database Import
 It’s a oneliner:
 
 sudo -u postgres psql -f /var/lib/pgsql/database.sql
+or
+sudo -u gitlab psql -d gitlabhq_production -f /var/lib/pgsql/database.sql
+
+
+
+
 Then make sure to remove /var/lib/pgsql/database.sql.
 
 GitLab Configuration
