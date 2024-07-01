@@ -1,0 +1,75 @@
+AAP_uninstall:
+================
+
+Shut down Ansible Automation Platform services by running the following command:
+
+# automation-controller-service stop
+Uninstall automation-controller packages:
+
+# dnf remove automation-controller\*
+If you run into PREIN scriptlet error while removing automation-controller* rpm packages execute the below command:
+
+# rpm -e --noscripts PACKAGE_NAME where PACKAGE_NAME is name of the rpm package which ran into scriptlet error
+Uninstall redis* packages :
+
+# dnf remove redis*
+Uninstall rh-postgresql12 and nginx:
+
+# dnf remove postgresql* nginx*
+Delete Ansible Automation Platform data/configuration files:
+
+# rm -rf /etc/{nginx,tower} /var/lib/{pgsql,awx}
+Delete Ansible Automation Platform installation package if you installed with the bundled installer:
+
+# rm -rf /var/lib/automation-platform-bundle
+Verify that automation controller components are uninstalled by checking that the following command returns no results:
+
+# rpm -qa | grep automation-controller
+
+
+Uninstall_AT:
+================
+How do I completely uninstall Ansible Tower 3.6+
+Shut down Tower services by running ansible-tower-service stop
+
+Uninstall ansible-tower packages:
+yum remove ansible-tower\*
+
+If you run into PREIN scriptlet error while removing ansible-tower* rpm packages execute the below command:
+rpm -e --noscripts PACKAGE_NAME where PACKAGE_NAME is name of the rpm package which ran into scriptlet error
+
+Uninstall RabbitMQ:
+yum -y remove rabbitmq-server
+
+On RHEL 7, uninstall rh-python36: yum remove rh-python36-*
+
+Uninstall rh-postgresql10 (RHEL 7): yum remove rh-postgresql10-* and rm /etc/profile.d/rh-postgresql10-env.sh or yum remove postgresql* (RHEL 8)
+
+Uninstall rh-redis* packages (RHEL 7, Tower 3.7+): yum remove rh-redis5*
+
+Delete Tower data/configuration files: rm -rf /etc/tower /var/lib/{pgsql,awx,rabbitmq}
+
+Delete Tower data files: RHEL 7: /var/opt/rh/rh-postgresql10/lib/pgsql/data or RHEL 8: /var/lib/pgsql/data
+
+Delete Tower installation package if you installed with the bundled installer: rm -rf /var/lib/tower-bundle
+
+Clean yum metadata: yum clean metadata --enablerepo="ansible-tower,ansible-tower-dependencies"
+
+Verify that Ansible Tower components are uninstalled by checking that rpm -qa | grep ansible-tower returns no results
+
+Use yum erase <package-name> to remove any remaining ansible-tower-* packages.
+
+How do I completely uninstall Ansible Tower 3.8
+In addition to the above steps, disable the repo for automation hub.
+
+yum-config-manager --disable automation-hub
+How do I remove Ansible Tower components without removing data.
+Backup Tower: setup.sh -b
+
+Completely remove Tower
+
+If you reinstall Tower, restore Tower: setup.sh -r with the backup file 1.
+
+This process will remove the essential Tower packages and configuration files.
+
+

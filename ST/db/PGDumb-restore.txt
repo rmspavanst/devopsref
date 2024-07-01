@@ -66,7 +66,7 @@ host    replication     all             ::1/128                 scram-sha-256
 2.CREATE DATABASE awx;
 3.CREATE USER awx WITH ENCRYPTED PASSWORD 'awxpass';
 4.GRANT ALL PRIVILEGES ON DATABASE awx TO awx;
-#ALTER USER postgres WITH PASSWORD '123' (optional)
+#ALTER USER awx WITH PASSWORD 'Redhat@DKSH123' (optional)
 4.1 \q
 5. psql -d awx
 6. \conninfo
@@ -75,6 +75,10 @@ host    replication     all             ::1/128                 scram-sha-256
 9. ALTER DATABASE postgres OWNER TO awx;
 10. ALTER DATABASE template0 OWNER TO awx;
 11. ALTER DATABASE template1 OWNER TO awx;
+
+REVOKE TEMPORARY, CONNECT ON DATABASE dbname FROM public;
+REVOKE ALL PRIVILEGES ON DATABASE "AWX" FROM postgres;
+
 
 ##To restore:
 

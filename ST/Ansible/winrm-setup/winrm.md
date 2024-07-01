@@ -44,8 +44,21 @@ $file = "$env:temp\ConfigureRemotingForAnsible.ps1"
 powershell.exe -ExecutionPolicy ByPass -File $file
 
 
+or
+
+Set-ExecutionPolicy Bypass -Scope LocalMachine -Force
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+$url = "https://raw.githubusercontent.com/ansible/ansible-documentation/devel/examples/scripts/ConfigureRemotingForAnsible.ps1"
+$file = "$env:temp\ConfigureRemotingForAnsible.ps1"
+(New-Object -TypeName System.Net.WebClient).DownloadFile($url, $file)
+Invoke-Expression "$file -SkipNetworkProfileCheck"
+
+
 
 winrm enumerate winrm/config/Listener
+
+
+
 
 
 Manual:
@@ -90,5 +103,17 @@ step6:
 -----
 you run again the ./ConfigureRemotingForAnsible.ps1 -EnableCredSSP -DisableBasicAuth
 
+
+
+Proxy_ERROR:
+------------
+
+export no_proxy="computer_full_name,another-host.com"
+
+telnet 1000021-v-cmtst.ghr.genting.corp 5986
+nc -zv 1000021-v-cmtst.ghr.genting.corp 5986
+
+curl -v --noproxy '*' https://1000021-v-cmtst.ghr.genting.corp:5986/wsman
+wget --no-proxy https://1000021-v-cmtst.ghr.genting.corp:5986/wsman
 
 

@@ -1,0 +1,68 @@
+# https://medium.com/@randy-huang/ansible-tower-installation-uninstallation-6cf0465d83f1
+
+
+# As the root user, call setup.sh with the appropriate parameters and Tower backup or restored as configured.
+
+./setup.sh -b
+./setup.sh -r
+
+Note:
+
+-b Perform a database backup rather than an installation.
+-r Perform a database restore rather than an installation.
+
+# Backup files will be created on the same path that setup.sh script exists. It can be changed by specifying the following EXTRA_VARS :
+./setup.sh -e 'backup_dest=/path/to/backup_dir/' -b
+
+# A default restore path is used unless EXTRA_VARS are provided with a non-default path, as shown in the example below:
+./setup.sh -e 'restore_backup_file=/path/to/nondefault/backup.tar.gz' -r
+
+
+
+Note:  Stop the Ansible Tower services to prevent any changes during the upgrade.
+Ensure all Ansible Tower instances are properly shut down if you're running a multi-node setup.
+
+Steps to upgrade:
+==================
+
+./setup.sh -e 'backup_dest=/path/to/backup_dir/' -b
+
+ansible-tower-service stop
+
+cat /etc/tower/conf.d/postgres.py (to get db details)
+
+
+
+pg_dump -U awx -h localhost -d awx -F c -b -v -f "/tmp/awx_backup.dump"
+
+pg_restore -U awx -h localhost -d awx -v "/tmp/awx_backup.dump"
+
+
+
+
+pg_dump -U awx -h localhost -Fc awx -f /path/to/backup/awx_backup.pg10.dump
+pg_restore -U awx -h localhost -d awx -Fc /path/to/backup/awx_backup.pg10.dump
+
+
+
+
+
+ansible-tower-backup -t /path/to/backup/
+sudo dnf install ansible-automation-platform-migrator
+
+
+ansible-automation-platform-migrator migrate -s /path/to/tower/backup -d /path/to/aap
+
+
+
+/etc/tower/settings.py
+From:
+
+Raw
+SECRET_KEY = file('/etc/tower/SECRET_KEY', 'rb').read().strip()
+To:
+
+Raw
+SECRET_KEY = open('/etc/tower/SECRET_KEY', 'rb').read().strip()
+
+
