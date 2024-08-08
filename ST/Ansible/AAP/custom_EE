@@ -5,7 +5,7 @@ execution-environment.yml
 version: 1
 build_arg_defaults:
     EE_BASE_IMAGE: quay.io/ansible/awx-ee:latest
-    EE_BUILDER_IMAGE: auay.io/ansible/ansible-builder:latest
+    EE_BUILDER_IMAGE: quay.io/ansible/ansible-builder:latest
 dependencies:
     galaxy: requirements.yml
     #python: requirements.txt
@@ -17,6 +17,11 @@ additional_build_steps:
         RUN pip3 install --upgrade pip setuptools
     #append:
     #    - Run ls -al /
+
+
+additional_build_steps:
+    prepend: |
+       export no_proxy="1000021-v-cmtst.ghr.genting.corp,another-host.com"
 
 
 #    python: requirements.txt

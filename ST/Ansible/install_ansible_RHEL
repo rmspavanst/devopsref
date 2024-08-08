@@ -45,3 +45,202 @@ $ git clone https://github.com/ansible/ansible.git
 $ cd ./ansible
 $ make rpm
 $ sudo rpm -Uvh ./rpm-build/ansible-*.noarch.rpm
+
+
+In centos*:
+===========
+
+wget https://www.python.org/ftp/python/3.12.1/Python-3.12.1.tgz
+   88  ll
+   89  rm -rf ansible/
+   90  tar xzf Python-3.12.1.tgz
+   91  cd Python-3.12.1
+   92  ./configure --enable-optimizations
+   93  python3.12
+   94  make -j 4
+   95  python3.12 --version
+   96  sudo make altinstall
+   97  python3.12 --version
+   98  history
+   99  cp -r /usr/local/bin/py* /usr/bin/
+  100  ll /usr/bin/
+  101  ll /usr/bin/pyt*
+  102  ln -sf /usr/bin/python3.12 /usr/bin/python
+  103  ll /usr/bin/pyt*
+  104  sudo ln -s /usr/bin/python3.12 /usr/bin/unversioned-python
+  105  sudo alternatives --install /usr/bin/python python /usr/bin/unversioned-python 1
+  106  sudo alternatives --config python
+  107  sudo ln -s /usr/bin/python /etc/alternatives/unversioned-python
+  108  python
+  109  sudo ln -s /usr/bin/python3.12 /usr/bin/unversioned-python
+  110  sudo alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 3
+  111  sudo alternatives --config python3
+  112  alternatives --list
+  113  python
+  114  python3
+
+  118  ll /usr/local/bin/pip*
+  119  sudo ln -s /usr/local/bin/pip3.12 /usr/local/bin/pip
+  120  sudo ln -s /usr/local/bin/pip3.12 /usr/local/bin/pip3
+  121  ll /usr/local/bin/pip*
+  122  pip -V
+  123  pip list
+sudo dnf install wget yum-utils make gcc openssl-devel bzip2-devel libffi-devel zlib-devel
+
+wget https://www.python.org/ftp/python/3.9.16/Python-3.9.16.tgz
+tar xzf Python-3.9.16.tgz
+cd Python-3.9.16
+sudo ./configure --with-system-ffi --with-computed-gotos --enable-loadable-sqlite-extensions
+sudo make -j ${nproc}
+sudo make altinstall
+
+python3.9 -V
+
+pip3.9 -V
+
+alternatives --list
+
+cp -r /usr/local/bin/py* /usr/bin/
+
+ln -sf /usr/bin/python3.9 /usr/bin/python
+
+alternatives --remove python /usr/libexec/no-python
+alternatives --install /usr/bin/python python /usr/bin/python3.9 1
+alternatives --config python
+alternatives --list
+
+python3.9 -m pip install --user ansible-core==2.14.5
+
+python3.9 -m pip install --upgrade --user ansible
+
+/usr/local/bin/python3.9 -m pip install --upgrade pip
+
+/usr/local/bin/python3.9 -m pip install --upgrade --user ansible
+
+python3 -m pip install  ansible-core==2.14.5
+python -m pip install  ansible-core==2.14.5
+
+ansible --version
+
+pip install PyYAML==5.4.1
+pip install yamllint==1.25.0
+pip install packaging==21.3
+
+or 
+
+$ git clone https://github.com/ansible/ansible.git
+$ cd ./ansible
+$ make rpm
+$ sudo rpm -Uvh ./rpm-build/ansible-*.noarch.rpm
+
+
+In centos*:
+===========
+
+wget https://www.python.org/ftp/python/3.12.1/Python-3.12.1.tgz
+   88  ll
+   89  rm -rf ansible/
+   90  tar xzf Python-3.12.1.tgz
+   91  cd Python-3.12.1
+   92  ./configure --enable-optimizations
+   93  python3.12
+   94  make -j 4
+   95  python3.12 --version
+   96  sudo make altinstall
+   97  python3.12 --version
+   98  history
+   99  cp -r /usr/local/bin/py* /usr/bin/
+  100  ll /usr/bin/
+  101  ll /usr/bin/pyt*
+  102  ln -sf /usr/bin/python3.12 /usr/bin/python
+  103  ll /usr/bin/pyt*
+  104  sudo ln -s /usr/bin/python3.12 /usr/bin/unversioned-python
+  105  sudo alternatives --install /usr/bin/python python /usr/bin/unversioned-python 1
+  106  sudo alternatives --config python
+  107  sudo ln -s /usr/bin/python /etc/alternatives/unversioned-python
+  108  python
+  109  sudo ln -s /usr/bin/python3.12 /usr/bin/unversioned-python
+  110  sudo alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 3
+  111  sudo alternatives --config python3
+  112  alternatives --list
+  113  python
+  114  python3
+
+  118  ll /usr/local/bin/pip*
+  119  sudo ln -s /usr/local/bin/pip3.12 /usr/local/bin/pip
+  120  sudo ln -s /usr/local/bin/pip3.12 /usr/local/bin/pip3
+  121  ll /usr/local/bin/pip*
+  122  pip -V
+  123  pip list
+sudo dnf install wget yum-utils make gcc openssl-devel bzip2-devel libffi-devel zlib-devel
+
+wget https://www.python.org/ftp/python/3.9.16/Python-3.9.16.tgz
+tar xzf Python-3.9.16.tgz
+cd Python-3.9.16
+sudo ./configure --with-system-ffi --with-computed-gotos --enable-loadable-sqlite-extensions
+sudo make -j ${nproc}
+sudo make altinstall
+
+python3.9 -V
+
+pip3.9 -V
+
+alternatives --list
+
+cp -r /usr/local/bin/py* /usr/bin/
+
+ln -sf /usr/bin/python3.9 /usr/bin/python
+
+alternatives --remove python /usr/libexec/no-python
+alternatives --install /usr/bin/python python /usr/bin/python3.9 1
+alternatives --config python
+alternatives --list
+
+python3.9 -m pip install --user ansible-core==2.14.5
+
+python3.9 -m pip install --upgrade --user ansible
+
+/usr/local/bin/python3.9 -m pip install --upgrade pip
+
+/usr/local/bin/python3.9 -m pip install --upgrade --user ansible
+
+python3 -m pip install  ansible-core==2.14.5
+python -m pip install  ansible-core==2.14.5
+
+ansible --version
+
+pip install PyYAML==5.4.1
+pip install yamllint==1.25.0
+pip install packaging==21.3
+
+or 
+
+$ git clone https://github.com/ansible/ansible.git
+$ cd ./ansible
+$ make rpm
+$ sudo rpm -Uvh ./rpm-build/ansible-*.noarch.rpm
+
+
+In centos*:
+===========
+
+wget https://www.python.org/ftp/python/3.12.1/Python-3.12.1.tgz
+
+tar xzf Python-3.12.1.tgz
+cd Python-3.12.1
+./configure --enable-optimizations
+ make -j 4
+ sudo make altinstall
+python3.12 --version
+cp -r /usr/local/bin/py* /usr/bin/
+ll /usr/bin/pyt*
+ln -sf /usr/bin/python3.12 /usr/bin/python
+sudo alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 3
+sudo alternatives --config python3
+alternatives --list
+ll /usr/local/bin/pip*
+sudo ln -s /usr/local/bin/pip3.12 /usr/local/bin/pip
+sudo ln -s /usr/local/bin/pip3.12 /usr/local/bin/pip3
+ll /usr/local/bin/pip*
+pip -V
+pip list

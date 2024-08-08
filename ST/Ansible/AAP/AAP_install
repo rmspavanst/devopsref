@@ -220,6 +220,12 @@ Set the HUB and AAP shell variables to reduce typing in the following skopeo com
 ...output omitted...
 
 
+Hub:
+======
+
+systemctl stop pulpcore.service pulpcore-api.service pulpcore-content.service pulpcore-worker@1.service pulpcore-worker@2.service nginx.service redis.service
+
+
 
 
 

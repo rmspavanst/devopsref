@@ -1,0 +1,216 @@
+Pre_request:
+
+#rhel9
+sudo subscription-manager status
+
+# Enable the BaseOS repository
+sudo subscription-manager repos --enable=rhel-9-for-x86_64-baseos-rpms
+
+# Enable the AppStream repository
+sudo subscription-manager repos --enable=rhel-9-for-x86_64-appstream-rpms
+
+sudo subscription-manager repos --list-enabled
+
+
+#rhel7
+sudo subscription-manager attach --auto
+sudo subscription-manager repos --enable=rhel-7-server-rpms
+
+sudo subscription-manager repos --list-enabled
+
+
+
+Step1:
+sudo dnf install -y httpd createrepo
+
+Step2:
+sudo mkdir -p /var/www/html/repos/rhel7
+sudo mkdir -p /var/www/html/repos/rhel8
+sudo mkdir -p /var/www/html/repos/rhel9
+
+sudo mkdir -p /var/www/html/repos-dvd/rhel7
+sudo mkdir -p /var/www/html/repos-dvd/rhel8
+sudo mkdir -p /var/www/html/repos-dvd/rhel9
+
+
+sudo mount /dev/sr0 /var/www/html/repos-dvd/rhel9
+sudo mount -o ro /dev/sr1 /var/www/html/repos-dvd/rhel7
+sudo mount /dev/sr2 /var/www/html/repos-dvd/rhel8
+
+vi /etc/fstab
+/dev/sr0    /var/www/html/repos-dvd/rhel9    iso9660    defaults    0 0
+/dev/sr1    /var/www/html/repos-dvd/rhel7    iso9660    ro          0 0
+/dev/sr2    /var/www/html/repos-dvd/rhel8    auto       defaults    0 0
+
+sudo mount -a
+
+
+
+Step3:
+
+sudo dnf install -y yum-utils createrepo
+
+# RHEL 7
+sudo reposync --gpgcheck --repoid=rhel-7-server-rpms --download-path=/var/www/html/repos/rhel7/
+
+# RHEL 8
+sudo reposync --gpgcheck --repoid=rhel-8-for-x86_64-baseos-rpms --download-path=/var/www/html/repos/rhel8/
+sudo reposync --gpgcheck --repoid=rhel-8-for-x86_64-appstream-rpms --download-path=/var/www/html/repos/rhel8/
+
+# RHEL 9
+sudo reposync --gpgcheck --repoid=rhel-9-for-x86_64-baseos-rpms --download-path=/var/www/html/repos/rhel9/
+sudo reposync --gpgcheck --repoid=rhel-9-for-x86_64-appstream-rpms --download-path=/var/www/html/repos/rhel9/
+
+
+or
+
+
+sudo dnf install -y yum-utils
+sudo reposync --gpgcheck -l --repoid=rhel-7-server-rpms --download-path=/var/www/html/repos/rhel7/
+sudo reposync --gpgcheck -l --repoid=rhel-8-for-x86_64-baseos-rpms --download-path=/var/www/html/repos/rhel8/
+sudo reposync --gpgcheck -l --repoid=rhel-9-for-x86_64-baseos-rpms --download-path=/var/www/html/repos/rhel9/
+or
+sudo dnf install -y yum-utils
+
+# RHEL 7
+sudo reposync --gpgcheck -l --repoid=rhel-7-server-rpms --download-path=/var/www/html/repos/rhel7/
+sudo reposync --gpgcheck -l --repoid=rhel-7-server-extras-rpms --download-path=/var/www/html/repos/rhel7/
+sudo reposync --gpgcheck -l --repoid=rhel-7-server-optional-rpms --download-path=/var/www/html/repos/rhel7/
+
+# RHEL 8
+sudo reposync --gpgcheck -l --repoid=rhel-8-for-x86_64-baseos-rpms --download-path=/var/www/html/repos/rhel8/
+sudo reposync --gpgcheck -l --repoid=rhel-8-for-x86_64-appstream-rpms --download-path=/var/www/html/repos/rhel8/
+
+# RHEL 9
+sudo reposync --gpgcheck -l --repoid=rhel-9-for-x86_64-baseos-rpms --download-path=/var/www/html/repos/rhel8/
+sudo reposync --gpgcheck -l --repoid=rhel-9-for-x86_64-appstream-rpms --download-path=/var/www/html/repos/rhel8/
+
+
+or 
+
+sudo mount -o loop /path/to/rhel7.iso /mnt
+sudo cp -r /mnt/* /var/www/html/repos/rhel7/
+sudo umount /mnt
+
+sudo mount -o loop /path/to/rhel8.iso /mnt
+sudo cp -r /mnt/* /var/www/html/repos/rhel8/
+sudo umount /mnt
+
+sudo mount -o loop /path/to/rhel9.iso /mnt
+sudo cp -r /mnt/* /var/www/html/repos/rhel9/
+sudo umount /mnt
+
+
+Step4:
+sudo createrepo /var/www/html/repos/rhel7/
+sudo createrepo /var/www/html/repos/rhel8/
+sudo createrepo /var/www/html/repos/rhel9/
+
+
+sudo createrepo /var/www/html/repos-dvd/rhel7/
+sudo createrepo /var/www/html/repos-dvd/rhel8/
+sudo createrepo /var/www/html/repos-dvd/rhel9/
+
+
+Step5:
+sudo systemctl start httpd
+sudo systemctl enable httpd
+
+
+step6:
+sudo firewall-cmd --permanent --add-service=http
+sudo firewall-cmd --reload
+
+
+step7: Configure Client Servers to Use the Repository Server
+
+sudo rm -f /etc/yum.repos.d/*.repo
+sudo vi /etc/yum.repos.d/local.repo
+
+
+vi local.repo
+[rhel8-baseos]
+name=Red Hat Enterprise Linux 8 - BaseOS
+baseurl=http://<repository-server-ip>/repos/rhel8/BaseOS
+enabled=1
+gpgcheck=0
+
+[rhel8-appstream]
+name=Red Hat Enterprise Linux 8 - AppStream
+baseurl=http://<repository-server-ip>/repos/rhel8/AppStream
+enabled=1
+gpgcheck=0
+
+
+[rhel7]
+name=Red Hat Enterprise Linux 7
+baseurl=http://<repository-server-ip>/repos/rhel7
+enabled=1
+gpgcheck=0
+
+
+[rhel9-baseos]
+name=Red Hat Enterprise Linux 9 - BaseOS
+baseurl=http://<repository-server-ip>/repos/rhel9/BaseOS
+enabled=1
+gpgcheck=0
+
+[rhel9-appstream]
+name=Red Hat Enterprise Linux 9 - AppStream
+baseurl=http://<repository-server-ip>/repos/rhel9/AppStream
+enabled=1
+gpgcheck=0
+
+
+sudo dnf clean all
+sudo dnf makecache
+
+sudo dnf update -y
+
+
+or 
+
+Sample Ansible Playbook:
+
+- name: Configure local repository on RHEL8 servers
+  hosts: rhel8_servers
+  become: yes
+  tasks:
+    - name: Remove existing repository files
+      file:
+        path: /etc/yum.repos.d
+        state: absent
+        force: yes
+
+    - name: Create repository directory
+      file:
+        path: /etc/yum.repos.d
+        state: directory
+
+    - name: Create local repository file
+      copy:
+        dest: /etc/yum.repos.d/local.repo
+        content: |
+          [rhel8-baseos]
+          name=Red Hat Enterprise Linux 8 - BaseOS
+          baseurl=http://<repository-server-ip>/repos/rhel8/BaseOS
+          enabled=1
+          gpgcheck=0
+
+          [rhel8-appstream]
+          name=Red Hat Enterprise Linux 8 - AppStream
+          baseurl=http://<repository-server-ip>/repos/rhel8/AppStream
+          enabled=1
+          gpgcheck=0
+
+    - name: Clean repository cache
+      command: dnf clean all
+
+    - name: Make repository cache
+      command: dnf makecache
+
+    - name: Update all packages
+      command: dnf update -y
+
+
+

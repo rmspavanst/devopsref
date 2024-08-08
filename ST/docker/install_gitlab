@@ -20,3 +20,23 @@ sudo docker run --detach \
 
   docker exec -it <gitlab-container-name> grep 'Password:' /etc/gitlab/initial_root_password
 
+
+mkdir -p /srv/gitlab/{data,logs,config}
+
+export GITLAB_HOME=/srv/gitlab
+export GITLAB_HOME=$HOME/gitlab
+
+podman run --detach \
+  --hostname 10.0.16.207 \
+  --publish 8443:443 --publish 8080:80 --publish 55466:22 \
+  --name gitlab \
+  --restart always \
+  --volume $GITLAB_HOME/gitlab/config:/etc/gitlab:Z \
+  --volume $GITLAB_HOME/gitlab/logs:/var/log/gitlab:Z \
+  --volume $GITLAB_HOME/gitlab/data:/var/opt/gitlab:Z \
+  docker.io/gitlab/gitlab-ee:latest
+
+
+podman exec -it gitlab grep 'Password:' /etc/gitlab/initial_root_password
+
+podman exec -it gitlab grep 'Password:' /etc/gitlab/initial_root_password
