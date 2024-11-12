@@ -1,0 +1,64 @@
+# startManaged1Servers.yml
+---
+- debug:
+    msg: Start the {{ appName }} Managed servers
+
+- name: Check the {{ appName }} is running or not
+  shell:
+    cmd: ps -ef | grep -w "{{ process }}" | grep -v grep | awk '{print $2}' | awk 'FNR == 1 {print}'
+  changed_when: false
+  register: process_result
+  ignore_errors: true
+
+- name: Start {{ appName }} if not running
+  shell: "{{ script }}"
+  when: process_result.stdout != "" or process_result.stdout == ""
+  register: start_process_result
+  ignore_errors: true
+
+- name: Verify the {{ appName }}
+  shell: ps -ef | grep "{{ process }}"
+  register: verify_process_result
+  ignore_errors: true
+
+- name: Display success/failure message based on process status
+  debug:
+    msg: |
+      {% if verify_process_result.stdout != "" or start_process_result.stdout != "" %}
+      "{{ appName }} processes started successfully."
+      {% else %}
+      Failure: "{{ appName }} processes are not running."
+      {% endif %}
+
+
+#startManagedServers.yml
+---
+- debug:
+    msg: Start the {{ appName }} Managed servers
+
+- name: Check the {{ appName }} is running or not
+  shell:
+    cmd: ps -ef | grep "{{ process }}" #| grep -v grep | awk '{print $2}' | awk 'FNR == 1 {print}'
+  changed_when: false
+  register: process_result
+  ignore_errors: true
+
+- name: Start {{ appName }} if not running
+  shell: "{{ script }}"
+  when: process_result.stdout != "" or process_result.stdout == ""
+  register: start_process_result
+  ignore_errors: true
+
+- name: Verify the {{ appName }}
+  shell: ps -ef | grep "{{ process }}"
+  register: verify_process_result
+  ignore_errors: true
+
+- name: Display success/failure message based on process status
+  debug:
+    msg: |
+      {% if verify_process_result.stdout != "" or start_process_result.stdout != "" %}
+      "{{ appName }} processes started successfully."
+      {% else %}
+      Failure: "{{ appName }} processes are not running."
+      {% endif %}

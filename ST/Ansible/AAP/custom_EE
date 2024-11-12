@@ -116,9 +116,10 @@ ARG EE_BASE_IMAGE
 ARG EE_BUILDER_IMAGE
 ARG ANSIBLE_GALAXY_CLI_COLLECTION_OPTS
 
+ENV no_proxy=1000021-v-cmtst.ghr.genting.corp,another-host.com"
 
 COPY --from=galaxy /usr/share/ansible /usr/share/ansible
-
+COPY _buld/krb5.conf /etc/krb5.conf
 LABEL ansible-execution-environment=true
 
 

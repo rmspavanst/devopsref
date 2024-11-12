@@ -1,0 +1,12 @@
+Primary Server:
+-----------------
+
+sudo yum install edb-as14-server edb-as14-contrib
+
+/usr/edb/as14/bin/initdb -D /var/lib/edb/as14/data
+or
+sudo /usr/edb/as14/bin/edb-as-14-setup initdb
+sudo systemctl start edb-as-14
+sudo systemctl enable edb-as-14
+
+

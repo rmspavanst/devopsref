@@ -1,0 +1,12 @@
+# Ansible Automation Controller Subscription Details Explained
+https://access.redhat.com/solutions/7057490
+
+
+
+# How to adjust "Hosts automated" / "Hosts remaining" counts of "subscription settings" in the Controller UI
+https://access.redhat.com/solutions/7070635
+
+
+https://docs.redhat.com/en/documentation/red_hat_ansible_automation_platform/2.4/html/automation_controller_user_guide/controller-managing-subscriptions#proc-controller-apo-endpoint-functions
+awx-manage host_metric --tarball
+

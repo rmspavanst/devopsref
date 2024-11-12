@@ -1,0 +1,78 @@
+# stopManagedServers.yml
+
+---
+- debug:
+    msg: Stop the {{ appName }} Managed servers
+
+- name: Check if {{ appName }} is running
+  shell:
+    cmd: ps -ef | grep -w "{{ process }}" | grep -v grep | awk '{print $2}' | awk 'FNR == 1 {print}'
+  changed_when: false
+  register: process_result
+  ignore_errors: yes
+  
+- name: output of the process_result
+  debug:
+    var: process_result  
+
+- name: Stop {{ appName }} if running
+  shell: "{{ script }}"
+  when: process_result.stdout != ""
+  register: stop_process_result
+  ignore_errors: yes
+
+- name: Check if {{ appName }} is running and kill if necessary
+  shell: |
+    pid=$(ps -ef | grep -w "{{ process }}" | grep -v grep | awk '{print $2}' | awk 'FNR == 1 {print}')
+    if [ -n "$pid" ]; then
+      kill -9 "$pid"
+    fi
+  register: kill_process_result
+  ignore_errors: yes
+
+- name: Display success/failure message based on process status
+  debug:
+    msg: |
+      {% if kill_process_result.stdout == "" or stop_process_result.stdout == "" %}
+      "{{ appName }} processes stopped successfully."
+      {% else %}
+      Failure: "{{ appName }} processes are still running."
+      {% endif %}
+
+
+# stopManaged1Servers.yml
+
+---
+- debug:
+    msg: Stop the {{ appName }} Managed servers
+
+- name: Check if {{ appName }} is running
+  shell:
+    cmd: ps -ef | grep -w "{{ process }}" | grep -v grep | awk '{print $2}' | awk 'FNR == 1 {print}'
+  changed_when: false
+  register: process_result
+  ignore_errors: yes
+
+- name: Stop {{ appName }} if running
+  shell: "{{ script }}"
+  when: process_result.stdout != ""
+  register: stop_process_result
+  ignore_errors: yes
+
+- name: Check if {{ appName }} is running and kill if necessary
+  shell: |
+    pid=$(ps -ef | grep -w "{{ process }}" | grep -v grep | awk '{print $2}' | awk 'FNR == 1 {print}')
+    if [ -n "$pid" ]; then
+      kill -9 "$pid"
+    fi
+  register: kill_process_result
+  ignore_errors: yes
+
+- name: Display success/failure message based on process status
+  debug:
+    msg: |
+      {% if kill_process_result.stdout == "" or stop_process_result.stdout == "" %}
+      "{{ appName }} processes stopped successfully."
+      {% else %}
+      Failure: "{{ appName }} processes are still running."
+      {% endif %}

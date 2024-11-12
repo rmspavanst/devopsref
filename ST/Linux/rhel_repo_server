@@ -213,4 +213,11 @@ Sample Ansible Playbook:
       command: dnf update -y
 
 
+sudo dnf updateinfo list security | grep "RHSA" | awk '{print $3}' | xargs sudo yumdownloader --destdir=/var/www/html/security/rhel9/
+
+dnf update --downloadonly security --downloaddir=/var/www/html/security/rhel9_security
+
+sudo dnf update --downloadonly --downloaddir=/root/rhel9/ --security --repoid=rhel-9-for-x86_64-baseos-rpms
+
+
 

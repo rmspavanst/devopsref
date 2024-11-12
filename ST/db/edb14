@@ -1,0 +1,140 @@
+
+#Auto:
+curl -1sLf 'https://downloads.enterprisedb.com/wdwKkmpBlMlbqQLCGql9fTHaXQlrkKvT/enterprise/setup.rpm.sh' | sudo -E bash
+
+Manual:
+
+dnf install yum-utils 
+rpm --import 'https://downloads.enterprisedb.com/wdwKkmpBlMlbqQLCGql9fTHaXQlrkKvT/enterprise/gpg.E71EB0829F1EF813.key'
+curl -1sLf 'https://downloads.enterprisedb.com/wdwKkmpBlMlbqQLCGql9fTHaXQlrkKvT/enterprise/config.rpm.txt?distro=el&codename=8' > /tmp/enterprise.repo
+dnf config-manager --add-repo '/tmp/enterprise.repo'
+dnf -q makecache -y --disablerepo='*' --enablerepo='enterprisedb-enterprise'
+
+
+sudo dnf -y install edb-as14-server edb-as14-server-contrib edb-as14-server-client edb-xdb edb-migrationtoolkit repmgr14
+
+sudo /usr/edb/as14/bin/initdb -D /var/lib/edb/as14/data
+or
+sudo PGSETUP_INITDB_OPTIONS="-E UTF-8" /usr/edb/as14/bin/edb-as-14-setup initdb
+
+
+####################################################################################################################
+1. Install EDB-AS14 on both servers
+On both the primary (172.24.112.187) and standby (172.24.112.188) servers:
+
+# Install prerequisites
+dnf install -y yum-utils
+
+# Import the EnterpriseDB GPG key
+rpm --import 'https://downloads.enterprisedb.com/wdwKkmpBlMlbqQLCGql9fTHaXQlrkKvT/enterprise/gpg.E71EB0829F1EF813.key'
+
+# Download the EDB repository file
+curl -1sLf 'https://downloads.enterprisedb.com/wdwKkmpBlMlbqQLCGql9fTHaXQlrkKvT/enterprise/config.rpm.txt?distro=el&codename=8' > /tmp/enterprise.repo
+
+# Add the repository to DNF
+dnf config-manager --add-repo '/tmp/enterprise.repo'
+
+# Update cache and install EDB-AS14 packages
+dnf -q makecache -y --disablerepo='*' --enablerepo='enterprisedb-enterprise'
+dnf -y install edb-as14-server edb-as14-server-contrib edb-as14-server-client edb-xdb
+
+2. Initialize the database on the primary server (172.24.112.187)
+
+# Initialize the EDB database cluster
+/opt/edb/as14/bin/initdb -D /var/lib/edb/as14/data
+or
+sudo PGSETUP_INITDB_OPTIONS="-E UTF-8" /usr/edb/as14/bin/edb-as-14-setup initdb
+
+# Start the EDB-AS14 service
+systemctl enable --now edb-as-14
+
+3. Configure Primary (Master) Server
+Edit the PostgreSQL configuration file (/var/lib/edb/as14/data/postgresql.conf):
+
+# Modify the following parameters
+listen_addresses = '*'
+wal_level = replica
+max_wal_senders = 10
+archive_mode = on
+archive_command = 'cp %p /var/lib/edb/as14/wal_archive/%f'
+Set up access control in the pg_hba.conf file (/var/lib/edb/as14/data/pg_hba.conf):
+
+# IPv4 local connections: # Accept from anywhere (not recommended)
+host     all             all             0.0.0.0/0                md5
+
+# Allow replication connections from the standby server
+host    replication     all     172.24.112.188/32       md5
+
+
+
+#Reload the configuration:
+systemctl reload edb-as-14
+
+# Create a replication user:
+sudo su - enterprisedb
+psql -d postgres
+CREATE ROLE replicator WITH REPLICATION PASSWORD 'replicator' LOGIN;
+CREATE USER replicator REPLICATION LOGIN ENCRYPTED PASSWORD 'replicator';
+
+4. Set up Standby Server (172.24.112.188)
+#Stop the EDB-AS14 service on the standby server:
+systemctl stop edb-as-14
+
+#Copy the data directory from the primary to the standby server:
+rsync -av --progress --exclude 'postmaster.pid' /var/lib/edb/as14/data/ root@172.24.112.188:/var/lib/edb/as14/data/
+ sudo chown -R enterprisedb:enterprisedb /var/lib/edb/as14/data
+ sudo chmod 700 /var/lib/edb/as14/data
+
+
+Configure replication on the standby by adding the following to postgresql.conf on the standby server:
+# Add standby mode
+primary_conninfo = 'host=172.24.112.187 port=5432 user=replicator password=yourpassword'
+
+#Start the EDB-AS14 service on the standby server:
+systemctl start edb-as-14
+
+5. Verify Replication
+#You can check replication status on the primary server:
+psql -c "SELECT * FROM pg_stat_replication;"
+#And on the standby:
+psql -c "SELECT * FROM pg_stat_wal_receiver;"
+
+
+
+###################################################################
+
+#Create the archive dir to archive wal file on primary:
+sudo su - postgres
+mkdir -p /var/lib/edb/as14/pg_log_arch/primary
+
+#Add below for primary:
+
+# to check log " tail -10f $PGDATA/log/postgresql-Tue.log"
+
+
+psql -c 'alter system set wal_level = replica;'
+psql -c 'alter system set wal_log_hints = on ;'
+psql -c 'alter system set archive_mode = on ;'
+
+#psql -c 'alter system set archive_command = 'test!-f
+#/var/lib/edb/as14/pg_log_arch/primary/%f && cp %p /var/lib/edb/as14/pg_log_arch/primary/%f';'
+
+psql
+alter system set archive_command = 'test ! -f /var/lib/edb/as14/pg_log_arch/primary/%f && cp %p /var/lib/edb/as14/pg_log_arch/primary/%f';
+\q
+
+psql -c 'alter system set max_wal_senders = 10 ;'
+psql -c 'alter system set wal_keep_size = 500 ;'
+psql -c 'alter system set host_standby = on ;'
+
+#Create relication user:
+psql
+CREATE USER replicator REPLICATION;
+\q
+
+#Allow remote access in pg_hba.conf on primary host
+
+vi @PGDATA/pg_hba.conf
+host replication replicator 10.0.16.211/32 trust
+host postgres postgres 10.0.16.210/32 md5 (optional)
+systemctl restart postgresql

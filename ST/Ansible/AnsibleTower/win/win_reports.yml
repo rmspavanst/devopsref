@@ -1,0 +1,245 @@
+---
+- name: Gather Windows patch status and save to CSV
+  hosts: windows
+  gather_facts: yes
+
+  tasks:
+    - name: Get the latest installed security patch
+      win_updates:
+        category_names: SecurityUpdates
+        state: searched
+      register: update_info
+
+    - debug:
+        var: update_info
+
+    - name: Determine patch compliance status
+      set_fact:
+        patch_status: >
+          {% if update_info.updates | length > 0 %}
+            Non-Compliant
+          {% else %}
+            Compliant
+          {% endif %}
+
+    - debug:
+        var: patch_status
+
+    - name: Gather latest security updates
+      win_shell: |
+        Get-WmiObject -Class Win32_QuickFixEngineering | Where-Object { $_.Description -like "*Security*" } | Sort-Object -Property InstalledOn -Descending | Select-Object -First 1 -Property Description, HotFixID, InstalledOn, PSComputerName, Caption
+      register: installed_updates
+
+    - debug:
+        var: installed_updates
+
+    - name: Parse the installed patch details
+      set_fact:
+        installed_patch: "{{ installed_updates.stdout_lines[2].split(': ')[1] }} - {{ installed_updates.stdout_lines[3].split(': ')[1] }}"
+        last_patched_date: "{{ installed_updates.stdout_lines[4].split(': ')[1] }}"
+
+    - debug:
+        var: installed_patch
+    - debug:
+        var: last_patched_date
+
+    - name: Check if the CSV file exists and is not empty
+      stat:
+        path: /var/lib/awx/projects/dksh/dksh_poc/reports/patch_status.csv
+      delegate_to: 10.0.16.201
+      register: csv_file
+
+    - name: Add CSV header if file is missing or empty
+      lineinfile:
+        path: /var/lib/awx/projects/dksh/dksh_poc/reports/patch_status.csv
+        line: "Hostname,IP Address,Patch Status,Installed Patch,Last Patched Date"
+        create: yes
+        state: present
+        insertafter: '^'
+      delegate_to: 10.0.16.201
+      when: csv_file.stat.exists == False or csv_file.stat.size == 0
+
+    - name: Get primary IP address
+      win_shell: "(Get-NetIPAddress | Where-Object { $_.AddressFamily -eq 'IPv4' -and $_.InterfaceAlias -ne 'Loopback' }).IPAddress"
+      register: primary_ip
+
+    - name: Set primary IP address fact
+      set_fact:
+        primary_ip_address: "{{ primary_ip.stdout_lines[0] }}"
+
+    - debug:
+        msg: "Primary IP Address: {{ primary_ip_address }}"
+
+    - name: Save patch details to CSV
+      blockinfile:
+        path: /var/lib/awx/projects/dksh/dksh_poc/reports/patch_status.csv
+        block: |
+          {{ ansible_hostname }},{{ primary_ip_address }},{{ patch_status }},{{ installed_patch }},{{ last_patched_date }}
+        create: yes
+        insertafter: EOF
+      delegate_to: 10.0.16.201
+
+
+    - name: Append patch details to CSV
+      lineinfile:
+        path: /var/lib/awx/projects/dksh/dksh_poc/reports/patch_status.csv
+        line: "{{ ansible_hostname }},{{ primary_ip_address }},{{ patch_status }},{{ installed_patch }},{{ last_patched_date }}"
+      delegate_to: 10.0.16.201
+
+
+
+---
+- name: Gather Windows patch status and save to CSV
+  hosts: windows
+  gather_facts: yes
+
+  tasks:
+    - name: Get the latest installed security patch
+      win_updates:
+        category_names: SecurityUpdates
+        state: searched
+      register: update_info
+
+    - debug:
+        var: update_info
+
+    - name: Determine patch compliance status
+      set_fact:
+        patch_status: >
+          {% if update_info.updates | length > 0 %}
+            Non-Compliant
+          {% else %}
+            Compliant
+          {% endif %}
+
+    - debug:
+        var: patch_status
+
+    - name: Gather latest security updates
+      win_shell: |
+        Get-WmiObject -Class Win32_QuickFixEngineering | Where-Object { $_.Description -like "*Security*" } | Sort-Object -Property InstalledOn -Descending | Select-Object -First 1 -Property Description, HotFixID, InstalledOn, PSComputerName, Caption
+      register: installed_updates
+
+    - debug:
+        var: installed_updates
+
+    - name: Parse the installed patch details
+      set_fact:
+        installed_patch: "{{ installed_updates.stdout_lines[2].split(': ')[1] }} - {{ installed_updates.stdout_lines[3].split(': ')[1] }}"
+        last_patched_date: "{{ installed_updates.stdout_lines[4].split(': ')[1] }}"
+
+    - debug:
+        var: installed_patch
+    - debug:
+        var: last_patched_date
+
+- name: Delete the file if it exists
+  file:
+    path: /var/lib/awx/projects/dksh/dksh_poc/reports/patch_status.csv
+    state: absent
+  delegate_to: 10.0.16.201
+  ignore_errors: yes
+
+    - name: Check if the CSV file exists and is not empty
+      stat:
+        path: /var/lib/awx/projects/dksh/dksh_poc/reports/patch_status.csv
+      delegate_to: 10.0.16.201
+      register: csv_file
+
+    - name: Add CSV header if file is missing or empty
+      lineinfile:
+        path: /var/lib/awx/projects/dksh/dksh_poc/reports/patch_status.csv
+        line: "Hostname,IP Address,Patch Status,Installed Patch,Last Patched Date"
+        create: yes
+        state: present
+        insertafter: BOF  #'^'
+      delegate_to: 10.0.16.201
+      when: csv_file.stat.exists == False or csv_file.stat.size == 0
+
+    - name: Get primary IP address
+      win_shell: "(Get-NetIPAddress | Where-Object { $_.AddressFamily -eq 'IPv4' -and $_.InterfaceAlias -ne 'Loopback' }).IPAddress"
+      register: primary_ip
+
+    - name: Set primary IP address fact
+      set_fact:
+        primary_ip_address: "{{ primary_ip.stdout_lines[0] }}"
+        
+    - debug:
+        msg: "Primary IP Address: {{ primary_ip_address }}"
+
+    - name: Generate patch status CSV from template
+      template:
+        src:  /var/lib/awx/projects/dksh/dksh_poc/patch_status.csv.j2
+        dest: /var/lib/awx/projects/dksh/dksh_poc/reports/patch_status.csv
+      delegate_to: 10.0.16.201
+
+
+---
+- name: Get the latest installed security patch
+  win_updates:
+    category_names: SecurityUpdates
+    state: searched
+  register: update_info
+
+- name: Determine patch compliance status
+  set_fact:
+    patch_status: >
+      {% if update_info.updates | length > 0 %}
+        Non-Compliant
+      {% else %}
+        Compliant
+      {% endif %}
+
+- name: Gather latest security updates
+  win_shell: |
+    Get-WmiObject -Class Win32_QuickFixEngineering | Where-Object { $_.Description -like "*Security*" } | Sort-Object -Property InstalledOn -Descending | Select-Object -First 1 -Property Description, HotFixID, InstalledOn, PSComputerName, Caption
+  register: installed_updates
+
+- name: Parse the installed patch details
+  set_fact:
+    installed_patch: "{{ installed_updates.stdout_lines[2].split(': ')[1] }} - {{ installed_updates.stdout_lines[3].split(': ')[1] }}"
+    last_patched_date: "{{ installed_updates.stdout_lines[4].split(': ')[1] }}"
+
+
+- name: Delete the file if it exists
+  file:
+    path: /var/lib/awx/projects/dksh/dksh_poc/reports/patch_status.csv
+    state: absent
+  delegate_to: 10.0.16.201
+  ignore_errors: yes
+
+
+- name: Check if the CSV file exists and is not empty
+  stat:
+    path: /var/lib/awx/projects/dksh/dksh_poc/reports/patch_status.csv
+  delegate_to: 10.0.16.201
+  register: csv_file
+
+- name: Add CSV header if file is missing or empty
+  lineinfile:
+    path: /var/lib/awx/projects/dksh/dksh_poc/reports/patch_status.csv
+    line: "Hostname,IP Address,Patch Status,Installed Patch,Last Patched Date"
+    create: yes
+    state: present
+    insertafter: '^'
+  delegate_to: 10.0.16.201
+  when: csv_file.stat.exists == False or csv_file.stat.size == 0
+
+- name: Get primary IP address
+  win_shell: "(Get-NetIPAddress | Where-Object { $_.AddressFamily -eq 'IPv4' -and $_.InterfaceAlias -ne 'Loopback' }).IPAddress"
+  register: primary_ip
+
+- name: Set primary IP address fact
+  set_fact:
+    primary_ip_address: "{{ primary_ip.stdout_lines[0] }}"
+
+- name: Append patch details to CSV
+  lineinfile:
+    path: /var/lib/awx/projects/dksh/dksh_poc/reports/patch_status.csv
+    line: "{{ ansible_hostname }},{{ primary_ip_address }},{{ patch_status }},{{ installed_patch }},{{ last_patched_date }}"
+  delegate_to: 10.0.16.201
+
+
+
+
+
